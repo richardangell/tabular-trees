@@ -22,21 +22,19 @@ def extract_model_predictions(model, file = None):
 
     if file == None:
 
-        save_file = str(datetime.datetime.now()) + '-temp-xgb-dump.txt'
+        file = str(datetime.datetime.now()) + '-temp-xgb-dump.txt'
 
-        model.dump_model(save_file, with_stats = True)
+        delete_file = True
 
-    else:
-
-        model.dump_model(file, with_stats = True)
+    model.dump_model(file, with_stats = True)
 
     # parse the model dump text file
     lines, trees_df = read_dump(file)
 
     # if no filename was specified remove the temp model dump
-    if file == None:
+    if delete_file:
 
-        os.remove(save_file)
+        os.remove(file)
 
     trees_preds_df = derive_predictions(trees_df)
 
@@ -165,7 +163,7 @@ def derive_predictions(df):
 
     # update weight values for internal nodes
     df_G.loc[df_G.node_type == 'internal', 'weight'] = \
-        - df.loc[df.node_type == 'internal', 'weight'] * df.loc[df.node_type == 'internal', 'H']
+        - df_G.loc[df_G.node_type == 'internal', 'G'] / df_G.loc[df_G.node_type == 'internal', 'H']
 
     return(df_G)
 
