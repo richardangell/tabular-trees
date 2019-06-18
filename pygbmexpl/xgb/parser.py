@@ -2,8 +2,11 @@ import pandas as pd
 
 
 
-def read_dump(file, return_raw_lines = True):
-    '''Reads an xgboost model dump .txt file and parses it into a tabular structure.
+def read_dump_text(file, return_raw_lines = True):
+    '''Reads an xgboost model dump text file and parses it into a tabular structure.
+
+    Text file to read must be the output from xgboost.Booster.dump_model with dump_format = 'text'. 
+    Note this argument was only added in 0.81 and this was the default prior to this release.
 
     Args:
         file (str): xgboost model dump .txt file.
