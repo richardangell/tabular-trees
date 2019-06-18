@@ -16,7 +16,9 @@ def read_dump_json(file, return_raw_lines = True):
         return_raw_lines (bool): should lines read from the json file be returned in a dict as well?
 
     Returns: 
-        pd.DataFrame: df with columns tree, node, yes, no, missing, split_var, split_point, quality, cover.
+        pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
+        If the model dump file was output with  with_stats = True then gain and cover columns are also
+        in the output.
 
     '''
 
@@ -42,49 +44,7 @@ def read_dump_json(file, return_raw_lines = True):
 
     trees_df = pd.concat(tree_list, axis = 0, sort = True)
 
-    if trees_df.shape[1] == 11:
-        
-        col_order = [
-            'tree', 
-            'nodeid', 
-            'depth',
-            'yes', 
-            'no', 
-            'missing', 
-            'split', 
-            'split_condition', 
-            'gain', 
-            'cover',
-            'leaf',
-        ]
-
-    elif trees_df.shape[1] == 9: 
-
-        col_order = [
-            'tree', 
-            'nodeid', 
-            'depth',
-            'yes', 
-            'no', 
-            'missing', 
-            'split', 
-            'split_condition', 
-            'leaf', 
-        ]
-
-    else:
-
-        raise ValueError(
-            'Unexpected number of columns in parsed model dump. Got ' +
-            str(trees_df.shape[1]) + 
-            ' expected 11 or 9. Columns; ' +
-            str(trees_df.columns.values)
-        )
-    
-    # reorder columns
-    trees_df = trees_df.loc[:,col_order]
-    
-    trees_df.sort_values(['tree', 'nodeid'], inplace = True)
+    trees_df = reorder_tree_df(trees_df)
     
     if return_raw_lines:
 
@@ -141,7 +101,9 @@ def read_dump_text(file, return_raw_lines = True):
         return_raw_lines (bool): should the raw lines read from the text file be returned?
 
     Returns: 
-        pd.DataFrame: df with columns tree, node, yes, no, missing, split_var, split_point, quality, cover.
+        pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
+        If the model dump file was output with  with_stats = True then gain and cover columns are also
+        in the output.
 
     '''
 
@@ -169,19 +131,23 @@ def read_dump_text(file, return_raw_lines = True):
             node_str = lines[i][:len(lines[i])-1].replace('\t', '')
             
             line_dict['tree'] = tree_no
+
+            # note this will get tree depth for all nodes, which is not consistent with the json dump output
+            # xgb json model dumps only contain depth for the non-terminal nodes
+            line_dict['depth'] = lines[i].count('\t')
             
             # split by :
             node_str_split1 = node_str.split(':')
             
             # get the node number before the :
-            line_dict['node'] = int(node_str_split1[0])
+            line_dict['nodeid'] = int(node_str_split1[0])
 
             # else if leaf node
             if node_str_split1[1][:4]  == 'leaf':
                 
                 node_str_split2 = node_str_split1[1].split(',')
                 
-                line_dict['quality'] = float(node_str_split2[0].split('=')[1])
+                line_dict['leaf'] = float(node_str_split2[0].split('=')[1])
 
                 # if model is dumped with the arg with_stats = False then cover will not be included 
                 # in the dump for terminal nodes
@@ -201,10 +167,10 @@ def read_dump_text(file, return_raw_lines = True):
                 node_str_split3 = node_str_split2[0].replace('[', '').replace(']', '').split('<')
                 
                 # extract split variable name before the <
-                line_dict['split_var'] = node_str_split3[0]
+                line_dict['split'] = node_str_split3[0]
 
                 # extract split point after the <
-                line_dict['split_point'] = float(node_str_split3[1])
+                line_dict['split_condition'] = float(node_str_split3[1])
   
                 node_str_split4 = node_str_split2[1].split(',')
                 
@@ -218,8 +184,7 @@ def read_dump_text(file, return_raw_lines = True):
                 try:
 
                     # get the child nodes
-                    # note quality = gain
-                    line_dict['quality'] = float(node_str_split4[3].split('=')[1])
+                    line_dict['gain'] = float(node_str_split4[3].split('=')[1])
                     line_dict['cover'] = float(node_str_split4[4].split('=')[1])
 
                 except:
@@ -230,46 +195,7 @@ def read_dump_text(file, return_raw_lines = True):
     
     lines_df = pd.DataFrame.from_dict(lines_list)
 
-    if lines_df.shape[1] == 9:
-        
-        col_order = [
-            'tree', 
-            'node', 
-            'yes', 
-            'no', 
-            'missing', 
-            'split_var', 
-            'split_point', 
-            'quality', 
-            'cover',
-        ]
-
-    elif lines_df.shape[1] == 8: 
-
-        col_order = [
-            'tree', 
-            'node', 
-            'yes', 
-            'no', 
-            'missing', 
-            'split_var', 
-            'split_point', 
-            'quality', 
-        ]
-
-    else:
-
-        raise ValueError(
-            'Unexpected number of columns in parsed model dump. Got ' +
-            str(lines_df.shape[1]) + 
-            ' expected 8 or 9. Columns; ' +
-            str(lines_df.columns.values)
-        )
-    
-    # reorder columns
-    lines_df = lines_df.loc[:,col_order]
-    
-    lines_df.sort_values(['tree', 'node'], inplace = True)
+    lines_df = reorder_tree_df(lines_df)
     
     if return_raw_lines:
 
@@ -278,5 +204,64 @@ def read_dump_text(file, return_raw_lines = True):
     else:
 
         return lines_df
+
+
+
+def reorder_tree_df(df):
+    '''Function to sort and reorder columns df of trees.'''
+
+    if not isinstance(df, pd.DataFrame):
+
+        raise TypeError('df should be a pd.DataFrame')
+
+    if not df.shape[0] > 0:
+
+        raise ValueError('df has no rows')
+
+    if df.shape[1] == 11:
+        
+        col_order = [
+            'tree', 
+            'nodeid', 
+            'depth',
+            'yes', 
+            'no', 
+            'missing', 
+            'split', 
+            'split_condition', 
+            'gain', 
+            'cover',
+            'leaf',             
+        ]
+
+    elif df.shape[1] == 9: 
+
+        col_order = [
+            'tree', 
+            'nodeid', 
+            'depth',
+            'yes', 
+            'no', 
+            'missing', 
+            'split', 
+            'split_condition', 
+            'leaf', 
+        ]
+
+    else:
+
+        raise ValueError(
+            'Unexpected number of columns in parsed model dump. Got ' +
+            str(df.shape[1]) + 
+            ' expected 11 or 9. Columns; ' +
+            str(df.columns.values)
+        )
+    
+    # reorder columns
+    df = df.loc[:,col_order]
+    
+    df.sort_values(['tree', 'nodeid'], inplace = True)
+
+    return df
 
 
