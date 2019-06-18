@@ -2,11 +2,12 @@ import pandas as pd
 
 
 
-def read_dump(file):
+def read_dump(file, return_raw_lines = True):
     '''Reads an xgboost model dump .txt file and parses it into a tabular structure.
 
     Args:
         file (str): xgboost model dump .txt file.
+        return_raw_lines (bool): should the raw lines read from the text file be returned?
 
     Returns: 
         pd.DataFrame: df with columns tree, node, yes, no, missing, split_var, split_point, quality, cover.
@@ -139,6 +140,12 @@ def read_dump(file):
     
     lines_df.sort_values(['tree', 'node'], inplace = True)
     
-    return lines, lines_df
+    if return_raw_lines:
+
+        return lines, lines_df
+
+    else:
+
+        return lines_df
 
 
