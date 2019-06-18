@@ -1,4 +1,132 @@
 import pandas as pd
+import json
+from copy import deepcopy
+
+
+
+def read_dump_json(file, return_raw_lines = True):
+    '''Reads an xgboost model dump json file and parses it into a tabular structure.
+
+    Json file to read must be the output from xgboost.Booster.dump_model with dump_format = 'json'. 
+    Note this argument was only added in 0.81 and the default prior to this release was dump in 
+    text format.
+
+    Args:
+        file (str): xgboost model dump json file.
+        return_raw_lines (bool): should lines read from the json file be returned in a dict as well?
+
+    Returns: 
+        pd.DataFrame: df with columns tree, node, yes, no, missing, split_var, split_point, quality, cover.
+
+    '''
+
+    with open(file) as f:
+
+        j = json.load(f)
+    
+    j_copy = deepcopy(j)
+
+    tree_list = []
+
+    for i in range(len(j)):
+
+        l = []
+
+        recursive_pop_children(n = j[i], l = l, verbose = False)
+
+        tree_df = pd.concat(l, axis = 0, sort = True)
+
+        tree_df['tree'] = i
+
+        tree_list.append(tree_df)
+
+    trees_df = pd.concat(tree_list, axis = 0, sort = True)
+
+    if trees_df.shape[1] == 11:
+        
+        col_order = [
+            'tree', 
+            'nodeid', 
+            'depth',
+            'yes', 
+            'no', 
+            'missing', 
+            'split', 
+            'split_condition', 
+            'gain', 
+            'cover',
+            'leaf',
+        ]
+
+    elif trees_df.shape[1] == 9: 
+
+        col_order = [
+            'tree', 
+            'nodeid', 
+            'depth',
+            'yes', 
+            'no', 
+            'missing', 
+            'split', 
+            'split_condition', 
+            'leaf', 
+        ]
+
+    else:
+
+        raise ValueError(
+            'Unexpected number of columns in parsed model dump. Got ' +
+            str(trees_df.shape[1]) + 
+            ' expected 11 or 9. Columns; ' +
+            str(trees_df.columns.values)
+        )
+    
+    # reorder columns
+    trees_df = trees_df.loc[:,col_order]
+    
+    trees_df.sort_values(['tree', 'nodeid'], inplace = True)
+    
+    if return_raw_lines:
+
+        return j_copy, trees_df
+
+    else:
+
+        return trees_df
+
+
+
+def recursive_pop_children(n, l, verbose = False):
+    '''Function to recursively extract nodes from nested structure and append to list.
+    
+    Procedure is as follows;
+    - if no children item in dict, append items (in pd.DataFrame) to list
+    - or remove children item from dict, then append remaining items (in pd.DataFrame) to list
+    - then call function on left and right children.
+
+    '''
+
+    if 'children' in n.keys():
+
+        children = n.pop('children')
+
+        if verbose:
+
+            print(n)
+
+        l.append(pd.DataFrame(n, index = [n['nodeid']]))
+
+        recursive_pop_children(children[0], l, verbose)
+
+        recursive_pop_children(children[1], l, verbose)
+
+    else:
+
+        if verbose:
+
+            print(n)        
+
+        l.append(pd.DataFrame(n, index = [n['nodeid']]))
 
 
 
