@@ -50,7 +50,16 @@ def read_dump(file):
                 node_str_split2 = node_str_split1[1].split(',')
                 
                 line_dict['quality'] = float(node_str_split2[0].split('=')[1])
-                line_dict['cover'] = float(node_str_split2[1].split('=')[1])
+
+                # if model is dumped with the arg with_stats = False then cover will not be included 
+                # in the dump for terminal nodes
+                try:
+
+                    line_dict['cover'] = float(node_str_split2[1].split('=')[1])
+
+                except:
+
+                    pass
 
             # else non terminal node
             else:
@@ -71,17 +80,59 @@ def read_dump(file):
                 line_dict['yes'] = int(node_str_split4[0].split('=')[1])
                 line_dict['no'] = int(node_str_split4[1].split('=')[1])
                 line_dict['missing'] = int(node_str_split4[2].split('=')[1])
-                
-                # get the child nodes
-                # note quality = gain
-                line_dict['quality'] = float(node_str_split4[3].split('=')[1])
-                line_dict['cover'] = float(node_str_split4[4].split('=')[1])
+
+                # if model is dumped with the arg with_stats = False then gain and cover will not 
+                # be included in the dump for non-terminal nodes
+                try:
+
+                    # get the child nodes
+                    # note quality = gain
+                    line_dict['quality'] = float(node_str_split4[3].split('=')[1])
+                    line_dict['cover'] = float(node_str_split4[4].split('=')[1])
+
+                except:
+
+                    pass                
 
             lines_list = lines_list + [line_dict]
     
     lines_df = pd.DataFrame.from_dict(lines_list)
-    
-    col_order = ['tree', 'node', 'yes', 'no', 'missing', 'split_var', 'split_point','quality', 'cover']
+
+    if lines_df.shape[1] == 9:
+        
+        col_order = [
+            'tree', 
+            'node', 
+            'yes', 
+            'no', 
+            'missing', 
+            'split_var', 
+            'split_point', 
+            'quality', 
+            'cover',
+        ]
+
+    elif lines_df.shape[1] == 8: 
+
+        col_order = [
+            'tree', 
+            'node', 
+            'yes', 
+            'no', 
+            'missing', 
+            'split_var', 
+            'split_point', 
+            'quality', 
+        ]
+
+    else:
+
+        raise ValueError(
+            'Unexpected number of columns in parsed model dump. Got ' +
+            str(lines_df.shape[1]) + 
+            ' expected 8 or 9. Columns; ' +
+            str(lines_df.columns.values)
+        )
     
     # reorder columns
     lines_df = lines_df.loc[:,col_order]
