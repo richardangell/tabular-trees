@@ -161,81 +161,41 @@ def traverse_tree_down(df,
             lower = fcn_call_lower
             upper = fcn_call_upper
             
-            if lower is None:
+            # if both upper bound is unspecified, this means we have not previously travelled down a left path
+            if upper is None:
+                
+                if verbose:
+                
+                    print(
+                        'values update for recursive call; \n\tcase v. lower None and upper None'
+                    )
+                
+                # choose a value above the split point to go down the right (no) split
+                value = df.loc[df['index'] == node, 'split_condition'].iloc[0] + 1
 
-                # if both upper and lower bounds are unspecified
-                # in this case, this is the first time that name has been split on
-                if upper is None:
-                    
-                    if verbose:
-                    
-                        print(
-                            'values update for recursive call; \n\tcase v. lower None and upper None'
-                        )
-                    
-                    # choose a value above the split point to go down the right (no) split
-                    value = df.loc[df['index'] == node, 'split_condition'].iloc[0] + 1
+                # the lower bound that can go down this split is the split condition (as we are now above it)
+                lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
 
-                    # the lower bound that can go down this split is the split condition (as we are now above it)
-                    lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
-
-                    # there is no upper bound on values that will go down this path yet
-                    upper = None
-
-                # if lower bound is unspecified and upper bound is specified
-                else:
-
-                    if verbose:
-                    
-                        print(
-                            'values update for recursive call; \n\tcase vi. lower None and upper not None'
-                        )                    
-                                        
-                    # the lower bound becomes the split condition
-                    lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
-
-                    # the upper bound remains the same
-                    upper = upper
-                    
-                    # set a value that falls between the bounds 
-                    value = (lower + upper) / 2                    
+                # there is no upper bound on values that will go down this path yet
+                upper = None
 
             else:
+
+                if verbose:
                 
-                # is lower bound is specified and upper bound is not specified
-                if upper is None:
-            
-                    if verbose:
-                    
-                        print(
-                            'values update for recursive call; \n\tcase vii. lower not None and upper None'
-                        )                
-                        
-                    # lower bound remains the same
-                    lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
-                    
-                    # but to send a data point to the left hand split the upper bound is the split condition 
-                    # for this node
-                    upper = None
-                    
-                    # set a value above the split condition
-                    value = df.loc[df['index'] == node, 'split_condition'].iloc[0] + 1
-                    
-                # if both lower and upper bounds are specified
-                else:
-            
-                    if verbose:
-                    
-                        print(
-                            'values update for recursive call; \n\tcase viii. lower not None and upper not None'
-                        )                
-                        
-                    lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
-                    
-                    upper = upper 
-                    
-                    # set a value that falls between the bounds 
-                    value = (lower + upper) / 2
+                    print(
+                        'values update for recursive call; \n\tcase vi. lower None and upper not None'
+                    )                    
+                                    
+                # the lower bound becomes the split condition
+                lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
+
+                # the upper bound remains the same
+                upper = upper
+                
+                # set a value that falls between the bounds 
+                value = (lower + upper) / 2                    
+
                     
             traverse_tree_down(
                 df, 
