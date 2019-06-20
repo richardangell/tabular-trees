@@ -71,8 +71,6 @@ def traverse_tree_down(df,
                 '\tnode type: terminal node'
             )
             
-
-
     else:
     
         if verbose:
@@ -84,8 +82,7 @@ def traverse_tree_down(df,
                 '\tnode type: internal node'
             )   
     
-        # if the split for the current node is on the variable of interest update value, lower, upper 
-        # otherwise keep them the same
+        # if the split for the current node is on the variable of interest update; value, lower, upper 
         if df.loc[df['index'] == node, 'split'].iloc[0] == name:
            
             # pick a value and update bounds that would send a data point down the left (yes) split
@@ -194,7 +191,6 @@ def traverse_tree_down(df,
                 # set a value that falls between the bounds 
                 value = (lower + upper) / 2                    
 
-                    
             traverse_tree_down(
                 df, 
                 df.loc[df['index'] == node, 'no'].iloc[0], 
@@ -207,7 +203,9 @@ def traverse_tree_down(df,
                 'no child - variable of interest', 
                 verbose
             )
-                        
+
+        # otherwise, if the split for the current node is not on the variable of interest do not update values but 
+        # continue down the tree       
         else:
 
             traverse_tree_down(
