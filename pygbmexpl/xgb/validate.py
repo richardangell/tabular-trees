@@ -137,8 +137,6 @@ def traverse_tree_down(df,
                 # set a value that falls between the bounds 
                 value = (lower + upper) / 2
 
-            print(type(nodes_list), '\n', nodes_list)
-
             # recursively call function down the left child of the current node
             traverse_tree_down(
                 df, 
