@@ -1,3 +1,4 @@
+import pandas as pd
 
 
 
@@ -236,7 +237,25 @@ def traverse_tree_down(df,
 
 
 
+def gather_traverse_tree_down_results(nodes, values, name):
+    '''Function to gather results from traverse_tree_down into pd.DataFrame.'''
 
+    if not isinstance(nodes, list):
 
+        raise TypeError('nodes must be a list')
+
+    if not isinstance(values, list):
+
+        raise TypeError('values must be a list')
+
+    if not isinstance(name, str):
+
+        raise TypeError('name must be a str')
+
+    if len(values) != len(nodes):
+
+        raise ValueError('nodes and values must be of the same length')
+
+    return pd.DataFrame({'nodeid': nodes, name + '_values': values})
 
 
