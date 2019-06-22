@@ -88,8 +88,9 @@ def validate_monotonic_constraints_df(trees_df, constraints):
 
                 # check that monotonic constraint v is applied on variable k for tree i
                 constraint_results[k][i] = check_1way_node_trend(
-                    df = tree_df2,
-                    trend = v
+                    df = tree_df,
+                    trend = v,
+                    variable = k
                 )
 
     return constraint_results
@@ -357,5 +358,84 @@ def gather_traverse_tree_down_results(nodes, values, name):
         raise ValueError('duplicated nodes; ' + str(nodes))
 
     return df
+
+
+
+def check_1way_node_trend(df, trend, variable):
+    '''Function to check monotonic trend is in place for single tree.'''
+
+    if not isinstance(df, pd.DataFrame):
+
+        raise TypeError('df should be a pd.DataFrame')
+
+    if not isinstance(trend, int):
+
+        raise TypeError('trend should be an int')
+
+    values_col = str(variable) + '_values'
+    monotonic_check_col = str(variable) + '_monotonic_check'
+    
+    if not values_col in df.columns.values:
+        
+        raise ValueError(values_col + ' column not in df')
+    
+    # set sorting order for columns; values_col, weight - True = ascending
+    if trend == 1:
+
+        sort_order = [True, True]
+    
+    # if the monotonic constraint is decreasing (-1) then order the predicted values
+    # at each node in decreasing order
+    elif trend == -1:
+
+        sort_order = [True, False]
+
+    else:
+
+        raise ValueError('unexpected value for trend; ' + str(trend) + ' variable; ' + str(variable))
+    
+    select_columns = EXPECTED_COLUMNS['tree_df_with_node_predictions'] + [values_col]
+    
+    # select the terminal / leaf nodes and nodes where the values column for this variable is not null
+    # if the values column is null this means the variable interest does not affect predictions
+    # for these nodes
+    terminal_nodes = df.loc[(df['node_type'] == 'leaf') & (~df[values_col].isnull()), select_columns] \
+        .sort_values(by = [values_col, 'weight'], ascending = sort_order).copy()
+    
+    weight_group_shift = terminal_nodes.groupby(values_col)['weight'].last().shift(1).reset_index(name = 'weight_shift_group')
+    
+    terminal_nodes = terminal_nodes.merge(weight_group_shift, how = 'left', on = values_col)
+    
+    # if the trend to check is increasing then check each node (grouped by values column) has a larger
+    # prediction then group max in the previous group
+    if trend == 1:
+    
+        terminal_nodes[monotonic_check_col] = terminal_nodes['weight'] - terminal_nodes['weight_shift_group'] >= 0
+    
+    # converse for the deacreasing trend case
+    else:
+        
+        terminal_nodes[monotonic_check_col] = terminal_nodes['weight_shift_group'] - terminal_nodes['weight'] >= 0
+    
+    results = {
+        'variable': variable,
+        'monotonic_direction': trend,
+        'node_info': terminal_nodes
+    }
+    
+    null_rows = terminal_nodes['weight_shift_group'].isnull()
+    
+    null_row_count = null_rows.sum()
+    
+    # if all nodes except the ones in the first values group meet the condition the monotonicity trend is preserved
+    if terminal_nodes.loc[~null_rows, monotonic_check_col].sum() == (terminal_nodes.shape[0] - null_row_count):
+            
+        results['monotonic'] = True
+            
+    else:
+        
+        results['monotonic'] = False
+    
+    return results
 
 
