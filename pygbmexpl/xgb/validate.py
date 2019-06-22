@@ -61,7 +61,7 @@ def traverse_tree_down(df,
     values_list.append(value)
     
     # if we have reached a terminal node
-    if df.loc[df['index'] == node, 'split'].isnull().iloc[0]:
+    if df.loc[df['nodeid'] == node, 'split'].isnull().iloc[0]:
         
         if verbose:
         
@@ -84,7 +84,7 @@ def traverse_tree_down(df,
             )   
     
         # if the split for the current node is on the variable of interest update; value, lower, upper 
-        if df.loc[df['index'] == node, 'split'].iloc[0] == name:
+        if df.loc[df['nodeid'] == node, 'split'].iloc[0] == name:
            
             # pick a value and update bounds that would send a data point down the left (yes) split
             
@@ -106,13 +106,13 @@ def traverse_tree_down(df,
                     )
                 
                 # choose a value above the split point to go down the left (yes) split
-                value = df.loc[df['index'] == node, 'split_condition'].iloc[0] - 1
+                value = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0] - 1
 
                 # there is no lower bound on values that will go down this path yet
                 lower = None
 
                 # the upper bound that can go down this split is the split condition (as we are now below it)
-                upper = df.loc[df['index'] == node, 'split_condition'].iloc[0]
+                upper = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0]
 
             # if lower bound is specified, this means we have previously travelled down a right path
             # does not matter if upper bound is specified or not i.e. we have previously travelled down a left
@@ -130,7 +130,7 @@ def traverse_tree_down(df,
                 
                 # but to send a data point to the left hand split the upper bound is the split condition 
                 # for this node
-                upper = df.loc[df['index'] == node, 'split_condition'].iloc[0]
+                upper = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0]
                 
                 # set a value that falls between the bounds 
                 value = (lower + upper) / 2
@@ -138,7 +138,7 @@ def traverse_tree_down(df,
             # recursively call function down the left child of the current node
             traverse_tree_down(
                 df, 
-                df.loc[df['index'] == node, 'yes'].iloc[0], 
+                df.loc[df['nodeid'] == node, 'yes'].iloc[0], 
                 name, 
                 nodes_list, 
                 values_list, 
@@ -167,10 +167,10 @@ def traverse_tree_down(df,
                     )
                 
                 # choose a value above the split point to go down the right (no) split
-                value = df.loc[df['index'] == node, 'split_condition'].iloc[0] + 1
+                value = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0] + 1
 
                 # the lower bound that can go down this split is the split condition (as we are now above it)
-                lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
+                lower = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0]
 
                 # there is no upper bound on values that will go down this path yet
                 upper = None
@@ -184,7 +184,7 @@ def traverse_tree_down(df,
                     )                    
                                     
                 # the lower bound becomes the split condition
-                lower = df.loc[df['index'] == node, 'split_condition'].iloc[0]
+                lower = df.loc[df['nodeid'] == node, 'split_condition'].iloc[0]
 
                 # the upper bound remains the same
                 upper = upper
@@ -194,7 +194,7 @@ def traverse_tree_down(df,
 
             traverse_tree_down(
                 df, 
-                df.loc[df['index'] == node, 'no'].iloc[0], 
+                df.loc[df['nodeid'] == node, 'no'].iloc[0], 
                 name, 
                 nodes_list, 
                 values_list,
@@ -211,7 +211,7 @@ def traverse_tree_down(df,
 
             traverse_tree_down(
                 df, 
-                df.loc[df['index'] == node, 'yes'].iloc[0], 
+                df.loc[df['nodeid'] == node, 'yes'].iloc[0], 
                 name, 
                 nodes_list, 
                 values_list,
@@ -224,7 +224,7 @@ def traverse_tree_down(df,
 
             traverse_tree_down(
                 df, 
-                df.loc[df['index'] == node, 'no'].iloc[0], 
+                df.loc[df['nodeid'] == node, 'no'].iloc[0], 
                 name, 
                 nodes_list, 
                 values_list,
