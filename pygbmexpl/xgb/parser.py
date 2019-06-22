@@ -5,6 +5,8 @@ import os
 import datetime
 from copy import deepcopy
 
+from pygbmexpl.helpers import check_df_columns
+
 
 
 EXPECTED_COLUMNS = {
@@ -22,6 +24,8 @@ EXPECTED_COLUMNS = {
 }
 
 EXPECTED_COLUMNS['model_dump_with_stats'] = EXPECTED_COLUMNS['model_dump_no_stats'] + ['gain', 'cover']
+
+EXPECTED_COLUMNS['tree_df_with_node_predictions'] = EXPECTED_COLUMNS['model_dump_with_stats'] + ['node_type', 'H', 'G', 'weight']
 
 
 
@@ -298,29 +302,32 @@ def extract_model_predictions(model, file = None):
 
     trees_preds_df = derive_predictions(trees_df)
 
+    check_df_columns(
+        df = trees_preds_df, 
+        expected_columns = EXPECTED_COLUMNS['tree_df_with_node_predictions']
+    )
+
     return(trees_preds_df)
 
 
 
 def derive_predictions(df):
     
-    # column to hold predictions
-    df['weight'] = 0
-
     # identify leaf and internal nodes
     df['node_type'] = 'internal'
     df.loc[df['split_condition'].isnull(), 'node_type'] = 'leaf'
-
     leaf_nodes = df['node_type'] == 'leaf'
-
-    df.loc[leaf_nodes, 'weight'] = df.loc[leaf_nodes, 'leaf']
 
     df['H'] = df['cover']
     df['G'] = 0
 
+    # column to hold predictions
+    df['weight'] = 0
+    df.loc[leaf_nodes, 'weight'] = df.loc[leaf_nodes, 'leaf']
+
     df.loc[leaf_nodes, 'G'] = - df.loc[leaf_nodes, 'weight'] * df.loc[leaf_nodes, 'H']
 
-    df.reset_index(inplace = True)
+    df.reset_index(inplace = True, drop = True)
 
     n_trees = df.tree.max()
 
