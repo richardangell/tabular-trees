@@ -352,7 +352,7 @@ def gather_traverse_tree_down_results(nodes, values, name):
 
     df = pd.DataFrame({'nodeid': nodes, name + '_values': values})
 
-    if df['nodeid'].duplciated().sum() > 0:
+    if df['nodeid'].duplicated().sum() > 0:
 
         raise ValueError('duplicated nodes; ' + str(nodes))
 
