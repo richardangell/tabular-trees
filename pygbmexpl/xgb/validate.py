@@ -55,43 +55,56 @@ def validate_monotonic_constraints_df(trees_df, constraints):
         for k, v in constraints.items():
 
             # if the constraint variable is used in the given tree 
-            if (trees_df.loc[trees_df['tree'] == i, 'split'] == k).sum() > 0:
+            if (tree_df['split'] == k).sum() > 0:
                 
-                nodes = []
-                values = []
+                all_nodes_checked = []
 
-                traverse_tree_down(
-                    df = tree_df, 
-                    node = 0, 
-                    name = k, 
-                    nodes_list = nodes, 
-                    values_list = values
-                )
+                # get all nodes that are split on the variable of interest
+                nodes_split_on_variable = tree_df.loc[tree_df['split'] == k, 'nodeid'].tolist()
 
-                nodes_values_df = gather_traverse_tree_down_results(
-                    nodes = nodes, 
-                    values = values, 
-                    name = k
-                )
+                constraint_results[k][i] = {}
 
-                # check all nodes got a value from traverse_tree_down
-                if nodes_values_df['nodeid'].isin(tree_df['nodeid']).sum() < tree_df.shape[0]:
+                # check all nodes below each node which splits on the variable of interest
+                for n in nodes_split_on_variable:    
+                    
+                    # if the node has not been checked before, in checking a node higher up the tree
+                    if not n in all_nodes_checked:
 
-                    raise ValueError('not all nodes recieved a value from nodes_values_df; tree: ' + str(i) + ' variable: ' + str(k))
+                        nodes = []
+                        values = []
 
-                # merge on values of variable k that would allow a data point to visit each node
-                tree_df = tree_df.merge(
-                    right = nodes_values_df,
-                    how = 'left',
-                    on = 'nodeid'
-                )
+                        traverse_tree_down(
+                            df = tree_df, 
+                            node = n, 
+                            name = k, 
+                            nodes_list = nodes, 
+                            values_list = values
+                        )
 
-                # check that monotonic constraint v is applied on variable k for tree i
-                constraint_results[k][i] = check_1way_node_trend(
-                    df = tree_df,
-                    trend = v,
-                    variable = k
-                )
+                        # append all the nodes checked in this loop to the list of all nodes that have been checked
+                        # for this variable k in this tree i
+                        all_nodes_checked = all_nodes_checked + nodes
+
+                        nodes_values_df = gather_traverse_tree_down_results(
+                            nodes = nodes, 
+                            values = values, 
+                            name = k
+                        )
+
+                        # merge on values of variable k that would allow a data point to visit each node
+                        # remove rows from tree_df that were not visited starting from node n going down the tree with inner join
+                        tree_df2 = tree_df.merge(
+                            right = nodes_values_df,
+                            how = 'inner',
+                            on = 'nodeid'
+                        )
+
+                        # check that monotonic constraint v is applied on variable k for tree i
+                        constraint_results[k][i][n] = check_1way_node_trend(
+                            df = tree_df2,
+                            trend = v,
+                            variable = k
+                        )
 
     return constraint_results
 
