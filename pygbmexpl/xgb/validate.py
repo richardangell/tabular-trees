@@ -20,6 +20,9 @@ def validate_monotonic_constraints_df(trees_df, constraints):
 
         raise TypeError('constraints should be a dict')
 
+    # dictionary to hold results of monotonic constraint checks
+    constraint_results = {}
+
     for k, v in constraints.items():
 
         if not isinstance(v, int):
@@ -35,29 +38,27 @@ def validate_monotonic_constraints_df(trees_df, constraints):
 
             del constraints[k]
 
+        constraint_results[k] = {}
+
     if not isinstance(trees_df, pd.DataFrame):
 
         raise TypeError('trees_df should be a pd.DataFrame')
 
     n = trees_df['tree'].max()
 
-    constraint_results = {}
+    # loop through each tree
+    for i in range(n):
 
-    # loop throguh each constraint
-    for k, v in constraints.items():
+        tree_df = trees_df.loc[trees_df['tree'] == i].copy()
 
-        constraint_results[k] = {}
-
-        # loop through each tree
-        for i in range(n):
+        # loop throguh each constraint
+        for k, v in constraints.items():
 
             # if the constraint variable is used in the given tree 
             if (trees_df.loc[trees_df['tree'] == i, 'split'] == k).sum() > 0:
                 
                 nodes = []
                 values = []
-
-                tree_df = trees_df.loc[trees_df['tree'] == i].copy()
 
                 traverse_tree_down(
                     df = tree_df, 
@@ -73,18 +74,17 @@ def validate_monotonic_constraints_df(trees_df, constraints):
                     name = k
                 )
 
-                # merge on values of variable k that would allow a data point to visit each node
-                tree_df2 = tree_df.merge(
-                    right = nodes_values_df,
-                    how = 'left',
-                    on = 'nodeid',
-                    indicator = True
-                )
-
-                # check all nodes got a value merged on
-                if (tree_df2['_merge'] == 'both').sum() < tree_df2.shape[0]:
+                # check all nodes got a value from traverse_tree_down
+                if nodes_values_df['nodeid'].isin(tree_df['nodeid']).sum() < tree_df.shape[0]:
 
                     raise ValueError('not all nodes recieved a value from nodes_values_df; tree: ' + str(i) + ' variable: ' + str(k))
+
+                # merge on values of variable k that would allow a data point to visit each node
+                tree_df = tree_df.merge(
+                    right = nodes_values_df,
+                    how = 'left',
+                    on = 'nodeid'
+                )
 
                 # check that monotonic constraint v is applied on variable k for tree i
                 constraint_results[k][i] = check_1way_node_trend(
