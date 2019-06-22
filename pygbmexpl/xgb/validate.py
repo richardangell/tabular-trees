@@ -256,6 +256,12 @@ def gather_traverse_tree_down_results(nodes, values, name):
 
         raise ValueError('nodes and values must be of the same length')
 
-    return pd.DataFrame({'nodeid': nodes, name + '_values': values})
+    df = pd.DataFrame({'nodeid': nodes, name + '_values': values})
+
+    if df['nodeid'].duplciated().sum() > 0:
+
+        raise ValueError('duplicated nodes; ' + str(nodes))
+
+    return df
 
 
