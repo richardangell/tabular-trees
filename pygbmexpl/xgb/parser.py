@@ -7,6 +7,24 @@ from copy import deepcopy
 
 
 
+EXPECTED_COLUMNS = {
+    'model_dump_no_stats': [
+        'tree', 
+        'nodeid', 
+        'depth',
+        'yes', 
+        'no', 
+        'missing', 
+        'split', 
+        'split_condition', 
+        'leaf', 
+    ]
+}
+
+EXPECTED_COLUMNS['model_dump_with_stats'] = EXPECTED_COLUMNS['model_dump_no_stats'] + ['gain', 'cover']
+
+
+
 def read_dump_json(file, return_raw_lines = True):
     '''Reads an xgboost model dump json file and parses it into a tabular structure.
 
@@ -223,33 +241,11 @@ def reorder_tree_df(df):
 
     if df.shape[1] == 11:
         
-        col_order = [
-            'tree', 
-            'nodeid', 
-            'depth',
-            'yes', 
-            'no', 
-            'missing', 
-            'split', 
-            'split_condition', 
-            'gain', 
-            'cover',
-            'leaf',             
-        ]
+        col_order = EXPECTED_COLUMNS['model_dump_with_stats']
 
     elif df.shape[1] == 9: 
 
-        col_order = [
-            'tree', 
-            'nodeid', 
-            'depth',
-            'yes', 
-            'no', 
-            'missing', 
-            'split', 
-            'split_condition', 
-            'leaf', 
-        ]
+        col_order = EXPECTED_COLUMNS['model_dump_no_stats']
 
     else:
 
