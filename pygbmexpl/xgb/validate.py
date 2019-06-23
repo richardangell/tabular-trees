@@ -46,6 +46,8 @@ def validate_monotonic_constraints_df(trees_df, constraints):
 
     n = trees_df['tree'].max()
 
+    monotonicity_check_list = []
+
     # loop through each tree
     for i in range(n):
 
@@ -56,56 +58,51 @@ def validate_monotonic_constraints_df(trees_df, constraints):
 
             # if the constraint variable is used in the given tree 
             if (tree_df['split'] == k).sum() > 0:
-                
-                all_nodes_checked = []
 
                 # get all nodes that are split on the variable of interest
                 nodes_split_on_variable = tree_df.loc[tree_df['split'] == k, 'nodeid'].tolist()
 
-                constraint_results[k][i] = {}
-
                 # check all nodes below each node which splits on the variable of interest
                 for n in nodes_split_on_variable:    
                     
-                    # if the node has not been checked before, in checking a node higher up the tree
-                    if not n in all_nodes_checked:
+                    child_nodes_left = []
+                    child_values_left = []
 
-                        nodes = []
-                        values = []
+                    child_nodes_right = []
+                    child_values_right = []
 
-                        traverse_tree_down(
-                            df = tree_df, 
-                            node = n, 
-                            name = k, 
-                            nodes_list = nodes, 
-                            values_list = values
-                        )
+                    traverse_tree_down(
+                        df = tree_df, 
+                        node = tree_df.loc[tree_df['nodeid'] == n, 'yes'].iloc[0], 
+                        name = k, 
+                        nodes_list = child_nodes_left, 
+                        values_list = child_values_left
+                    )
 
-                        # append all the nodes checked in this loop to the list of all nodes that have been checked
-                        # for this variable k in this tree i
-                        all_nodes_checked = all_nodes_checked + nodes
+                    traverse_tree_down(
+                        df = tree_df, 
+                        node = tree_df.loc[tree_df['nodeid'] == n, 'no'].iloc[0], 
+                        name = k, 
+                        nodes_list = child_nodes_right, 
+                        values_list = child_values_right
+                    )
 
-                        nodes_values_df = gather_traverse_tree_down_results(
-                            nodes = nodes, 
-                            values = values, 
-                            name = k
-                        )
+                    # constraint_results[k][i][n]
+                    # check that monotonic constraint v is applied on variable k for tree i at node n
+                    x = check_monotonicity_at_split(
+                        tree_df = tree_df,
+                        tree_no = i,
+                        trend = v,
+                        variable = k,
+                        node = n,
+                        child_nodes_left = child_nodes_left,
+                        child_nodes_right = child_nodes_right
+                    )
 
-                        # merge on values of variable k that would allow a data point to visit each node
-                        # remove rows from tree_df that were not visited starting from node n going down the tree with inner join
-                        tree_df2 = tree_df.merge(
-                            right = nodes_values_df,
-                            how = 'inner',
-                            on = 'nodeid'
-                        )
+                    monotonicity_check_list.append(x)
 
-                        # check that monotonic constraint v is applied on variable k for tree i
-                        constraint_results[k][i][n] = check_1way_node_trend(
-                            df = tree_df2,
-                            trend = v,
-                            variable = k
-                        )
-
+    constraint_results = pd.concat(monotonicity_check_list, axis = 0).sort_values(['variable', 'tree', 'nodeid']).reset_index(drop = True)
+                
     return constraint_results
 
 
@@ -374,81 +371,85 @@ def gather_traverse_tree_down_results(nodes, values, name):
 
 
 
-def check_1way_node_trend(df, trend, variable):
-    '''Function to check monotonic trend is in place for single tree.'''
+def check_monotonicity_at_split(tree_df, tree_no, trend, variable, node, child_nodes_left, child_nodes_right):
+    '''Function to check monotonic trend is in place at a given split in a single tree.'''
 
-    if not isinstance(df, pd.DataFrame):
+    if not isinstance(tree_df, pd.DataFrame):
 
-        raise TypeError('df should be a pd.DataFrame')
+        raise TypeError('tree_df should be a pd.DataFrame')
+
+    if not isinstance(tree_no, int):
+
+        raise TypeError('tree_no should be an int')
 
     if not isinstance(trend, int):
 
         raise TypeError('trend should be an int')
 
-    values_col = str(variable) + '_values'
-    monotonic_check_col = str(variable) + '_monotonic_check'
-    
-    if not values_col in df.columns.values:
-        
-        raise ValueError(values_col + ' column not in df')
-    
-    # set sorting order for columns; values_col, weight - True = ascending
+    if not isinstance(node, int):
+
+        raise TypeError('node should be an int')
+
+    if not isinstance(child_nodes_left, list):
+
+        raise TypeError('child_nodes_left should be an list')
+
+    if not isinstance(child_nodes_right, list):
+
+        raise TypeError('child_nodes_right should be an list')
+
+    all_child_nodes = child_nodes_left + child_nodes_right
+
+    tree_nodes = tree_df['nodeid'].tolist()
+
+    child_nodes_not_in_tree = list(set(all_child_nodes) - set(tree_nodes))
+
+    if len(child_nodes_not_in_tree) > 0:
+
+        raise ValueError('the following child nodes do not appear in tree; ' + str(child_nodes_not_in_tree))
+
+    left_nodes_max_pred = tree_df.loc[tree_df['nodeid'].isin(child_nodes_left), 'weight'].max()
+
+    right_nodes_min_pred = tree_df.loc[tree_df['nodeid'].isin(child_nodes_right), 'weight'].min()
+
     if trend == 1:
 
-        sort_order = [True, True]
-    
-    # if the monotonic constraint is decreasing (-1) then order the predicted values
-    # at each node in decreasing order
+        if left_nodes_max_pred <= right_nodes_min_pred:
+
+            monotonic = True
+
+        else:
+
+            monotonic = False
+
     elif trend == -1:
 
-        sort_order = [True, False]
+        if left_nodes_max_pred >= right_nodes_min_pred:
+
+            monotonic = True
+
+        else:
+
+            monotonic = False
 
     else:
 
-        raise ValueError('unexpected value for trend; ' + str(trend) + ' variable; ' + str(variable))
-    
-    select_columns = EXPECTED_COLUMNS['tree_df_with_node_predictions'] + [values_col]
-    
-    # select the terminal / leaf nodes and nodes where the values column for this variable is not null
-    # if the values column is null this means the variable interest does not affect predictions
-    # for these nodes
-    terminal_nodes = df.loc[(df['node_type'] == 'leaf') & (~df[values_col].isnull()), select_columns] \
-        .sort_values(by = [values_col, 'weight'], ascending = sort_order).copy()
-    
-    weight_group_shift = terminal_nodes.groupby(values_col)['weight'].last().shift(1).reset_index(name = 'weight_shift_group')
-    
-    terminal_nodes = terminal_nodes.merge(weight_group_shift, how = 'left', on = values_col)
-    
-    # if the trend to check is increasing then check each node (grouped by values column) has a larger
-    # prediction then group max in the previous group
-    if trend == 1:
-    
-        terminal_nodes[monotonic_check_col] = terminal_nodes['weight'] - terminal_nodes['weight_shift_group'] >= 0
-    
-    # converse for the deacreasing trend case
-    else:
-        
-        terminal_nodes[monotonic_check_col] = terminal_nodes['weight_shift_group'] - terminal_nodes['weight'] >= 0
-    
+        raise ValueError('unexpected value for trend; ' + str(trend) + ' variable; ' + str(variable) + ' node:' + str(node))
+
     results = {
         'variable': variable,
-        'monotonic_direction': trend,
-        'node_info': terminal_nodes
+        'tree': tree_no,
+        'nodeid': node,
+        'monotonic_trend': trend,
+        'monotonic': monotonic,
+        'child_nodes_left_max_prediction': left_nodes_max_pred,
+        'child_nodes_right_min_prediction': right_nodes_min_pred,
+        'child_nodes_left': str(child_nodes_left),
+        'child_nodes_right': str(child_nodes_right)
     }
     
-    null_rows = terminal_nodes['weight_shift_group'].isnull()
-    
-    null_row_count = null_rows.sum()
-    
-    # if all nodes except the ones in the first values group meet the condition the monotonicity trend is preserved
-    if terminal_nodes.loc[~null_rows, monotonic_check_col].sum() == (terminal_nodes.shape[0] - null_row_count):
-            
-        results['monotonic'] = True
-            
-    else:
-        
-        results['monotonic'] = False
-    
-    return results
+    results_df = pd.DataFrame(results, index = [node])
+
+    return results_df
 
 
