@@ -6,7 +6,7 @@ from pygbmexpl.xgb.parser import EXPECTED_COLUMNS
 
 
 
-def validate_monotonic_constraints_df(trees_df, constraints):
+def validate_monotonic_constraints_df(trees_df, constraints, return_detailed_results = False):
     '''Function to check that monotonic constraints are as expected in an xgboost model.'''
 
     check_df_columns(
@@ -102,8 +102,16 @@ def validate_monotonic_constraints_df(trees_df, constraints):
                     monotonicity_check_list.append(x)
 
     constraint_results = pd.concat(monotonicity_check_list, axis = 0).sort_values(['variable', 'tree', 'nodeid']).reset_index(drop = True)
-                
-    return constraint_results
+    
+    if return_detailed_results:
+
+        return constraint_results
+
+    else:
+
+        summarised_constraint_results = constraint_results.groupby('variable')['monotonic'].mean() == 1
+
+        return summarised_constraint_results
 
 
 
