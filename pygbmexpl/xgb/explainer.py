@@ -31,15 +31,15 @@ def terminal_node_path(tree_df, row):
     """
 
     # get column headers no rows
-    path = tree_df.loc[tree_df.node == -1]
+    path = tree_df.loc[tree_df.nodeid == -1]
 
     # get the first node in the tree
-    current_node = tree_df.loc[tree_df.node == 0].copy()
+    current_node = tree_df.loc[tree_df.nodeid == 0].copy()
 
     # for internal nodes record the value of the variable that will be used to split
     if current_node['node_type'].item() != 'leaf':
 
-        current_node['value'] = row[current_node['split_var']].values[0][0]
+        current_node['value'] = row[current_node['split']].values[0]
 
     else:
 
@@ -51,7 +51,7 @@ def terminal_node_path(tree_df, row):
     if current_node['node_type'].item() != 'leaf':
         
         # determine if the value of the split variable sends the row left (yes) or right (no)
-        if row[current_node['split_var']].values[0] < current_node['split_point'].values[0]:
+        if row[current_node['split']].values[0] < current_node['split_condition'].values[0]:
 
             next_node = current_node['yes'].item()
 
@@ -62,19 +62,19 @@ def terminal_node_path(tree_df, row):
         # (loop) traverse the tree until a leaf node is reached 
         while True:
 
-            current_node = tree_df.loc[tree_df.node == next_node].copy()
+            current_node = tree_df.loc[tree_df.nodeid == next_node].copy()
 
             # for internal nodes record the value of the variable that will be used to split
             if current_node['node_type'].item() != 'leaf':
 
-                current_node['value'] = row[current_node['split_var']].values[0][0]
+                current_node['value'] = row[current_node['split']].values[0]
         
             path = path.append(current_node)
 
             if current_node['node_type'].item() != 'leaf':
                 
                 # determine if the value of the split variable sends the row left (yes) or right (no)
-                if row[current_node['split_var']].values[0] < current_node['split_point'].values[0]:
+                if row[current_node['split']].values[0] < current_node['split_condition'].values[0]:
 
                     next_node = current_node['yes'].item()
 
@@ -87,22 +87,20 @@ def terminal_node_path(tree_df, row):
                 break
 
     # shift the split_vars down by 1 to get the variable which is contributing to the change in prediction
-    path['contributing_var'] = path['split_var'].shift(1)
+    path['contributing_var'] = path['split'].shift(1)
 
     # get change in predicted value due to split i.e. contribution for that variable
     path['contribution'] = path['weight'] - path['weight'].shift(1).fillna(0)
 
     path.loc[path.contributing_var.isnull(), 'contributing_var'] = 'base'
 
-    cols_order = ['index',
-                  'tree',
-                  'node',
+    cols_order = ['tree',
+                  'nodeid',
                   'yes',
                   'no',
                   'missing',
-                  'split_var',
-                  'split_point',
-                  'quality',
+                  'split',
+                  'split_condition',
                   'cover',
                   'weight',
                   'node_type',
