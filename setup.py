@@ -28,6 +28,10 @@ def read_long_description():
     return long_description
 
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
+
 setuptools.setup(
     name="pygbmexpl",
     version=get_version(),
@@ -38,10 +42,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/richardangell/pygbmexpl",
     packages=setuptools.find_packages(),
-    install_requires=[
-        'pandas',
-        'xgboost'
-    ],
+    install_requires=required,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
