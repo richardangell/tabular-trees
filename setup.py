@@ -38,9 +38,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/richardangell/pygbmexpl",
     packages=setuptools.find_packages(),
-    #install_requires=[
-    #    'xgboost'
-    #],
+    install_requires=[
+        'pandas',
+        'xgboost'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
