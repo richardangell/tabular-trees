@@ -1,4 +1,2 @@
 from pygbmexpl._version import __version__
-import pygbmexpl.xgb
-
-__all__ = ['xgb']
+import pygbmexpl.xgb as xgb
