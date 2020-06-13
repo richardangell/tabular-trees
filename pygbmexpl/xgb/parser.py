@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import xgboost as xgb
 import json
 import os
@@ -65,19 +66,48 @@ def read_dump_json(file, return_raw_lines = True):
 
         tree_df['tree'] = i
 
+        tree_df = fill_depth_for_terminal_nodes(tree_df)
+
         tree_list.append(tree_df)
 
     trees_df = pd.concat(tree_list, axis = 0, sort = True)
 
     trees_df = reorder_tree_df(trees_df)
     
+    trees_df.reset_index(inplace = True, drop = True)
+
     if return_raw_lines:
 
-        return j_copy, trees_df
+        return trees_df, j_copy
 
     else:
 
         return trees_df
+
+
+def fill_depth_for_terminal_nodes(df):
+    """Function to fill in the depth column for terminal nodes.
+
+    The json dump from xgboost does not contain this information.
+    """
+
+    for i, row in df.iterrows():
+
+        if np.isnan(row['depth']):
+
+            if (df['yes'] == row['nodeid']).sum() > 0:
+
+                parent_col = 'yes'
+
+            else:
+
+                parent_col = 'no'
+
+            df.at[i, 'depth'] = df.loc[df[parent_col] == row['nodeid'], 'depth'] + 1
+
+    df['depth'] = df['depth'].astype(int)
+            
+    return df
 
 
 
@@ -119,7 +149,7 @@ def read_dump_text(file, return_raw_lines = True):
     '''Reads an xgboost model dump text file and parses it into a tabular structure.
 
     Text file to read must be the output from xgboost.Booster.dump_model with dump_format = 'text'. 
-    Note this argument was only added in 0.81 and this was the default prior to this release.
+    Note this argument was only added in 0.81 and text dump was the default prior to this release.
 
     Args:
         file (str): xgboost model dump .txt file.
@@ -220,11 +250,17 @@ def read_dump_text(file, return_raw_lines = True):
     
     lines_df = pd.DataFrame.from_dict(lines_list)
 
+    if 'cover' in lines_df.columns.values:
+
+        lines_df['cover'] = lines_df['cover'].astype(int)
+
     lines_df = reorder_tree_df(lines_df)
     
+    lines_df.reset_index(inplace = True, drop = True)
+
     if return_raw_lines:
 
-        return lines, lines_df
+        return lines_df, lines
 
     else:
 
