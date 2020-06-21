@@ -375,10 +375,6 @@ def derive_predictions(df):
     # append all updated trees
     df_G = pd.concat(df_G_list, axis = 0)
 
-    if (df_G.G == 0).sum() != 0:
-        
-        raise ValueError('G not propagated successfully')
-
     internal_nodes = df_G['node_type'] == 'internal'
 
     # update weight values for internal nodes
