@@ -245,7 +245,10 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
 
         current_prediction = mean_prediction
 
-        contributions = {'base': mean_prediction}
+        contributions = {
+            'base': mean_prediction,
+            'permutation': str(feature_permutation)
+        }
 
         for feature in feature_permutation:
 
@@ -271,7 +274,7 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
 
     else:
 
-        results_feature_level = pd.DataFrame(results_df.mean(axis = 0)).T
+        results_feature_level = pd.DataFrame(results_df.drop(columns = 'permutation').mean(axis = 0)).T
 
         return results_feature_level
 
