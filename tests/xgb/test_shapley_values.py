@@ -20,8 +20,7 @@ def test_expected_shapley_values():
     shapley_values = pygbmexpl.xgb.explainer.shapley_values(tree_df, row_to_explain, False)
 
     expected_values = {
-        'base': 23.0,
-        'tree': 0,
+        'bias': 23.0,
         'x': -5.0,
         'y': 2.0,
         'z': 0.0

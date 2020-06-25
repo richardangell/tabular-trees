@@ -5,16 +5,23 @@ from sklearn.datasets import load_boston
 
 
 
-def build_depth_3_model(n_trees = 10):
+def build_depth_3_model(n_trees = 10, return_data = False, drop_columns = None):
     """Build xgboost model on boston dataset with 10 trees and depth 3."""
 
     boston = load_boston()
 
+    boston_df = pd.DataFrame(boston['data'], columns = boston['feature_names'])
+
+    if not drop_columns is None:
+
+        boston_df.drop(columns = drop_columns, inplace = True)
+
     xgb_data = xgb.DMatrix(
-        data = boston['data'], 
-        label = boston['target'], 
-        feature_names = boston['feature_names']
+        boston_df, 
+        label = boston['target']
     )
+
+    xgb_data.set_base_margin([0] * boston_df.shape[0])
 
     model = xgb.train(
         params = {
@@ -25,7 +32,13 @@ def build_depth_3_model(n_trees = 10):
         num_boost_round = n_trees
     )
 
-    return model
+    if return_data:
+
+        return model, xgb_data, boston_df
+
+    else:
+
+        return model
 
 
 

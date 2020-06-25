@@ -174,6 +174,8 @@ def shapley_values(tree_df, row, return_permutations = False):
 
     else:
 
+        results_df = pd.DataFrame(results_df.sum(axis = 0)).T.drop(columns = 'tree')
+
         return results_df
 
 
@@ -246,7 +248,7 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
         current_prediction = mean_prediction
 
         contributions = {
-            'base': mean_prediction,
+            'bias': mean_prediction,
             'permutation': str(feature_permutation)
         }
 
