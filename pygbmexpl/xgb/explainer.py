@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import warnings
 import itertools
+from math import factorial
+from tqdm import tqdm
 
 
 
@@ -128,6 +130,11 @@ def shapley_values(tree_df, row, return_permutations = False):
     to illustrate the algorithm - so will likely run very slow for models of any 
     significant size.
 
+    Note, it is the users responsibility to pass the relevant columns in row (i.e. the 
+    columns that were present in the training data available to the model). If extra 
+    columns are added this will exponentially increase the number of runs - even if 
+    they are not relevant to the model.
+
     Parameters
     ----------
     tree_df : pd.DataFrame
@@ -239,7 +246,7 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
 
     i = 0
 
-    for feature_permutation in itertools.permutations(features):
+    for feature_permutation in tqdm(itertools.permutations(features), total = factorial(len(features))):
 
         feature_permutation = list(feature_permutation)
 
