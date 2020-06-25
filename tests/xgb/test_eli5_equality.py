@@ -9,7 +9,7 @@ import build_model
 
 
 
-def test_prediction_decomposition_eqal_eli5(tmp_path):
+def test_prediction_decomposition_eqal_eli5():
     """Test that the prediction decomposition outputs from xgb.explainer.decompose_prediction are eqaul to the outputs from eli5."""
 
     model = build_model.build_depth_3_model()
