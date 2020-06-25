@@ -160,7 +160,7 @@ def shapley_values(tree_df, row, return_permutations = False):
 
             raise ValueError(f'tree number {tree_no} has no rows')
 
-        tree_shapley_values = shapley_values_tree(tree_rows, row, return_permutations)
+        tree_values = shapley_values_tree(tree_rows, row, return_permutations)
 
         tree_values.insert(0, 'tree', tree_no)
 
