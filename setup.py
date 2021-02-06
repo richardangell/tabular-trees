@@ -21,14 +21,13 @@ def read_long_description():
     """Function to read long description from README."""
 
     with open("README.md", "r") as fh:
-
         long_description = fh.read()
 
     return long_description
 
 
-# with open('requirements.txt') as f:
-#     required = f.read().splitlines()
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
 
 
 setuptools.setup(
@@ -41,10 +40,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/richardangell/pygbmexpl",
     packages=setuptools.find_packages(),
-    install_requires=["pandas>=0.24", "xgboost>=0.81"],
+    install_requires=required,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
 )
