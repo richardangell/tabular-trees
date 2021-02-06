@@ -35,24 +35,7 @@ jobs:
         
     - name: Test with pytest
       run: |
-        pytest . --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
-      
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: pytest-results
-        path: |
-          junit/test-results.xml
-          report.html
-      # Use always() to always run this step to publish test results when there are test failures
-      if: ${{ always() }}
-      
-    - name: Upload coverage pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-pytest-results
-        path: coverage.xml
-      if: ${{ always() }}
+        pytest . --cov=pygbmexpl/ --cov-report=html
       
     - name: Upload coverage pytest html test results
       uses: actions/upload-artifact@v2
