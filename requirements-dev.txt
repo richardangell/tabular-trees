@@ -1,4 +1,4 @@
-scikit-learn>=0.22
+scikit-learn==0.22
 pandas>=0.24
 xgboost>=0.81
 pytest==6.2.2

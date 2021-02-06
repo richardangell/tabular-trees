@@ -1,0 +1,6 @@
+[flake8]
+ignore = 
+    E501, # line length
+    W503  # will 'soon' be reversed; https://www.flake8rules.com/rules/W503.html 
+per-file-ignores = 
+    __init__.py:F401

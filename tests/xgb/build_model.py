@@ -11,7 +11,7 @@ def build_depth_3_model(n_trees=10, return_data=False, drop_columns=None):
 
     boston_df = pd.DataFrame(boston["data"], columns=boston["feature_names"])
 
-    if not drop_columns is None:
+    if drop_columns is not None:
 
         boston_df.drop(columns=drop_columns, inplace=True)
 

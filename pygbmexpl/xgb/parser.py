@@ -2,9 +2,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 import json
-import os
 import tempfile
-import datetime
 from pathlib import Path
 from copy import deepcopy
 
@@ -165,11 +163,11 @@ def _read_dump_json(file, return_raw_lines=False):
 
     for i in range(len(j)):
 
-        l = []
+        results_list = []
 
-        _recursive_pop_children(n=j[i], l=l, verbose=False)
+        _recursive_pop_children(_dict=j[i], _list=results_list, verbose=False)
 
-        tree_df = pd.concat(l, axis=0, sort=True)
+        tree_df = pd.concat(results_list, axis=0, sort=True)
 
         tree_df["tree"] = i
 
@@ -192,7 +190,7 @@ def _read_dump_json(file, return_raw_lines=False):
         return trees_df
 
 
-def _recursive_pop_children(n, l, verbose=False):
+def _recursive_pop_children(_dict, _list, verbose=False):
     """Function to recursively extract nodes from nested structure and append to list.
 
     Procedure is as follows;
@@ -202,27 +200,27 @@ def _recursive_pop_children(n, l, verbose=False):
 
     """
 
-    if "children" in n.keys():
+    if "children" in _dict.keys():
 
-        children = n.pop("children")
+        children = _dict.pop("children")
 
         if verbose:
 
-            print(n)
+            print(_dict)
 
-        l.append(pd.DataFrame(n, index=[n["nodeid"]]))
+        _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-        _recursive_pop_children(children[0], l, verbose)
+        _recursive_pop_children(children[0], _list, verbose)
 
-        _recursive_pop_children(children[1], l, verbose)
+        _recursive_pop_children(children[1], _list, verbose)
 
     else:
 
         if verbose:
 
-            print(n)
+            print(_dict)
 
-        l.append(pd.DataFrame(n, index=[n["nodeid"]]))
+        _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
 
 def _fill_depth_for_terminal_nodes(df):
@@ -353,7 +351,7 @@ def _read_dump_text(file, return_raw_lines=False):
 
                     line_dict["cover"] = float(node_str_split2[1].split("=")[1])
 
-                except:
+                except IndexError:
 
                     pass
 
@@ -387,7 +385,7 @@ def _read_dump_text(file, return_raw_lines=False):
                     line_dict["gain"] = float(node_str_split4[3].split("=")[1])
                     line_dict["cover"] = float(node_str_split4[4].split("=")[1])
 
-                except:
+                except IndexError:
 
                     pass
 

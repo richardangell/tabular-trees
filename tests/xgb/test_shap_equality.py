@@ -1,5 +1,5 @@
 import pandas as pd
-import xgboost as xgb
+
 import pygbmexpl
 
 import build_model
