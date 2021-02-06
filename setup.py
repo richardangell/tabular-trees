@@ -26,7 +26,7 @@ def read_long_description():
     return long_description
 
 
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 
