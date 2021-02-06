@@ -57,18 +57,18 @@ EXPECTED_COLUMNS = {
 }
 
 
-def parse_model(model, file = None):
+def parse_model(model):
     """Extract predictions for all nodes in an xgboost model.
 
-    Args:
-        model (xgb.core.booster): an xgboost model.
-        file (str): xgboost model dump .txt file. Defaults to None.
-            Pass a value to keep the model dump .txt file, otherwise it
-            is deleted.
+    Parameters
+    ----------
+    model : xgb.core.booster
+        Xgboost model to parse into tabular structure.
 
-    Returns: 
-        pd.DataFrame: df with columns tree, node, yes, no, missing, split_var, split_point, quality, cover
-            weight, G, H, node_type. Note, weight is the prediction for this node.
+    Returns
+    -------
+    tabular_trees : TabularTrees
+        Model parsed into tabular structure. 
 
     """
 
@@ -89,7 +89,9 @@ def parse_model(model, file = None):
             expected_columns = EXPECTED_COLUMNS['tree_df_with_node_predictions']
         )
 
-        return t.TabularTrees(trees_preds_df, 'xgboost', xgb.__version__)
+        tabular_trees = t.TabularTrees(trees_preds_df, 'xgboost', xgb.__version__)
+
+        return tabular_trees
 
     else:
 
@@ -132,14 +134,20 @@ def _read_dump_json(file, return_raw_lines = False):
     Note this argument was only added in 0.81 and the default prior to this release was dump in 
     text format.
 
-    Args:
-        file (str): xgboost model dump json file.
-        return_raw_lines (bool): should lines read from the json file be returned in a dict as well?
+    Parameters
+    ----------
+        file : str
+            Xgboost model dump json file.
 
-    Returns: 
+        return_raw_lines : bool, default = False
+            Should lines read from the json file be returned in a dict as well?
+
+    Returns
+    -------
         pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
-        If the model dump file was output with  with_stats = True then gain and cover columns are also
-        in the output.
+        If the model dump file was output with with_stats = True then gain and cover columns are also
+        in the output DataFrame.
+        dict : if return_raw_lines is True then the raw contents of the json file are also returned.
 
     '''
 
@@ -274,14 +282,22 @@ def _read_dump_text(file, return_raw_lines = False):
     Text file to read must be the output from xgboost.Booster.dump_model with dump_format = 'text'. 
     Note this argument was only added in 0.81 and text dump was the default prior to this release.
 
-    Args:
-        file (str): xgboost model dump .txt file.
-        return_raw_lines (bool): should the raw lines read from the text file be returned?
+    Parameters
+    ----------
+        file : str
+            Xgboost model dump json file.
 
-    Returns: 
-        pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
-        If the model dump file was output with  with_stats = True then gain and cover columns are also
-        in the output.
+        return_raw_lines : bool, default = False
+            Should lines read from the json file be returned in a dict as well?
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf. If 
+        the model dump file was output with with_stats = True then gain and cover columns are also in 
+        the output DataFrame.
+    list
+        If return_raw_lines is True then the raw contents of the txt file are also returned.
 
     '''
 
@@ -391,7 +407,22 @@ def _read_dump_text(file, return_raw_lines = False):
 
 
 def _derive_predictions(df):
-    
+    """Function to derive predictons for all nodes in trees.
+
+    Leaf node predictions are available in the leaf column.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame output from either _read_dump_text or _read_dump_json functions.
+
+    Returns
+    -------
+    pd.DataFrame
+        Input DataFrame with 'node_prediction', 'H', 'G' and 'node_type' columns added.
+
+    """
+
     # identify leaf and internal nodes
     df['node_type'] = 'internal'
     df.loc[df['split_condition'].isnull(), 'node_type'] = 'leaf'
@@ -437,12 +468,16 @@ def _derive_internal_node_G(tree_df):
     G value back up through the tree, adding this leaf node G to each node
     that is travelled to.
 
-    Args:
-        tree_df (pd.DataFrame): rows from corresponding to a single tree (from _derive_predictions)
+    Parameters:
+    -----------
+    tree_df : pd.DataFrame
+        Rows from corresponding to a single tree, from _derive_predictions.
 
-    Returns: 
-        pd.DataFrame: updated tree_df with G propagated up the tree s.t. each internal node's G value
-            is the sum of G for it's child nodes.
+    Returns
+    -------
+    pd.DataFrame
+        Updated tree_df with G propagated up the tree s.t. each internal node's G value
+        is the sum of G for it's child nodes.
 
     """
 
