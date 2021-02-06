@@ -34,11 +34,12 @@ class TabularTrees:
         'split', 
         'split_condition', 
         'leaf', 
+        'node_prediction'
     ]
 
     INTEGER_COLUMNS = ['tree', 'nodeid', 'depth']
 
-    FLOAT_COLUMNS = ['yes', 'no', 'missing', 'leaf']
+    FLOAT_COLUMNS = ['yes', 'no', 'missing', 'leaf', 'node_prediction']
 
     # columns that should only take null values when the leaf columns takes nulls values
     # and vice versa
@@ -84,6 +85,9 @@ class TabularTrees:
             If any of the FLOAT_COLUMNS are not float dtypes.
 
         ValueError
+            If node_prediction column contains any null values.
+
+        ValueError
             If there are any nulls in LEAF_INVERTED_NULLS_COLUMNS when 'leaf' column
             takes null values. LEAF_INVERTED_NULLS_COLUMNS should only take nulls
             when 'leaf' is not null an vice versa.
@@ -120,7 +124,7 @@ class TabularTrees:
         h.check_df_columns(
             df = tree_df, 
             expected_columns = self.REQUIRED_COLUMNS,
-            allow_unspecified_columns = False
+            allow_unspecified_columns = True
         )
 
         if tree_df[self.INTEGER_COLUMNS].isnull().sum().sum() > 0:
@@ -133,6 +137,9 @@ class TabularTrees:
         for column in self.FLOAT_COLUMNS:
             if not pd.api.types.is_float_dtype(tree_df[column]):
                 raise TypeError(f'{column} column should be float dtype')
+
+        if tree_df['node_prediction'].isnull().sum() > 0:
+            raise ValueError('node_prediction column has null values')
 
         leaf_column_nulls = tree_df['leaf'].isnull()
         leaf_column_non_nulls = ~leaf_column_nulls
