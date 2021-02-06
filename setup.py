@@ -5,7 +5,7 @@ import re
 def get_version():
     """Function to read package version number from file."""
 
-    VERSION_FILE = "pygbmexpl/_version.py"
+    VERSION_FILE = "ttrees/_version.py"
     version_str = open(VERSION_FILE, "rt").read()
     VERSION_RE = r"^__version__ = ['\"]([^'\"]*)['\"]"
     mo = re.search(VERSION_RE, version_str, re.M)
@@ -31,14 +31,14 @@ with open("requirements.txt") as f:
 
 
 setuptools.setup(
-    name="pygbmexpl",
+    name="tabular-trees",
     version=get_version(),
     author="Richard Angell",
     author_email="richardangell37@gmail.com",
-    description="Package to explain gbm predictions",
+    description="Package for tabular tree structures",
     long_description=read_long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/richardangell/pygbmexpl",
+    url="https://github.com/richardangell/tabular-trees",
     packages=setuptools.find_packages(),
     install_requires=required,
     python_requires=">=3.7",

@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 from copy import deepcopy
 
-import pygbmexpl.helpers as h
-import pygbmexpl.trees as t
+import ttrees.helpers as h
+import ttrees.trees as t
 
 
 EXPECTED_COLUMNS = {

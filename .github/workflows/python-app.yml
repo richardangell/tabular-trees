@@ -35,7 +35,7 @@ jobs:
         
     - name: Test with pytest
       run: |
-        pytest . --cov=pygbmexpl/ --cov-report=html --cov-config=.coveragerc
+        pytest . --cov=ttrees/ --cov-report=html --cov-config=.coveragerc
       
     - name: Upload coverage pytest html test results
       uses: actions/upload-artifact@v2

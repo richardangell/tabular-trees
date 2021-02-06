@@ -1,6 +1,6 @@
 import pandas as pd
 
-import pygbmexpl.helpers as h
+import ttrees.helpers as h
 
 
 class TabularTrees:
