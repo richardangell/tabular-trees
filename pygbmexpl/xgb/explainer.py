@@ -95,7 +95,7 @@ def terminal_node_path(tree_df, row):
     path['contributing_var'] = path['split'].shift(1)
 
     # get change in predicted value due to split i.e. contribution for that variable
-    path['contribution'] = path['weight'] - path['weight'].shift(1).fillna(0)
+    path['contribution'] = path['node_prediction'] - path['node_prediction'].shift(1).fillna(0)
 
     path.loc[path.contributing_var.isnull(), 'contributing_var'] = 'base'
 
@@ -107,7 +107,7 @@ def terminal_node_path(tree_df, row):
                   'split',
                   'split_condition',
                   'cover',
-                  'weight',
+                  'node_prediction',
                   'node_type',
                   'H',
                   'G',
@@ -206,7 +206,7 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
 
     internal_nodes = tree_df['node_type'] == 'internal'
 
-    mean_prediction = (tree_df.loc[~internal_nodes, 'cover'] * tree_df.loc[~internal_nodes, 'weight']).sum() / tree_df.loc[~internal_nodes, 'cover'].sum()
+    mean_prediction = (tree_df.loc[~internal_nodes, 'cover'] * tree_df.loc[~internal_nodes, 'node_prediction']).sum() / tree_df.loc[~internal_nodes, 'cover'].sum()
  
     keep_cols = [
         'yes', 
@@ -215,12 +215,12 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
         'split', 
         'cover', 
         'node_type', 
-        'weight'
+        'node_prediction'
     ]
 
     tree_df_cols_subset = tree_df[keep_cols].copy()
 
-    tree_df_cols_subset.loc[internal_nodes, 'weight'] = 'internal'
+    tree_df_cols_subset.loc[internal_nodes, 'node_prediction'] = 'internal'
 
     cols_rename = {
         'yes': 'a', 
@@ -228,7 +228,7 @@ def shapley_values_tree(tree_df, row, return_permutations = False):
         'split_condition': 't', 
         'split': 'd', 
         'cover': 'r', 
-        'weight': 'v'
+        'node_prediction': 'v'
     }
 
     tree_df_cols_subset.rename(columns = cols_rename, inplace = True)

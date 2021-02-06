@@ -1,21 +1,27 @@
 import pandas as pd
 
 
-
 def check_df_columns(df, expected_columns, allow_unspecified_columns = False):
-    '''Function to check if pandas DataFrame has expected columns.'''
+    '''Function to check if a pd.DataFrame has expected columns.
+    
+    Extra columns can be allowed by specifying the allow_unspecified_columns argument.
 
-    if not isinstance(df, pd.DataFrame):
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame to check.
 
-        raise TypeError('Expecting df to be a pd.DataFrame')
+    expected_columns : list
+        List of columns expected to be in df.
 
-    if not isinstance(expected_columns, list):
+    allow_unspecified_columns : bool, default = False
+        Should extra, unspecified columns in df be allowed?
 
-        raise TypeError('Expecting expected_columns to be a list')
+    '''
 
-    if not isinstance(allow_unspecified_columns, bool):
-
-        raise TypeError('Expecting allow_unspecified_columns to be a bool')
+    check_type(df, 'df', pd.DataFrame)
+    check_type(expected_columns, 'expected_columns', list)
+    check_type(allow_unspecified_columns, 'allow_unspecified_columns', bool)
 
     df_cols = df.columns.values.tolist()
 
@@ -33,4 +39,24 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns = False):
 
             raise ValueError('Extra columns in df when allow_unspecified_columns = False; ' + str(in_df_not_expected))
 
+
+def check_type(obj, obj_name, expected_type):
+    """Check whether an object is of a given type.
+    
+    Parameters
+    ----------
+    obj : any
+        Object to check.
+    
+    obj_name : str
+        Name for object, will be printed in error message if not of expected type.
+
+    expected_type : type
+        Expected type of obj. 
+
+    """
+
+    if type(obj) is not expected_type:
+
+        raise TypeError(f'{obj_name} is not expected type; {expected_type} got {type(obj)}')
 
