@@ -23,10 +23,10 @@ def test_text_json_parsing_equal(tmp_path):
     model.dump_model(json_dump_no_stats, with_stats = False, dump_format = 'json')
 
     # parse dumped files
-    tree_df1 = pygbmexpl.xgb.parser.read_dump_text(text_dump, return_raw_lines = False)
-    tree_df2 = pygbmexpl.xgb.parser.read_dump_text(text_dump_no_stats, return_raw_lines = False)
-    tree_df3 = pygbmexpl.xgb.parser.read_dump_json(json_dump, return_raw_lines = False)
-    tree_df4 = pygbmexpl.xgb.parser.read_dump_json(json_dump_no_stats, return_raw_lines = False)
+    tree_df1 = pygbmexpl.xgb.parser._read_dump_text(text_dump, return_raw_lines = False)
+    tree_df2 = pygbmexpl.xgb.parser._read_dump_text(text_dump_no_stats, return_raw_lines = False)
+    tree_df3 = pygbmexpl.xgb.parser._read_dump_json(json_dump, return_raw_lines = False)
+    tree_df4 = pygbmexpl.xgb.parser._read_dump_json(json_dump_no_stats, return_raw_lines = False)
 
     # check the equivalent parsed text/json outputs are equal
     pd.testing.assert_frame_equal(tree_df1, tree_df3)

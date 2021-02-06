@@ -33,9 +33,9 @@ def test_prediction_decomposition_eqal_eli5():
 
     eli5_decomposition['feature_mapped'] = eli5_decomposition['feature'].map(column_mapping)
 
-    pygbmexpl_trees_df = pygbmexpl.xgb.parser.extract_model_predictions(model)
+    pygbmexpl_trees_df = pygbmexpl.xgb.parser.parse_model(model)
 
-    pygbmexpl_decomposition = pygbmexpl.xgb.explainer.decompose_prediction(pygbmexpl_trees_df, row_data)
+    pygbmexpl_decomposition = pygbmexpl.xgb.explainer.decompose_prediction(pygbmexpl_trees_df.tree_data, row_data)
 
     # aggregate pygbmexpl output to variable level, by default it is at tree x node level
     pygbmexpl_decomposition_agg = pd.DataFrame(
