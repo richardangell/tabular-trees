@@ -5,10 +5,10 @@ import pygbmexpl.helpers as h
 
 class TabularTrees:
     """Class to hold tree structures from different packages in tabular format.
-    
+
     Different packages containing tree based algorithms need different approaches to convert
     the models into tabular structure. Once the models have been converted to tabular
-    structure they can be stored within the a TabularTrees object. TabularTrees does 
+    structure they can be stored within the a TabularTrees object. TabularTrees does
     various checks to ensure the trees are in a set format.
 
     Parameters
@@ -25,31 +25,31 @@ class TabularTrees:
     """
 
     REQUIRED_COLUMNS = [
-        'tree', 
-        'nodeid', 
-        'depth',
-        'yes', 
-        'no', 
-        'missing', 
-        'split', 
-        'split_condition', 
-        'leaf', 
-        'node_prediction'
+        "tree",
+        "nodeid",
+        "depth",
+        "yes",
+        "no",
+        "missing",
+        "split",
+        "split_condition",
+        "leaf",
+        "node_prediction",
     ]
 
-    INTEGER_COLUMNS = ['tree', 'nodeid', 'depth']
+    INTEGER_COLUMNS = ["tree", "nodeid", "depth"]
 
-    FLOAT_COLUMNS = ['yes', 'no', 'missing', 'leaf', 'node_prediction']
+    FLOAT_COLUMNS = ["yes", "no", "missing", "leaf", "node_prediction"]
 
     # columns that should only take null values when the leaf columns takes nulls values
     # and vice versa
-    LEAF_INVERTED_NULLS_COLUMNS = ['yes', 'no', 'missing', 'split', 'split_condition']
+    LEAF_INVERTED_NULLS_COLUMNS = ["yes", "no", "missing", "split", "split_condition"]
 
     def __init__(self, data, package, package_version):
 
-        h.check_type(data, 'data', pd.DataFrame)
-        h.check_type(package, 'package', str)
-        h.check_type(package_version, 'package_version', str)
+        h.check_type(data, "data", pd.DataFrame)
+        h.check_type(package, "package", str)
+        h.check_type(package_version, "package_version", str)
 
         self.package = package
         self.package_version = package_version
@@ -63,13 +63,13 @@ class TabularTrees:
         self.n_leaf_nodes = self.calculate_number_leaf_nodes(self.tree_data)
 
     def check_tree_data(self, tree_df):
-        """Checks on input tree_df to ensure it is in a consistent, expected format. 
-        
+        """Checks on input tree_df to ensure it is in a consistent, expected format.
+
         Raises section below lists the checks that are performed.
 
         Raises
         ------
-        ValueError 
+        ValueError
             If tree_df has no rows.
 
         ValueError
@@ -93,7 +93,7 @@ class TabularTrees:
             when 'leaf' is not null an vice versa.
 
         ValueError
-            If there are any non-null values in LEAF_INVERTED_NULLS_COLUMNS when 'leaf' 
+            If there are any non-null values in LEAF_INVERTED_NULLS_COLUMNS when 'leaf'
             column is not null. LEAF_INVERTED_NULLS_COLUMNS should only take nulls
             when 'leaf' is not null an vice versa.
 
@@ -119,78 +119,108 @@ class TabularTrees:
         """
 
         if not tree_df.shape[0] > 0:
-            raise ValueError('tree data has not rows')
+            raise ValueError("tree data has not rows")
 
         h.check_df_columns(
-            df = tree_df, 
-            expected_columns = self.REQUIRED_COLUMNS,
-            allow_unspecified_columns = True
+            df=tree_df,
+            expected_columns=self.REQUIRED_COLUMNS,
+            allow_unspecified_columns=True,
         )
 
         if tree_df[self.INTEGER_COLUMNS].isnull().sum().sum() > 0:
-            raise ValueError(f'nulls present in the following columns; {self.INTEGER_COLUMNS}')
+            raise ValueError(
+                f"nulls present in the following columns; {self.INTEGER_COLUMNS}"
+            )
 
         for column in self.INTEGER_COLUMNS:
             if not pd.api.types.is_integer_dtype(tree_df[column]):
-                raise TypeError(f'{column} column should be integer dtype')
+                raise TypeError(f"{column} column should be integer dtype")
 
         for column in self.FLOAT_COLUMNS:
             if not pd.api.types.is_float_dtype(tree_df[column]):
-                raise TypeError(f'{column} column should be float dtype')
+                raise TypeError(f"{column} column should be float dtype")
 
-        if tree_df['node_prediction'].isnull().sum() > 0:
-            raise ValueError('node_prediction column has null values')
+        if tree_df["node_prediction"].isnull().sum() > 0:
+            raise ValueError("node_prediction column has null values")
 
-        leaf_column_nulls = tree_df['leaf'].isnull()
+        leaf_column_nulls = tree_df["leaf"].isnull()
         leaf_column_non_nulls = ~leaf_column_nulls
 
         # check that LEAF_INVERTED_NULLS_COLUMNS have no nulls where 'leaf' is null
-        if tree_df.loc[leaf_column_nulls, self.LEAF_INVERTED_NULLS_COLUMNS].isnull().sum().sum() > 0:
-            raise ValueError(f'null values present in the following columns; {self.LEAF_INVERTED_NULLS_COLUMNS} when leaf column is null')
+        if (
+            tree_df.loc[leaf_column_nulls, self.LEAF_INVERTED_NULLS_COLUMNS]
+            .isnull()
+            .sum()
+            .sum()
+            > 0
+        ):
+            raise ValueError(
+                f"null values present in the following columns; {self.LEAF_INVERTED_NULLS_COLUMNS} when leaf column is null"
+            )
 
-        expected_null_values_where_leaf_not_null = len(self.LEAF_INVERTED_NULLS_COLUMNS) * leaf_column_non_nulls.sum()
+        expected_null_values_where_leaf_not_null = (
+            len(self.LEAF_INVERTED_NULLS_COLUMNS) * leaf_column_non_nulls.sum()
+        )
 
         # check that LEAF_INVERTED_NULLS_COLUMNS have no non-null values where 'leaf' is not null
-        if tree_df.loc[leaf_column_non_nulls, self.LEAF_INVERTED_NULLS_COLUMNS].isnull().sum().sum() < expected_null_values_where_leaf_not_null:
-            raise ValueError(f'non null values present in the following columns; {self.LEAF_INVERTED_NULLS_COLUMNS} when leaf column is not null')
-        
-        first_tree = tree_df['tree'].min()
+        if (
+            tree_df.loc[leaf_column_non_nulls, self.LEAF_INVERTED_NULLS_COLUMNS]
+            .isnull()
+            .sum()
+            .sum()
+            < expected_null_values_where_leaf_not_null
+        ):
+            raise ValueError(
+                f"non null values present in the following columns; {self.LEAF_INVERTED_NULLS_COLUMNS} when leaf column is not null"
+            )
+
+        first_tree = tree_df["tree"].min()
 
         # check tree column start index is 0
         if not first_tree == 0:
-            raise ValueError(f'''first tree is not index 0, got {first_tree}''')
-        
+            raise ValueError(f"""first tree is not index 0, got {first_tree}""")
+
         # for each tree in [0:max(tree_df['tree'])]
-        for tree_no in range(tree_df['tree'].max() + 1):
-            
-            tree_no_rows = tree_df['tree'] == tree_no
+        for tree_no in range(tree_df["tree"].max() + 1):
+
+            tree_no_rows = tree_df["tree"] == tree_no
 
             # check the tree has rows in tree_df
             if not (tree_no_rows).sum() > 0:
-                raise ValueError(f'no rows in data for tree {tree_no}')
-            
-            tree_min_depth = tree_df.loc[tree_no_rows, 'depth'].min()
-            tree_max_depth = tree_df.loc[tree_no_rows, 'depth'].max()
+                raise ValueError(f"no rows in data for tree {tree_no}")
+
+            tree_min_depth = tree_df.loc[tree_no_rows, "depth"].min()
+            tree_max_depth = tree_df.loc[tree_no_rows, "depth"].max()
 
             # check depth column start index is 0, for given tree
             if not tree_min_depth == 0:
-                raise ValueError(f'''first depth index for tree {tree_no} is not 0, got {tree_min_depth}''')
-            
+                raise ValueError(
+                    f"""first depth index for tree {tree_no} is not 0, got {tree_min_depth}"""
+                )
+
             # check there are rows for the given tree, for each depth in [0:max(tree_df['depth'])]
             for tree_depth in range(tree_max_depth + 1):
-                tree_depth_rows = (tree_df['tree'] == tree_no) & (tree_df['depth'] == tree_depth)
+                tree_depth_rows = (tree_df["tree"] == tree_no) & (
+                    tree_df["depth"] == tree_depth
+                )
                 if not tree_depth_rows.sum() > 0:
-                    raise ValueError(f'no rows in data for tree {tree_no} and depth {tree_depth}')
+                    raise ValueError(
+                        f"no rows in data for tree {tree_no} and depth {tree_depth}"
+                    )
 
-            tree_min_nodeid = tree_df.loc[tree_no_rows, 'nodeid'].min()
-            tree_max_nodeid = tree_df.loc[tree_no_rows, 'nodeid'].max()
+            tree_min_nodeid = tree_df.loc[tree_no_rows, "nodeid"].min()
+            tree_max_nodeid = tree_df.loc[tree_no_rows, "nodeid"].max()
 
             # check depth column start index is 0, for given tree
             if not tree_min_nodeid == 0:
-                raise ValueError(f'''first nodeid index for tree {tree_no} is not 0, got {tree_min_nodeid}''')
-            
-            if not tree_df.loc[tree_no_rows, 'nodeid'].nunique() == tree_max_nodeid + 1:
-                raise ValueError(f'nodeid is not unique increasing from {tree_min_nodeid} to {tree_max_nodeid}')
+                raise ValueError(
+                    f"""first nodeid index for tree {tree_no} is not 0, got {tree_min_nodeid}"""
+                )
+
+            if not tree_df.loc[tree_no_rows, "nodeid"].nunique() == tree_max_nodeid + 1:
+                raise ValueError(
+                    f"nodeid is not unique increasing from {tree_min_nodeid} to {tree_max_nodeid}"
+                )
 
     def calculate_number_trees(self, tree_df):
         """Caculate the number of trees.
@@ -198,7 +228,7 @@ class TabularTrees:
         This is the max of the tree column plus 1, as the tree index starts at 0.
         """
 
-        return tree_df['tree'].max() + 1
+        return tree_df["tree"].max() + 1
 
     def calculate_max_depth_trees(self, tree_df):
         """Caculate the max tree depth across all trees.
@@ -206,7 +236,7 @@ class TabularTrees:
         This is the max of the depth column plus 1, as the depth index starts at 0.
         """
 
-        return tree_df['depth'].max() + 1
+        return tree_df["depth"].max() + 1
 
     def calculate_number_leaf_nodes(self, tree_df):
         """Caculate the total number of leaf nodes in the trees.
@@ -214,7 +244,7 @@ class TabularTrees:
         This is the total number of rows in the passed DataFrame where the leaf column is not null.
         """
 
-        return (~tree_df['leaf'].isnull()).sum()
+        return (~tree_df["leaf"].isnull()).sum()
 
     def calculate_number_nodes(self, tree_df):
         """Caculate the total number of nodes in the trees.
@@ -227,9 +257,9 @@ class TabularTrees:
     def __repr__(self):
         """Return a string with key info from the object."""
 
-        print_str = f'TabularTrees representation of {self.package} ({self.package_version}) model' + \
-            f'\n  n trees: {self.n_trees}\n  max depth: {self.max_depth}\n  n nodes: {self.n_nodes}\n  n leaf nodes: {self.n_leaf_nodes}'
+        print_str = (
+            f"TabularTrees representation of {self.package} ({self.package_version}) model"
+            + f"\n  n trees: {self.n_trees}\n  max depth: {self.max_depth}\n  n nodes: {self.n_nodes}\n  n leaf nodes: {self.n_leaf_nodes}"
+        )
 
         return print_str
-
-
