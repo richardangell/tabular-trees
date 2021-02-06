@@ -5,17 +5,9 @@ import pandas as pd
 def check_df_columns(df, expected_columns, allow_unspecified_columns = False):
     '''Function to check if pandas DataFrame has expected columns.'''
 
-    if not isinstance(df, pd.DataFrame):
-
-        raise TypeError('Expecting df to be a pd.DataFrame')
-
-    if not isinstance(expected_columns, list):
-
-        raise TypeError('Expecting expected_columns to be a list')
-
-    if not isinstance(allow_unspecified_columns, bool):
-
-        raise TypeError('Expecting allow_unspecified_columns to be a bool')
+    check_type(df, 'df', pd.DataFrame)
+    check_type(expected_columns, 'expected_columns', list)
+    check_type(allow_unspecified_columns, 'allow_unspecified_columns', bool)
 
     df_cols = df.columns.values.tolist()
 
@@ -33,4 +25,11 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns = False):
 
             raise ValueError('Extra columns in df when allow_unspecified_columns = False; ' + str(in_df_not_expected))
 
+
+
+def check_type(obj, obj_name, expected_type):
+
+    if type(obj) is not expected_type:
+
+        raise TypeError(f'{obj_name} is not expected type; {expected_type} got {type(obj)}')
 
