@@ -1,6 +1,6 @@
 import pandas as pd
 
-import ttrees
+import tabular_trees
 
 import build_model
 
@@ -23,9 +23,9 @@ def test_prediction_decomposition_eqal_eli5():
 
     row_data = data.iloc[0]
 
-    tree_df = ttrees.xgb.parser.parse_model(model)
+    tree_df = tabular_trees.xgb.parser.parse_model(model)
 
-    shapley_values = ttrees.xgb.explainer.shapley_values(
+    shapley_values = tabular_trees.xgb.explainer.shapley_values(
         tree_df.tree_data, row_data, False
     )
 

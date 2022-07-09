@@ -16,7 +16,7 @@ pre-commit = "==2.19.0"
 pytest = "==7.1.2"
 pytest-cov = "==3.0.0"
 tox = "==3.25.0"
-eli5 = "==0.10.1"
+eli5 = "==0.13.0"
 scikit-learn = ">=1.0"
 
 [requires]
