@@ -29,6 +29,17 @@ test = [
     "eli5==0.10.1",
     "scikit-learn>=1.0"
 ]
+doc = [
+    "Sphinx==4.5.0",
+    "sphinx-rtd-theme==1.0.0",
+    "numpydoc==1.3.1",
+]
 
 [project.urls]
 Home = "https://github.com/richardangell/tabular-trees"
+
+[tool.flit.sdist]
+exclude = [
+    "demo",
+    "docs",
+]
