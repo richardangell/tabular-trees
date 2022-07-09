@@ -8,7 +8,7 @@ setuptools = "*"
 pandas = ">=0.24"
 xgboost = ">=1.4.0"
 tqdm = "==4.46.1"
-tabular-trees = {path = "."}
+tabular-trees = {editable = true, path = "."}
 
 [dev-packages]
 flit = "==3.7.1"

@@ -3,7 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "tabular_trees"
+name = "tabular-trees"
 authors = [{name = "Richard Angell", email = "richardangell37@gmail.com"}]
 dynamic = ["version", "description"]
 classifiers=[
@@ -18,6 +18,9 @@ dependencies=[
     "xgboost>=1.4.0",
     "tqdm==4.46.1"
 ]
+
+[tool.flit.module]
+name = "tabular_trees"
 
 [project.optional-dependencies]
 test = [
