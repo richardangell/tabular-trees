@@ -1,8 +1,10 @@
+"""Module for validating xgboost trees."""
+
 import pandas as pd
 from copy import deepcopy
 
-from ttrees.helpers import check_df_columns
-from ttrees.xgb.parser import EXPECTED_COLUMNS
+from ..helpers import check_df_columns
+from ..xgb.parser import EXPECTED_COLUMNS
 
 
 def validate_monotonic_constraints_df(

@@ -1,6 +1,8 @@
+"""Module for tree structure classes."""
+
 import pandas as pd
 
-import ttrees.helpers as h
+from . import helpers as h
 
 
 class TabularTrees:

@@ -1,3 +1,5 @@
-import ttrees.xgb.explainer as explainer
-import ttrees.xgb.parser as parser
-import ttrees.xgb.validate as validate
+"""Module containing functionality for dealing with xgboost models."""
+
+from . import explainer
+from . import parser
+from . import validate

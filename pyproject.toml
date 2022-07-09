@@ -1,0 +1,34 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "tabular_trees"
+authors = [{name = "Richard Angell", email = "richardangell37@gmail.com"}]
+dynamic = ["version", "description"]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+requires-python=">=3.8"
+dependencies=[
+    "setuptools",
+    "pandas>=0.24",
+    "xgboost>=0.81",
+    "tqdm==4.46.1"
+]
+
+[project.optional-dependencies]
+test = [
+    "pre-commit==2.19.0",
+    "pytest==7.1.2",
+    "pytest-mock==3.8.1",
+    "pytest-cov==3.0.0",
+    "tox==3.25.0",
+    "eli5==0.10.1",
+    "scikit-learn>=1.0"
+]
+
+[project.urls]
+Home = "https://github.com/richardangell/tabular-trees"
