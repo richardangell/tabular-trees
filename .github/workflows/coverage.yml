@@ -27,7 +27,7 @@ jobs:
     - name: Test with pytest
       if: always()
       run: |
-        pytest --cov=src/package/ --cov-report=html --cov-config=.coveragerc
+        pytest --cov=src/tabular_trees/ --cov-report=html --cov-config=.coveragerc
       
     - name: Upload coverage pytest html test results to github
       if: always()    
