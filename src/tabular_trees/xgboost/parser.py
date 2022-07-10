@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from copy import deepcopy
 
-from .. import helpers as h
+from .. import checks
 from .. import trees as t
 
 
@@ -84,7 +84,7 @@ def parse_model(model):
 
         trees_preds_df = _derive_predictions(trees_df)
 
-        h.check_df_columns(
+        checks.check_df_columns(
             df=trees_preds_df,
             expected_columns=EXPECTED_COLUMNS["tree_df_with_node_predictions"],
         )
@@ -113,8 +113,8 @@ def read_dump(file, return_raw_lines=False):
 
     """
 
-    h.check_type(file, "file", str)
-    h.check_type(return_raw_lines, "return_raw_lines", bool)
+    checks.check_type(file, "file", str)
+    checks.check_type(return_raw_lines, "return_raw_lines", bool)
 
     if file.lower().endswith("txt"):
 
@@ -253,7 +253,7 @@ def _fill_depth_for_terminal_nodes(df):
 def _reorder_tree_df(df):
     """Function to sort and reorder columns df of trees."""
 
-    h.check_type(df, "df", pd.DataFrame)
+    checks.check_type(df, "df", pd.DataFrame)
 
     if not df.shape[0] > 0:
         raise ValueError("df has no rows")

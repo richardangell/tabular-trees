@@ -3,7 +3,7 @@
 import pandas as pd
 from copy import deepcopy
 
-from ..helpers import check_df_columns
+from ..checks import check_df_columns
 from ..xgboost.parser import EXPECTED_COLUMNS
 
 
