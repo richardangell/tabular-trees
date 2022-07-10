@@ -93,7 +93,7 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
 
     if len(in_expected_not_df) > 0:
 
-        raise ValueError("Expected columns not in df; " + str(in_expected_not_df))
+        raise ValueError(f"expected columns not in df; {in_expected_not_df}")
 
     if not allow_unspecified_columns:
 
@@ -102,6 +102,5 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
         if len(in_df_not_expected) > 0:
 
             raise ValueError(
-                "Extra columns in df when allow_unspecified_columns = False; "
-                + str(in_df_not_expected)
+                f"extra columns in df when allow_unspecified_columns = False; {in_df_not_expected}"
             )
