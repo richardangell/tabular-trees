@@ -4,7 +4,7 @@ import pandas as pd
 from copy import deepcopy
 
 from ..helpers import check_df_columns
-from ..xgb.parser import EXPECTED_COLUMNS
+from ..xgboost.parser import EXPECTED_COLUMNS
 
 
 def validate_monotonic_constraints_df(

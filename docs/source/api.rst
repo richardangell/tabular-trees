@@ -11,29 +11,29 @@ trees module
 
     trees.TabularTrees
     
-xgb.explainer module
+xgboost.explainer module
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgb.explainer.decompose_prediction
-    xgb.explainer.terminal_node_path
-    xgb.explainer.shapley_values
+    xgboost.explainer.decompose_prediction
+    xgboost.explainer.terminal_node_path
+    xgboost.explainer.shapley_values
          
-xgb.parser module
+xgboost.parser module
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgb.parser.parse_model
-    xgb.parser.read_dump
+    xgboost.parser.parse_model
+    xgboost.parser.read_dump
    
-xgb.validate module
+xgboost.validate module
 ------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgb.validate.validate_monotonic_constraints_df
+    xgboost.validate.validate_monotonic_constraints_df
