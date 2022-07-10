@@ -89,7 +89,7 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
 
     df_cols = df.columns.values.tolist()
 
-    in_expected_not_df = list(set(expected_columns) - set(df_cols))
+    in_expected_not_df = sorted(list(set(expected_columns) - set(df_cols)))
 
     if len(in_expected_not_df) > 0:
 
