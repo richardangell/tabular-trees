@@ -16,6 +16,15 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
+0.2.0.dev1 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/11>`_
+---------------------------------------------------------------------------------------
+
+Changed
+^^^^^^^
+
+- Renamed xgb module to xgboost
+- Exclude .tox directory in bandit
+
 0.2.0.dev0 (unreleased) `#10 <https://github.com/richardangell/tabular-trees/pull/10>`_
 ---------------------------------------------------------------------------------------
 
