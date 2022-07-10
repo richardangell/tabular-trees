@@ -83,9 +83,9 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
 
     """
 
-    check_type(df, "df", pd.DataFrame)
-    check_type(expected_columns, "expected_columns", list)
-    check_type(allow_unspecified_columns, "allow_unspecified_columns", bool)
+    check_type(df, pd.DataFrame, "df")
+    check_type(expected_columns, list, "expected_columns")
+    check_type(allow_unspecified_columns, bool, "allow_unspecified_columns")
 
     df_cols = df.columns.values.tolist()
 
