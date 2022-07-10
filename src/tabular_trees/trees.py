@@ -49,9 +49,9 @@ class TabularTrees:
 
     def __init__(self, data, package, package_version):
 
-        checks.check_type(data, "data", pd.DataFrame)
-        checks.check_type(package, "package", str)
-        checks.check_type(package_version, "package_version", str)
+        checks.check_type(data, pd.DataFrame, "data")
+        checks.check_type(package, str, "package")
+        checks.check_type(package_version, str, "package_version")
 
         self.package = package
         self.package_version = package_version

@@ -113,8 +113,8 @@ def read_dump(file, return_raw_lines=False):
 
     """
 
-    checks.check_type(file, "file", str)
-    checks.check_type(return_raw_lines, "return_raw_lines", bool)
+    checks.check_type(file, str, "file")
+    checks.check_type(return_raw_lines, bool, "return_raw_lines")
 
     if file.lower().endswith("txt"):
 
@@ -253,7 +253,7 @@ def _fill_depth_for_terminal_nodes(df):
 def _reorder_tree_df(df):
     """Function to sort and reorder columns df of trees."""
 
-    checks.check_type(df, "df", pd.DataFrame)
+    checks.check_type(df, pd.DataFrame, "df")
 
     if not df.shape[0] > 0:
         raise ValueError("df has no rows")
