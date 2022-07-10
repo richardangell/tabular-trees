@@ -1,3 +1,5 @@
+"""Module for parsing xgboost models."""
+
 import pandas as pd
 import numpy as np
 import xgboost as xgb
@@ -6,8 +8,8 @@ import tempfile
 from pathlib import Path
 from copy import deepcopy
 
-import ttrees.helpers as h
-import ttrees.trees as t
+from .. import helpers as h
+from .. import trees as t
 
 
 EXPECTED_COLUMNS = {

@@ -1,3 +1,0 @@
-pandas>=0.24
-xgboost>=0.81
-tqdm==4.46.1 
