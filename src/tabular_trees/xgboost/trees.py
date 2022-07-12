@@ -136,8 +136,10 @@ class ParsedXGBoostTabularTrees:
         output from xgb.Booster.trees_to_dataframe.
 
         This involves the following steps;
+        - converting the cover column to float type
         - creating the ID column by combining tree and nodeid columns
         - creating the Categroy column
+        - populating the split column for leaf nodes
         - combining the leaf node predictions stored in leaf into Gain
         - converting the yes, no and missing columns to the same format as ID
         - dropping the depth and leaf columns
@@ -150,12 +152,21 @@ class ParsedXGBoostTabularTrees:
 
         """
 
+        df = self._convert_cover_dtype(df)
         df = self._create_id_columns(df)
         df = self._create_category_column(df)
+        df = self._populate_leaf_node_split_column(df)
         df = self._combine_leaf_and_gain(df)
         df = self._convert_node_columns(df)
         df = self._drop_columns(df)
         df = self._rename_columns(df)
+
+        return df
+
+    def _convert_cover_dtype(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Convert the cover column to float type."""
+
+        df["cover"] = df["cover"].astype(float)
 
         return df
 
@@ -186,12 +197,20 @@ class ParsedXGBoostTabularTrees:
 
         return df
 
+    def _populate_leaf_node_split_column(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Populate leaf node rows of the split column with the value 'Leaf'."""
+
+        leaf_nodes = df["gain"].isnull()
+
+        df.loc[leaf_nodes, "split"] = "Leaf"
+
+        return df
+
     def _combine_leaf_and_gain(self, df: pd.DataFrame) -> pd.DataFrame:
         """Combine the values in the leaf column into the gain column.
 
         The leaf column should only be populated for leaf nodes (giving their
         predicted value) and gain should only be populated for interval nodes.
-
         """
 
         leaf_nodes = df["gain"].isnull()
