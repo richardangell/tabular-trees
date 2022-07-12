@@ -5,10 +5,12 @@ import numpy as np
 import xgboost as xgb
 import json
 import tempfile
+import warnings
+from abc import ABC, abstractmethod
 from pathlib import Path
-from copy import deepcopy
 
 from .. import checks
+from .trees import ParsedXGBoostTabularTrees
 from .. import trees as t
 
 
@@ -57,22 +59,45 @@ EXPECTED_COLUMNS = {
 }
 
 
-def parse_model(model):
-    """Extract predictions for all nodes in an xgboost model.
+class XGBoostParser:
+    """Class that dumps and xgboost Booster and then parses the dumped file."""
 
-    Parameters
-    ----------
-    model : xgb.core.booster
-        Xgboost model to parse into tabular structure.
+    def __init__(self, model, dump_type="json"):
 
-    Returns
-    -------
-    tabular_trees : TabularTrees
-        Model parsed into tabular structure.
+        checks.check_type(model, xgb.core.Booster, "model")
+        self.model = model
 
-    """
+        checks.check_type(dump_type, str, "dump_type")
+        checks.check_condition(
+            dump_type in ["json", "text"], "dump_type in ['json', 'text']"
+        )
+        self.dump_type = dump_type
 
-    if type(model) is xgb.core.Booster:
+        if dump_type == "json":
+            self.reader = JsonDumpReader()
+        else:
+            self.reader = TextDumpReader()
+
+        warnings.warn(
+            "XGBoostDumpParser class is depreceated, "
+            "Booster.trees_to_dataframe is available instead",
+            FutureWarning,
+        )
+
+    def parse_model(self, model):
+        """Extract predictions for all nodes in an xgboost model.
+
+        Parameters
+        ----------
+        model : xgb.core.booster
+            Xgboost model to parse into tabular structure.
+
+        Returns
+        -------
+        tabular_trees : TabularTrees
+            Model parsed into tabular structure.
+
+        """
 
         with tempfile.TemporaryDirectory() as tmp_dir:
 
@@ -80,7 +105,7 @@ def parse_model(model):
 
             model.dump_model(tmp_model_dump, with_stats=True, dump_format="json")
 
-            trees_df = _read_dump_json(tmp_model_dump, False)
+            trees_df = self.reader.read_dump()
 
         trees_preds_df = _derive_predictions(trees_df)
 
@@ -93,161 +118,130 @@ def parse_model(model):
 
         return tabular_trees
 
-    else:
 
-        raise TypeError(
-            f"unexpected type for model, expected xgboost.core.Booster but got {type(model)}"
-        )
+class DumpReader(ABC):
+    """Abstract base class for parsers."""
 
+    def __init__(self, file: str) -> None:
 
-def read_dump(file, return_raw_lines=False):
-    """Read an xgboost model dumped to txt or json file.
+        checks.check_type(file, str, "file")
+        checks.check_condition(Path(file).exists(), f"{file} exists")
+        self.file = file
 
-    Parameters
-    ----------
-    file : str
-        Full path, filename with extension of xgboost model dumped to txt or json format.
+    @abstractmethod
+    def read_dump(self) -> ParsedXGBoostTabularTrees:
 
-    return_raw_lines : bool
-        Should the raw contents of file also be returned?
-
-    """
-
-    checks.check_type(file, str, "file")
-    checks.check_type(return_raw_lines, bool, "return_raw_lines")
-
-    if file.lower().endswith("txt"):
-
-        return _read_dump_text(file, return_raw_lines)
-
-    elif file.lower().endswith("json"):
-
-        return _read_dump_json(file, return_raw_lines)
-
-    else:
-
-        raise ValueError(
-            "file should be the full path, filename with extension of an xgboost model dumped to json or txt"
-        )
+        pass
 
 
-def _read_dump_json(file, return_raw_lines=False):
-    """Reads an xgboost model dump json file and parses it into a tabular structure.
+class JsonDumpReader(DumpReader):
+    """Class to read xgboost model (json) file dumps."""
 
-    Json file to read must be the output from xgboost.Booster.dump_model with dump_format = 'json'.
-    Note this argument was only added in 0.81 and the default prior to this release was dump in
-    text format.
+    def read_dump(self) -> ParsedXGBoostTabularTrees:
+        """Reads an xgboost model dump json file and parses it into a tabular
+        structure.
 
-    Parameters
-    ----------
-        file : str
-            Xgboost model dump json file.
+        Json file to read must be the output from xgboost.Booster.dump_model
+        with dump_format = 'json'. Note this argument was only added in 0.81
+        and the default prior to this release was dump in text format.
 
-        return_raw_lines : bool, default = False
-            Should lines read from the json file be returned in a dict as well?
+        Returns
+        -------
+            pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
+            If the model dump file was output with with_stats = True then gain and cover columns are also
+            in the output DataFrame.
+            dict : if return_raw_lines is True then the raw contents of the json file are also returned.
 
-    Returns
-    -------
-        pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
-        If the model dump file was output with with_stats = True then gain and cover columns are also
-        in the output DataFrame.
-        dict : if return_raw_lines is True then the raw contents of the json file are also returned.
+        """
 
-    """
+        with open(self.file) as f:
 
-    with open(file) as f:
+            j = json.load(f)
 
-        j = json.load(f)
+        tree_list = []
 
-    j_copy = deepcopy(j)
+        for i in range(len(j)):
 
-    tree_list = []
+            results_list: list[pd.DataFrame] = []
 
-    for i in range(len(j)):
+            self._recursive_pop_children(_dict=j[i], _list=results_list, verbose=False)
 
-        results_list = []
+            tree_df = pd.concat(results_list, axis=0, sort=True)
 
-        _recursive_pop_children(_dict=j[i], _list=results_list, verbose=False)
+            tree_df["tree"] = i
 
-        tree_df = pd.concat(results_list, axis=0, sort=True)
+            tree_df = self._fill_depth_for_terminal_nodes(tree_df)
 
-        tree_df["tree"] = i
+            tree_list.append(tree_df)
 
-        tree_df = _fill_depth_for_terminal_nodes(tree_df)
+        trees_df = pd.concat(tree_list, axis=0, sort=True)
 
-        tree_list.append(tree_df)
+        trees_df = _reorder_tree_df(trees_df)
 
-    trees_df = pd.concat(tree_list, axis=0, sort=True)
-
-    trees_df = _reorder_tree_df(trees_df)
-
-    trees_df.reset_index(inplace=True, drop=True)
-
-    if return_raw_lines:
-
-        return trees_df, j_copy
-
-    else:
+        trees_df.reset_index(inplace=True, drop=True)
 
         return trees_df
 
+    def _recursive_pop_children(self, _dict, _list, verbose=False):
+        """Function to recursively extract nodes from nested structure and append to list.
 
-def _recursive_pop_children(_dict, _list, verbose=False):
-    """Function to recursively extract nodes from nested structure and append to list.
+        Procedure is as follows;
+        - if no children item in dict, append items (in pd.DataFrame) to list
+        - or remove children item from dict, then append remaining items (in pd.DataFrame) to list
+        - then call function on left and right children.
 
-    Procedure is as follows;
-    - if no children item in dict, append items (in pd.DataFrame) to list
-    - or remove children item from dict, then append remaining items (in pd.DataFrame) to list
-    - then call function on left and right children.
+        """
 
-    """
+        if "children" in _dict.keys():
 
-    if "children" in _dict.keys():
+            children = _dict.pop("children")
 
-        children = _dict.pop("children")
+            if verbose:
 
-        if verbose:
+                print(_dict)
 
-            print(_dict)
+            _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-        _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
+            self._recursive_pop_children(children[0], _list, verbose)
 
-        _recursive_pop_children(children[0], _list, verbose)
+            self._recursive_pop_children(children[1], _list, verbose)
 
-        _recursive_pop_children(children[1], _list, verbose)
+        else:
 
-    else:
+            if verbose:
 
-        if verbose:
+                print(_dict)
 
-            print(_dict)
+            _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-        _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
+    def _fill_depth_for_terminal_nodes(self, df):
+        """Function to fill in the depth column for terminal nodes.
+
+        The json dump from xgboost does not contain this information.
+        """
+
+        for i, row in df.iterrows():
+
+            if np.isnan(row["depth"]):
+
+                if (df["yes"] == row["nodeid"]).sum() > 0:
+
+                    parent_col = "yes"
+
+                else:
+
+                    parent_col = "no"
+
+                df.at[i, "depth"] = df.loc[df[parent_col] == row["nodeid"], "depth"] + 1
+
+        df["depth"] = df["depth"].astype(int)
+
+        return df
 
 
-def _fill_depth_for_terminal_nodes(df):
-    """Function to fill in the depth column for terminal nodes.
+class TextDumpReader(DumpReader):
 
-    The json dump from xgboost does not contain this information.
-    """
-
-    for i, row in df.iterrows():
-
-        if np.isnan(row["depth"]):
-
-            if (df["yes"] == row["nodeid"]).sum() > 0:
-
-                parent_col = "yes"
-
-            else:
-
-                parent_col = "no"
-
-            df.at[i, "depth"] = df.loc[df[parent_col] == row["nodeid"], "depth"] + 1
-
-    df["depth"] = df["depth"].astype(int)
-
-    return df
+    pass
 
 
 def _reorder_tree_df(df):
