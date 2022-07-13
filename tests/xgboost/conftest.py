@@ -1,7 +1,7 @@
 import xgboost as xgb
 from sklearn.datasets import load_diabetes
 
-from tabular_trees.xgboost.parser import read_dump
+from tabular_trees.xgboost.parser import JsonDumpReader
 
 import pytest
 
@@ -42,7 +42,7 @@ def xgb_diabetes_model_parsed_trees_dataframe(tmp_path, xgb_diabetes_model):
 
     xgb_diabetes_model.dump_model(json_file, with_stats=True, dump_format="json")
 
-    trees_df = read_dump(json_file)
+    trees_df = JsonDumpReader().read_dump(json_file)
 
     return trees_df
 
@@ -60,6 +60,6 @@ def xgb_diabetes_model_parsed_trees_dataframe_no_stats(tmp_path, xgb_diabetes_mo
 
     xgb_diabetes_model.dump_model(json_file, with_stats=False, dump_format="json")
 
-    trees_df = read_dump(json_file)
+    trees_df = JsonDumpReader().read_dump(json_file)
 
     return trees_df

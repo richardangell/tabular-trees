@@ -15,9 +15,9 @@ from .trees import ParsedXGBoostTabularTrees
 
 
 class XGBoostParser:
-    """Class that dumps and xgboost Booster and then parses the dumped file."""
+    """Class that dumps an xgboost Booster then parses the dumped file."""
 
-    def __init__(self, model, dump_type="json"):
+    def __init__(self, model, dump_type="json") -> None:
 
         checks.check_type(model, xgb.core.Booster, "model")
         self.model = model
@@ -29,7 +29,7 @@ class XGBoostParser:
         self.dump_type = dump_type
 
         if dump_type == "json":
-            self.reader = JsonDumpReader()
+            self.reader: DumpReader = JsonDumpReader()
         else:
             self.reader = TextDumpReader()
 
@@ -75,7 +75,7 @@ class DumpReader(ABC):
         pass
 
     @abstractmethod
-    def read_dump(self, file: str) -> pd.DataFrame:
+    def read_dump(self, file: str) -> None:
 
         checks.check_type(file, str, "file")
         checks.check_condition(Path(file).exists(), f"{file} exists")

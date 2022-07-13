@@ -1,40 +1,77 @@
 import pandas as pd
 import tabular_trees
+import re
 
-import build_model
+import pytest
 
 
-def test_text_json_parsing_equal(tmp_path):
-    """Test that parsing an xgboost model dumped to text file and json file gives the same output."""
+class DummyDumpReader(tabular_trees.xgboost.parser.DumpReader):
+    """Dummy class inheriting from DumpReader, to test DumpReader
+    functionality."""
 
-    model = build_model.build_depth_3_model()
+    def read_dump(self, file: str) -> None:
+        """Method that simply calls the DumpReader.read_dump method."""
 
-    # filepaths to dump model to in different combinations of format (text/json) and with/without stats
-    text_dump = str(tmp_path.joinpath("dump_raw.txt"))
-    text_dump_no_stats = str(tmp_path.joinpath("dump_raw_no_stats.txt"))
-    json_dump = str(tmp_path.joinpath("dump_raw.json"))
-    json_dump_no_stats = str(tmp_path.joinpath("dump_raw_no_stats.json"))
+        return super().read_dump(file)
 
-    # dump model to files above
-    model.dump_model(text_dump, with_stats=True, dump_format="text")
-    model.dump_model(text_dump_no_stats, with_stats=False, dump_format="text")
-    model.dump_model(json_dump, with_stats=True, dump_format="json")
-    model.dump_model(json_dump_no_stats, with_stats=False, dump_format="json")
 
-    # parse dumped files
-    tree_df1 = tabular_trees.xgboost.parser._read_dump_text(
-        text_dump, return_raw_lines=False
-    )
-    tree_df2 = tabular_trees.xgboost.parser._read_dump_text(
-        text_dump_no_stats, return_raw_lines=False
-    )
-    tree_df3 = tabular_trees.xgboost.parser._read_dump_json(
-        json_dump, return_raw_lines=False
-    )
-    tree_df4 = tabular_trees.xgboost.parser._read_dump_json(
-        json_dump_no_stats, return_raw_lines=False
-    )
+class TestDumpReaderReadDump:
+    """Tests for the DumpReader.read_dump abstract method."""
 
-    # check the equivalent parsed text/json outputs are equal
-    pd.testing.assert_frame_equal(tree_df1, tree_df3)
-    pd.testing.assert_frame_equal(tree_df2, tree_df4)
+    def test_file_not_str_exception(self):
+        """Test that a TypeError is raised if file is not a str."""
+
+        dump_reader = DummyDumpReader()
+
+        with pytest.raises(
+            TypeError,
+            match="file is not in expected types <class 'str'>, got <class 'list'>",
+        ):
+
+            dump_reader.read_dump([1, 2, 3])
+
+    def test_file_does_not_exist_exception(self):
+        """Test that a ValueError is raised if file does not exist."""
+
+        dump_reader = DummyDumpReader()
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("condition: [does_not_exist.txt exists] not met"),
+        ):
+
+            dump_reader.read_dump("does_not_exist.txt")
+
+
+class TestDumpReader_Implementations:
+    """Tests for the DumpReader subclasses."""
+
+    @pytest.mark.parametrize("with_stats", [(False), (True)])
+    def test_text_json_parsing_equal(self, with_stats, tmp_path, xgb_diabetes_model):
+        """Test that parsing an xgboost model dumped to text file and json
+        file gives the same output."""
+
+        text_dump = str(tmp_path.joinpath("dump_raw.txt"))
+        json_dump = str(tmp_path.joinpath("dump_raw.json"))
+
+        xgb_diabetes_model.dump_model(
+            text_dump, with_stats=with_stats, dump_format="text"
+        )
+        xgb_diabetes_model.dump_model(
+            json_dump, with_stats=with_stats, dump_format="json"
+        )
+
+        text_parser = tabular_trees.xgboost.parser.TextDumpReader()
+        text_output = text_parser.read_dump(text_dump)
+
+        json_parser = tabular_trees.xgboost.parser.JsonDumpReader()
+        json_output = json_parser.read_dump(json_dump)
+
+        assert sorted(text_output.columns.values) == sorted(
+            json_output.columns.values
+        ), "column names are not the same between text and json outputs"
+
+        # reorder columns to be in the same order
+        text_output = text_output[json_output.columns.values]
+
+        pd.testing.assert_frame_equal(text_output, json_output)
