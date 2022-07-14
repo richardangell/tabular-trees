@@ -14,65 +14,17 @@ from .. import checks
 from .trees import ParsedXGBoostTabularTrees
 
 
-class XGBoostParser:
-    """Class that dumps an xgboost Booster then parses the dumped file."""
-
-    def __init__(self, model, dump_type="json") -> None:
-
-        checks.check_type(model, xgb.core.Booster, "model")
-        self.model = model
-
-        checks.check_type(dump_type, str, "dump_type")
-        checks.check_condition(
-            dump_type in ["json", "text"], "dump_type in ['json', 'text']"
-        )
-        self.dump_type = dump_type
-
-        if dump_type == "json":
-            self.reader: DumpReader = JsonDumpReader()
-        else:
-            self.reader = TextDumpReader()
-
-        warnings.warn(
-            "XGBoostDumpParser class is depreceated, "
-            "Booster.trees_to_dataframe is available instead",
-            FutureWarning,
-        )
-
-    def parse_model(self) -> ParsedXGBoostTabularTrees:
-        """Extract predictions for all nodes in an xgboost model.
-
-        Parameters
-        ----------
-        model : xgb.core.booster
-            Xgboost model to parse into tabular structure.
-
-        Returns
-        -------
-        tabular_trees : TabularTrees
-            Model parsed into tabular structure.
-
-        """
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-
-            tmp_model_dump = str(
-                Path(tmp_dir).joinpath(f"temp_model_dump.{self.dump_type}")
-            )
-
-            self.model.dump_model(tmp_model_dump, with_stats=True, dump_format="json")
-
-            trees_df = self.reader.read_dump(tmp_model_dump)
-
-        return ParsedXGBoostTabularTrees(trees_df)
-
-
 class DumpReader(ABC):
     """Abstract base class for parsers."""
 
     def __init__(self) -> None:
-
         pass
+
+    @classmethod
+    @property
+    @abstractmethod
+    def dump_type(cls):
+        raise NotImplementedError
 
     @abstractmethod
     def read_dump(self, file: str) -> None:
@@ -83,6 +35,8 @@ class DumpReader(ABC):
 
 class JsonDumpReader(DumpReader):
     """Class to read xgboost model (json) file dumps."""
+
+    dump_type = "json"
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Reads an xgboost model dump json file and parses it into a tabular
@@ -188,6 +142,8 @@ class JsonDumpReader(DumpReader):
 
 class TextDumpReader(DumpReader):
     """Class to read xgboost model (json) file dumps."""
+
+    dump_type = "text"
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Reads an xgboost model dump text file and parses it into a tabular structure.
@@ -308,6 +264,50 @@ class TextDumpReader(DumpReader):
         lines_df.reset_index(inplace=True, drop=True)
 
         return lines_df
+
+
+class XGBoostParser:
+    """Class that dumps an xgboost Booster then parses the dumped file."""
+
+    def __init__(
+        self, model: xgb.core.Booster, reader: DumpReader = JsonDumpReader()
+    ) -> None:
+
+        checks.check_type(model, xgb.core.Booster, "model")
+        checks.check_type(reader, DumpReader, "reader")
+
+        self.model = model
+        self.reader = reader
+
+        warnings.warn(
+            "XGBoostDumpParser class is depreceated, "
+            "Booster.trees_to_dataframe is available instead",
+            FutureWarning,
+        )
+
+    def parse_model(self) -> ParsedXGBoostTabularTrees:
+        """Extract predictions for all nodes in an xgboost model.
+
+        Returns
+        -------
+        tabular_trees : TabularTrees
+            Model parsed into tabular structure.
+
+        """
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+
+            tmp_model_dump = str(
+                Path(tmp_dir).joinpath(f"temp_model_dump.{self.reader.dump_type}")
+            )
+
+            self.model.dump_model(
+                tmp_model_dump, with_stats=True, dump_format=self.reader.dump_type
+            )
+
+            trees_df = self.reader.read_dump(tmp_model_dump)
+
+        return ParsedXGBoostTabularTrees(trees_df)
 
 
 def _derive_predictions(df):
