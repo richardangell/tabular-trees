@@ -51,6 +51,118 @@ class XGBoostTabularTrees:
 
         return self.trees.loc[self.trees["Tree"].isin(tree_indexes)].copy()
 
+    def derive_predictions(self, df):
+        """Derive predictons for all nodes in trees.
+
+        Leaf node predictions are available in the leaf column.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame output from either _read_dump_text or _read_dump_json
+            functions.
+
+        Returns
+        -------
+        pd.DataFrame
+            Input DataFrame with 'weight' (node predictions), 'H', 'G' and
+            'node_type' columns added.
+
+        """
+
+        # identify leaf and internal nodes
+        df["node_type"] = "internal"
+        df.loc[df["Split"].isnull(), "node_type"] = "leaf"
+        leaf_nodes = df["node_type"] == "leaf"
+
+        df["H"] = df["Cover"]
+        df["G"] = 0
+
+        # column to hold predictions
+        df["weight"] = 0
+        df.loc[leaf_nodes, "weight"] = df.loc[leaf_nodes, "Gain"]
+
+        df.loc[leaf_nodes, "G"] = (
+            -df.loc[leaf_nodes, "weight"] * df.loc[leaf_nodes, "H"]
+        )
+
+        df.reset_index(inplace=True, drop=True)
+
+        # propagate G up from the leaf nodes to internal nodes, for each tree
+        df_G_list = [
+            self._derive_internal_node_G(df.loc[df["Tree"] == n])
+            for n in range(self.n_trees + 1)
+        ]
+
+        # append all updated trees
+        df_G = pd.concat(df_G_list, axis=0)
+
+        internal_nodes = df_G["node_type"] == "internal"
+
+        # update weight values for internal nodes
+        df_G.loc[internal_nodes, "weight"] = (
+            -df_G.loc[internal_nodes, "G"] / df_G.loc[internal_nodes, "H"]
+        )
+
+        return df_G
+
+    def _derive_internal_node_G(self, tree_df):
+        """Function to derive predictons for internal nodes in a single tree.
+
+        This involves starting at each leaf node in the tree and propagating the
+        G value back up through the tree, adding this leaf node G to each node
+        that is travelled to.
+
+        Parameters:
+        -----------
+        tree_df : pd.DataFrame
+            Rows from corresponding to a single tree, from _derive_predictions.
+
+        Returns
+        -------
+        pd.DataFrame
+            Updated tree_df with G propagated up the tree s.t. each internal node's G value
+            is the sum of G for it's child nodes.
+
+        """
+
+        tree_df = tree_df.copy()
+
+        leaf_df = tree_df.loc[tree_df["node_type"] == "leaf"]
+
+        # loop through each leaf node
+        for i in leaf_df.index:
+
+            leaf_row = leaf_df.loc[[i]]
+            current_node = leaf_row["ID"].item()
+
+            leaf_G = leaf_row["G"].item()
+
+            # if the leaf node is not also the first node in the tree
+            if int(current_node.split("-")[1]) > 0:
+
+                # traverse the tree bottom from bottom to top and propagate the G value upwards
+                while True:
+
+                    # find parent node row
+                    parent = (tree_df["Yes"] == current_node) | (
+                        tree_df["No"] == current_node
+                    )
+
+                    # get parent node G
+                    tree_df.loc[parent, "G"] = tree_df.loc[parent, "G"] + leaf_G
+
+                    # update the current node to be the parent node
+                    leaf_row = tree_df.loc[parent]
+                    current_node = leaf_row["ID"].item()
+
+                    # if we have made it back to the top node in the tree then stop
+                    if int(current_node.split("-")[1]) == 0:
+
+                        break
+
+        return tree_df
+
 
 @dataclass
 class ParsedXGBoostTabularTrees:
