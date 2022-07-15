@@ -73,6 +73,46 @@ class TestXGBoostTabularTreesInit:
             == xgb_diabetes_model_trees_dataframe["Tree"].max()
         ), "n_trees attribute not set correctly"
 
+    def test_trees_column_order(self, xgb_diabetes_model_trees_dataframe):
+        """Test that the columns in the trees attribute are in the order of
+        REQUIRED_COLUMNS."""
+
+        wrong_order_columns = [
+            "Missing",
+            "Node",
+            "Split",
+            "ID",
+            "Feature",
+            "Tree",
+            "Yes",
+            "No",
+            "Category",
+            "Gain",
+            "Cover",
+        ]
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(
+            xgb_diabetes_model_trees_dataframe[wrong_order_columns]
+        )
+
+        assert (
+            xgboost_tabular_trees.trees.columns.to_list()
+            == xgboost_tabular_trees.REQUIRED_COLUMNS
+        ), "trees attribute columns in wrong order"
+
+    def test_trees_sorted(self, xgb_diabetes_model_trees_dataframe):
+        """Test that the trees attribute is sorted by Tree and Node columns."""
+
+        input_df = xgb_diabetes_model_trees_dataframe.copy().sort_values(
+            ["Gain", "Cover"]
+        )
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(input_df)
+
+        pd.testing.assert_frame_equal(
+            input_df.sort_values(["Tree", "Node"]), xgboost_tabular_trees.trees
+        )
+
 
 class TestXGBoostTabularTreesGetTrees:
     """Tests for the XGBoostTabularTrees.get_trees method."""
@@ -214,6 +254,70 @@ class TestParsedXGBoostTabularTreesInit:
         ):
 
             trees.ParsedXGBoostTabularTrees(tree_data.drop(columns=[missing_column]))
+
+    @pytest.mark.parametrize(
+        "tree_data_fixture_name,column_order",
+        [
+            (
+                "xgb_diabetes_model_parsed_trees_dataframe_no_stats",
+                trees.ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS,
+            ),
+            (
+                "xgb_diabetes_model_parsed_trees_dataframe",
+                trees.ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS
+                + trees.ParsedXGBoostTabularTrees.STATS_COLUMNS,
+            ),
+        ],
+    )
+    def test_trees_sorted(self, request, tree_data_fixture_name, column_order):
+        """Test that the trees attribute is sorted by tree and nodeid columns."""
+
+        tree_data = request.getfixturevalue(tree_data_fixture_name)
+
+        # set the correct column order beforehand, so only the row ordering
+        # is varying
+        tree_data = tree_data[column_order]
+
+        tree_data = tree_data.copy().sort_values(["split_condition"])
+
+        parsed_tabular_trees = trees.ParsedXGBoostTabularTrees(tree_data)
+
+        pd.testing.assert_frame_equal(
+            tree_data.sort_values(["tree", "nodeid"]), parsed_tabular_trees.trees
+        )
+
+    @pytest.mark.parametrize(
+        "tree_data_fixture_name,column_order",
+        [
+            (
+                "xgb_diabetes_model_parsed_trees_dataframe_no_stats",
+                trees.ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS,
+            ),
+            (
+                "xgb_diabetes_model_parsed_trees_dataframe",
+                trees.ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS
+                + trees.ParsedXGBoostTabularTrees.STATS_COLUMNS,
+            ),
+        ],
+    )
+    def test_column_order(self, request, tree_data_fixture_name, column_order):
+        """Test that the trees attribute columns are in the correct order."""
+
+        tree_data = request.getfixturevalue(tree_data_fixture_name)
+
+        # set the correct row order beforehand, so only the column ordering
+        # is varying
+        tree_data = tree_data.sort_values(["tree", "nodeid"])
+
+        assert (
+            tree_data.columns.values.tolist() != column_order
+        ), "tree_data columns are already in correct order"
+
+        parsed_tabular_trees = trees.ParsedXGBoostTabularTrees(tree_data)
+
+        pd.testing.assert_frame_equal(
+            tree_data[column_order], parsed_tabular_trees.trees
+        )
 
 
 class TestParsedXGBoostTabularTreesConvert:

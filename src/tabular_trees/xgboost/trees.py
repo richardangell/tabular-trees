@@ -31,9 +31,11 @@ class XGBoostTabularTrees:
         checks.check_type(self.trees, pd.DataFrame, "trees")
         checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
 
-        # reorder columns
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
         self.n_trees = int(self.trees["Tree"].max())
+
+        # reorder columns and sort
+        self.trees = self.trees[self.REQUIRED_COLUMNS]
+        self.trees = self.trees.sort_values(["Tree", "Node"])
 
     def get_trees(self, tree_indexes: list[int]):
         """Return the tabular data for specified tree(s) from model."""
@@ -209,15 +211,19 @@ class ParsedXGBoostTabularTrees:
 
         if all([column in self.trees.columns.values for column in self.STATS_COLUMNS]):
 
-            checks.check_df_columns(
-                self.trees, self.REQUIRED_BASE_COLUMNS + self.STATS_COLUMNS
-            )
+            all_columns = self.REQUIRED_BASE_COLUMNS + self.STATS_COLUMNS
+
+            checks.check_df_columns(self.trees, all_columns)
+            self.trees = self.trees[all_columns]
             self.has_stats = True
 
         else:
 
             checks.check_df_columns(self.trees, self.REQUIRED_BASE_COLUMNS)
+            self.trees = self.trees[self.REQUIRED_BASE_COLUMNS]
             self.has_stats = False
+
+        self.trees = self.trees.sort_values(["tree", "nodeid"])
 
     def convert_to_xgboost_tabular_trees(self) -> XGBoostTabularTrees:
         """Return the tree structures as XGBoostTabularTrees class.
