@@ -55,7 +55,7 @@ class XGBoostTabularTrees:
 
         return self.trees.loc[self.trees["Tree"].isin(tree_indexes)].copy()
 
-    def derive_predictions(self, df):
+    def derive_predictions(self):
         """Derive predictons for all nodes in trees.
 
         Leaf node predictions are available in the leaf column.
@@ -73,6 +73,8 @@ class XGBoostTabularTrees:
             'node_type' columns added.
 
         """
+
+        df = self.trees.copy()
 
         # identify leaf and internal nodes
         df["node_type"] = "internal"
