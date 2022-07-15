@@ -33,6 +33,8 @@ class XGBoostTabularTrees:
 
         self.n_trees = int(self.trees["Tree"].max())
 
+        self.trees = self.trees.reset_index(drop=True)
+
         # reorder columns and sort
         self.trees = self.trees[self.REQUIRED_COLUMNS]
         self.trees = self.trees.sort_values(["Tree", "Node"])
@@ -87,8 +89,6 @@ class XGBoostTabularTrees:
         df.loc[leaf_nodes, "G"] = (
             -df.loc[leaf_nodes, "weight"] * df.loc[leaf_nodes, "H"]
         )
-
-        df.reset_index(inplace=True, drop=True)
 
         # propagate G up from the leaf nodes to internal nodes, for each tree
         df_G_list = [

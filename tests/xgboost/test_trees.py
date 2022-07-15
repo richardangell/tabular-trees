@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 import re
 
@@ -112,6 +113,33 @@ class TestXGBoostTabularTreesInit:
         pd.testing.assert_frame_equal(
             input_df.sort_values(["Tree", "Node"]), xgboost_tabular_trees.trees
         )
+
+    def test_trees_index_reset(self, xgb_diabetes_model_trees_dataframe):
+        """Test that the index on trees attribute is reset."""
+
+        input_df = xgb_diabetes_model_trees_dataframe.copy()
+
+        input_df.index = [0] * input_df.shape[0]
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(input_df)
+
+        np.testing.assert_array_equal(
+            xgboost_tabular_trees.trees.index.values,
+            np.array([i for i in range(input_df.shape[0])]),
+        )
+
+
+class TestXGBoostTabularTreesDerivePredictions:
+    """Tests for the XGBoostTabularTrees.derive_predictions method."""
+
+    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
+        """Test successfull call of the derive_predictions method."""
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(
+            xgb_diabetes_model_trees_dataframe
+        )
+
+        xgboost_tabular_trees.derive_predictions()
 
 
 class TestXGBoostTabularTreesGetTrees:
