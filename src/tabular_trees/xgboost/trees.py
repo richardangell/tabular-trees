@@ -77,31 +77,24 @@ class XGBoostTabularTrees:
 
         return df
 
-    def derive_predictions(self):
-        """Derive predictons for all nodes in trees.
+    def derive_predictions(self) -> pd.DataFrame:
+        """Derive predictons for internal nodes in trees.
 
-        Leaf node predictions are available in the leaf column.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            DataFrame output from either _read_dump_text or _read_dump_json
-            functions.
+        Predictions will be available in 'weight' column in the output.
 
         Returns
         -------
         pd.DataFrame
-            Input DataFrame with 'weight' (node predictions), 'H', 'G' and
-            'node_type' columns added.
+            Tree data (trees attribute) with 'weight', 'H' and 'G' columns
+            added.
 
         """
 
         df = self.trees.copy()
 
         # identify leaf and internal nodes
-        df["node_type"] = "internal"
-        df.loc[df["Split"].isnull(), "node_type"] = "leaf"
-        leaf_nodes = df["node_type"] == "leaf"
+        leaf_nodes = df["Feature"] == "Leaf"
+        internal_nodes = ~leaf_nodes
 
         df["H"] = df["Cover"]
         df["G"] = 0
@@ -123,8 +116,6 @@ class XGBoostTabularTrees:
         # append all updated trees
         df_G = pd.concat(df_G_list, axis=0)
 
-        internal_nodes = df_G["node_type"] == "internal"
-
         # update weight values for internal nodes
         df_G.loc[internal_nodes, "weight"] = (
             -df_G.loc[internal_nodes, "G"] / df_G.loc[internal_nodes, "H"]
@@ -132,7 +123,7 @@ class XGBoostTabularTrees:
 
         return df_G
 
-    def _derive_internal_node_G(self, tree_df):
+    def _derive_internal_node_G(self, tree_df: pd.DataFrame) -> pd.DataFrame:
         """Function to derive predictons for internal nodes in a single tree.
 
         This involves starting at each leaf node in the tree and propagating the
@@ -154,7 +145,7 @@ class XGBoostTabularTrees:
 
         tree_df = tree_df.copy()
 
-        leaf_df = tree_df.loc[tree_df["node_type"] == "leaf"]
+        leaf_df = tree_df.loc[tree_df["Feature"] == "Leaf"]
 
         # loop through each leaf node
         for i in leaf_df.index:
