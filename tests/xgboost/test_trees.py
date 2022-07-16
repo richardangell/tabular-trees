@@ -141,6 +141,29 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         xgboost_tabular_trees.derive_predictions()
 
+    @pytest.mark.skip("not implemented")
+    def test_predictions_calculated_correctly(
+        self, xgb_diabetes_dmatrix, xgb_diabetes_model_trees_dataframe
+    ):
+        """Test that the derived node prediction values are correct."""
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(
+            xgb_diabetes_model_trees_dataframe
+        )
+
+        predictions = xgboost_tabular_trees.derive_predictions()
+
+        # loop through internal nodes
+        for idx in predictions.index:
+
+            if predictions.iloc[idx, "Feature"] != "Leaf":
+
+                # calculate depth
+                # get tree no
+                # build model with required number of trees with correct depth
+
+                pass
+
 
 class TestXGBoostTabularTreesGetTrees:
     """Tests for the XGBoostTabularTrees.get_trees method."""

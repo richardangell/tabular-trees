@@ -7,8 +7,8 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def xgb_diabetes_model():
-    """Build an xgboost model with 10 trees and depth 3 on the diabetes dataset."""
+def xgb_diabetes_dmatrix():
+    """Return the diabetes dataset in a single xgb.DMatrix."""
 
     data = load_diabetes()
 
@@ -16,8 +16,17 @@ def xgb_diabetes_model():
         data["data"], label=data["target"], feature_names=data["feature_names"]
     )
 
+    return xgb_data
+
+
+@pytest.fixture(scope="session")
+def xgb_diabetes_model(xgb_diabetes_dmatrix):
+    """Build an xgboost model with 10 trees and depth 3 on the diabetes dataset."""
+
     model = xgb.train(
-        params={"silent": 1, "max_depth": 3}, dtrain=xgb_data, num_boost_round=10
+        params={"silent": 1, "max_depth": 3},
+        dtrain=xgb_diabetes_dmatrix,
+        num_boost_round=10,
     )
 
     return model
