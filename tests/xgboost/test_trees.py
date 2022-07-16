@@ -25,6 +25,16 @@ class TestXGBoostTabularTreesInit:
 
             trees.XGBoostTabularTrees(12345)
 
+    def test_lambda_not_float_exception(self):
+        """Test an exception is raised if trees is not a pd.DataFrame."""
+
+        with pytest.raises(
+            TypeError,
+            match="lambda_ is not in expected types <class 'float'>, got <class 'str'>",
+        ):
+
+            trees.XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), "1")
+
     @pytest.mark.parametrize(
         "drop_columns", [(["Yes"]), (["No"]), (["Yes", "No", "Missing"])]
     )
@@ -142,14 +152,19 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         xgboost_tabular_trees.derive_predictions()
 
-    def test_predictions_calculated_correctly(
-        self, xgb_diabetes_dmatrix, xgb_diabetes_model_trees_dataframe
-    ):
+    @pytest.mark.parametrize("lambda_", [(0.0), (2.0)])
+    def test_predictions_calculated_correctly(self, lambda_, xgb_diabetes_dmatrix):
         """Test that the derived node prediction values are correct."""
 
-        xgboost_tabular_trees = trees.XGBoostTabularTrees(
-            xgb_diabetes_model_trees_dataframe
+        model_for_predictions = xgb.train(
+            params={"verbosity": 0, "max_depth": 3, "lambda": lambda_},
+            dtrain=xgb_diabetes_dmatrix,
+            num_boost_round=10,
         )
+
+        trees_data = model_for_predictions.trees_to_dataframe()
+
+        xgboost_tabular_trees = trees.XGBoostTabularTrees(trees_data, lambda_)
 
         predictions = xgboost_tabular_trees.derive_predictions()
 
@@ -169,7 +184,11 @@ class TestXGBoostTabularTreesDerivePredictions:
                 if row["Tree"] == 0:
 
                     model = xgb.train(
-                        params={"verbosity": 0, "max_depth": row["Depth"], "lambda": 0},
+                        params={
+                            "verbosity": 0,
+                            "max_depth": row["Depth"],
+                            "lambda": lambda_,
+                        },
                         dtrain=xgb_diabetes_dmatrix,
                         num_boost_round=row["Tree"] + 1,
                     )
@@ -183,14 +202,18 @@ class TestXGBoostTabularTreesDerivePredictions:
                         params={
                             "verbosity": 0,
                             "max_depth": predictions["Depth"].max(),
-                            "lambda": 0,
+                            "lambda": lambda_,
                         },
                         dtrain=xgb_diabetes_dmatrix,
                         num_boost_round=row["Tree"],
                     )
 
                     model = xgb.train(
-                        params={"verbosity": 0, "max_depth": row["Depth"], "lambda": 0},
+                        params={
+                            "verbosity": 0,
+                            "max_depth": row["Depth"],
+                            "lambda": lambda_,
+                        },
                         dtrain=xgb_diabetes_dmatrix,
                         num_boost_round=1,
                         xgb_model=model_n,

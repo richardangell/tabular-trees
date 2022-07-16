@@ -24,7 +24,7 @@ def xgb_diabetes_model(xgb_diabetes_dmatrix):
     """Build an xgboost model with 10 trees and depth 3 on the diabetes dataset."""
 
     model = xgb.train(
-        params={"verbosity": 0, "max_depth": 3, "lambda": 0},
+        params={"verbosity": 0, "max_depth": 3},
         dtrain=xgb_diabetes_dmatrix,
         num_boost_round=10,
     )

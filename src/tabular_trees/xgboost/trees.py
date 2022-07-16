@@ -10,6 +10,7 @@ class XGBoostTabularTrees:
     """Class to hold the xgboost models in tabular format."""
 
     trees: pd.DataFrame
+    lambda_: float = 1.0
     n_trees: int = field(init=False)
 
     REQUIRED_COLUMNS = [
@@ -29,6 +30,7 @@ class XGBoostTabularTrees:
     def __post_init__(self):
 
         checks.check_type(self.trees, pd.DataFrame, "trees")
+        checks.check_type(self.lambda_, float, "lambda_")
         checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
 
         self.n_trees = int(self.trees["Tree"].max())
@@ -103,8 +105,8 @@ class XGBoostTabularTrees:
         df["weight"] = 0
         df.loc[leaf_nodes, "weight"] = df.loc[leaf_nodes, "Gain"]
 
-        df.loc[leaf_nodes, "G"] = (
-            -df.loc[leaf_nodes, "weight"] * df.loc[leaf_nodes, "H"]
+        df.loc[leaf_nodes, "G"] = -df.loc[leaf_nodes, "weight"] * (
+            df.loc[leaf_nodes, "H"] + self.lambda_
         )
 
         # propagate G up from the leaf nodes to internal nodes, for each tree
@@ -117,8 +119,8 @@ class XGBoostTabularTrees:
         df_G = pd.concat(df_G_list, axis=0)
 
         # update weight values for internal nodes
-        df_G.loc[internal_nodes, "weight"] = (
-            -df_G.loc[internal_nodes, "G"] / df_G.loc[internal_nodes, "H"]
+        df_G.loc[internal_nodes, "weight"] = -df_G.loc[internal_nodes, "G"] / (
+            df_G.loc[internal_nodes, "H"] + self.lambda_
         )
 
         return df_G
