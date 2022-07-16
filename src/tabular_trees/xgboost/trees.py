@@ -151,19 +151,20 @@ class XGBoostTabularTrees:
         for i in leaf_df.index:
 
             leaf_row = leaf_df.loc[[i]]
-            current_node = leaf_row["ID"].item()
 
             leaf_G = leaf_row["G"].item()
+            current_node = leaf_row["Node"].item()
+            current_tree_node = leaf_row["ID"].item()
 
             # if the leaf node is not also the first node in the tree
-            if int(current_node.split("-")[1]) > 0:
+            if current_node > 0:
 
                 # traverse the tree bottom from bottom to top and propagate the G value upwards
                 while True:
 
                     # find parent node row
-                    parent = (tree_df["Yes"] == current_node) | (
-                        tree_df["No"] == current_node
+                    parent = (tree_df["Yes"] == current_tree_node) | (
+                        tree_df["No"] == current_tree_node
                     )
 
                     # get parent node G
@@ -171,10 +172,11 @@ class XGBoostTabularTrees:
 
                     # update the current node to be the parent node
                     leaf_row = tree_df.loc[parent]
-                    current_node = leaf_row["ID"].item()
+                    current_node = leaf_row["Node"].item()
+                    current_tree_node = leaf_row["ID"].item()
 
                     # if we have made it back to the top node in the tree then stop
-                    if int(current_node.split("-")[1]) == 0:
+                    if current_node == 0:
 
                         break
 
