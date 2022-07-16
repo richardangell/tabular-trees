@@ -33,11 +33,11 @@ class XGBoostTabularTrees:
 
         self.n_trees = int(self.trees["Tree"].max())
 
-        self.trees = self.trees.reset_index(drop=True)
-
         # reorder columns and sort
         self.trees = self.trees[self.REQUIRED_COLUMNS]
         self.trees = self.trees.sort_values(["Tree", "Node"])
+
+        self.trees = self.trees.reset_index(drop=True)
 
     def get_trees(self, tree_indexes: list[int]):
         """Return the tabular data for specified tree(s) from model."""
