@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import xgboost as xgb
 import pytest
 import re
 
@@ -141,7 +142,6 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         xgboost_tabular_trees.derive_predictions()
 
-    @pytest.mark.skip("not implemented")
     def test_predictions_calculated_correctly(
         self, xgb_diabetes_dmatrix, xgb_diabetes_model_trees_dataframe
     ):
@@ -153,16 +153,62 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         predictions = xgboost_tabular_trees.derive_predictions()
 
-        # loop through internal nodes
-        for idx in predictions.index:
+        depths = xgboost_tabular_trees.derive_depths()
 
-            if predictions.iloc[idx, "Feature"] != "Leaf":
+        predictions["Depth"] = depths["Depth"]
 
-                # calculate depth
-                # get tree no
-                # build model with required number of trees with correct depth
+        # loop through internal nodes, non-root nodes
+        for row_number in range(predictions.shape[0]):
 
-                pass
+            row = predictions.iloc[row_number]
+
+            if (row["Feature"] != "Leaf") and (row["Node"] > 0):
+
+                # build model with required number of trees and depth of the
+                # current node, so in this tree the node is a leaf node
+                if row["Tree"] == 0:
+
+                    model = xgb.train(
+                        params={"verbosity": 0, "max_depth": row["Depth"], "lambda": 0},
+                        dtrain=xgb_diabetes_dmatrix,
+                        num_boost_round=row["Tree"] + 1,
+                    )
+
+                # if the number of trees required is > 1 then build the first n - 1
+                # trees at the maximum depth, then build the last tree at the depth
+                # of the current node
+                else:
+
+                    model_n = xgb.train(
+                        params={
+                            "verbosity": 0,
+                            "max_depth": predictions["Depth"].max(),
+                            "lambda": 0,
+                        },
+                        dtrain=xgb_diabetes_dmatrix,
+                        num_boost_round=row["Tree"],
+                    )
+
+                    model = xgb.train(
+                        params={"verbosity": 0, "max_depth": row["Depth"], "lambda": 0},
+                        dtrain=xgb_diabetes_dmatrix,
+                        num_boost_round=1,
+                        xgb_model=model_n,
+                    )
+
+                model_trees = model.trees_to_dataframe()
+
+                round_to_digits = 3
+
+                derived_prediction = round(row["weight"], round_to_digits)
+                prediction_from_leaf_node = round(
+                    model_trees.loc[model_trees["ID"] == row["ID"], "Gain"].item(),
+                    round_to_digits,
+                )
+
+                assert (
+                    derived_prediction == prediction_from_leaf_node
+                ), f"""derived internal node prediction for node {row["ID"]} incorrect (rounding to 3dp)"""
 
 
 class TestXGBoostTabularTreesDeriveDepths:
