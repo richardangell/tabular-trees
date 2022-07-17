@@ -10,7 +10,15 @@ trees module
     :toctree: api/
 
     trees.TabularTrees
-    
+         
+lightgbm.trees module
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    lightgbm.trees.LightGBMTabularTrees
+
 xgboost.explainer module
 --------------------------
 

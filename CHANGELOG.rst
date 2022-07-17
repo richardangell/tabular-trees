@@ -16,6 +16,13 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
+0.2.0.dev2 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/12>`_
+---------------------------------------------------------------------------------------
+
+Added
+^^^^^
+- Added lightgbm.trees.LightGBMTabularTrees class to hold output from lgb.Booster.trees_to_dataframe
+
 0.2.0.dev1 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/11>`_
 ---------------------------------------------------------------------------------------
 

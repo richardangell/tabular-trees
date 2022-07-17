@@ -1,6 +1,16 @@
 """tabular_trees"""
 
 from ._version import __version__
-from . import xgboost
+
 from . import checks
 from . import trees
+
+try:
+    from . import lightgbm
+except ImportError:
+    pass
+
+try:
+    from . import xgboost
+except ImportError:
+    pass
