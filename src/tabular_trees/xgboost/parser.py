@@ -2,13 +2,19 @@
 
 import pandas as pd
 import numpy as np
-import xgboost as xgb
 import json
 import tempfile
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
+
+try:
+    import xgboost as xgb
+except ModuleNotFoundError as err:
+    raise ImportError(
+        "xgboost must be installed to use functionality in tab.xgboost"
+    ) from err
 
 from .. import checks
 from .trees import ParsedXGBoostTabularTrees
