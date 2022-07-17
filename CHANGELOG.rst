@@ -19,11 +19,19 @@ Each individual change should have a link to the pull request after the descript
 0.2.0.dev1 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/11>`_
 ---------------------------------------------------------------------------------------
 
+Added
+^^^^^
+
+- Added XGBoostTabularTrees to hold xgb.Booster.trees_to_dataframe output
+- Added ParsedXGBoostTabularTrees class to hold the outout of parser classes
+- Added DumpReader, JsonDumpReader, TextDumpReader classes in xgboost.parser module.
+
 Changed
 ^^^^^^^
 
 - Renamed xgb module to xgboost
 - Exclude .tox directory in bandit
+- Refactor xgboost.parser and move some functionality into xgboost.trees classes
 
 0.2.0.dev0 (unreleased) `#10 <https://github.com/richardangell/tabular-trees/pull/10>`_
 ---------------------------------------------------------------------------------------
@@ -42,7 +50,7 @@ Changed
 - Project to use pyproject.toml and flit as the build tool
 - Tox configuration
 - Source code moved to src directory
-- Package import name to ``tabular_trees``
+- Package import name to ``tabular_trees`` from ``ttrees``
 
 0.1.4 (2021-02-06)
 ------------------
