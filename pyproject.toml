@@ -25,6 +25,9 @@ name = "tabular_trees"
 xgboost = [
     "xgboost>=1.4.0"
 ]
+lightgbm = [
+    "lightgbm>=3.0.0"
+]
 test = [
     "pre-commit==2.19.0",
     "pytest==7.1.2",

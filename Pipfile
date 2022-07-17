@@ -6,12 +6,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+ipykernel = "*"
 setuptools = "*"
 pandas = ">=0.24"
 xgboost = ">=1.4.0"
 tqdm = "==4.46.1"
+lightgbm = "==3.0.0"
 tabular-trees = {editable = true, path = "."}
-ipykernel = "*"
 
 [dev-packages]
 flit = "==3.7.1"
