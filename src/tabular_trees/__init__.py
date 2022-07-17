@@ -6,6 +6,11 @@ from . import checks
 from . import trees
 
 try:
+    from . import lightgbm
+except ImportError:
+    pass
+
+try:
     from . import xgboost
 except ImportError:
     pass
