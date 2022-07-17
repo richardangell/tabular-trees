@@ -27,11 +27,21 @@ xgboost.parser module
 .. autosummary::
     :toctree: api/
 
-    xgboost.parser.parse_model
-    xgboost.parser.read_dump
-   
+    xgboost.parser.DumpReader
+    xgboost.parser.JsonDumpReader
+    xgboost.parser.TextDumpReader
+         
+xgboost.trees module
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    xgboost.trees.XGBoostTabularTrees
+    xgboost.trees.ParsedXGBoostTabularTrees
+
 xgboost.validate module
-------------------
+--------------------------
 
 .. autosummary::
     :toctree: api/
