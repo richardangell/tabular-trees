@@ -15,7 +15,7 @@ from .trees import ParsedXGBoostTabularTrees
 
 
 class DumpReader(ABC):
-    """Abstract base class for parsers."""
+    """Abstract base class for xgboost mode dump readers."""
 
     def __init__(self) -> None:
         pass
@@ -43,15 +43,15 @@ class JsonDumpReader(DumpReader):
         structure.
 
         Json file to read must be the output from xgboost.Booster.dump_model
-        with dump_format = 'json'. Note this argument was only added in 0.81
-        and the default prior to this release was dump in text format.
+        with dump_format = 'json'.
 
         Returns
         -------
-            pd.DataFrame: df with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf.
-            If the model dump file was output with with_stats = True then gain and cover columns are also
-            in the output DataFrame.
-            dict : if return_raw_lines is True then the raw contents of the json file are also returned.
+        pd.DataFrame
+            DataFrame with columns; tree, nodeid, depth, yes, no, missing,
+            split, split_condition, leaf. If the model dump file was output
+            with with_stats = True then gain and cover columns are also in
+            the output DataFrame.
 
         """
 
@@ -67,7 +67,7 @@ class JsonDumpReader(DumpReader):
 
             results_list: list[pd.DataFrame] = []
 
-            self._recursive_pop_children(_dict=j[i], _list=results_list, verbose=False)
+            self._recursive_pop_children(_dict=j[i], _list=results_list)
 
             tree_df = pd.concat(results_list, axis=0, sort=True)
 
@@ -83,39 +83,33 @@ class JsonDumpReader(DumpReader):
 
         return trees_df
 
-    def _recursive_pop_children(self, _dict, _list, verbose=False):
-        """Function to recursively extract nodes from nested structure and append to list.
+    def _recursive_pop_children(self, _dict: dict, _list: list):
+        """Function to recursively extract nodes from nested structure and
+        append to list.
 
-        Procedure is as follows;
-        - if no children item in dict, append items (in pd.DataFrame) to list
-        - or remove children item from dict, then append remaining items (in pd.DataFrame) to list
-        - then call function on left and right children.
-
+        The procedure is as follows;
+        If _dict has no childen i.e. this is a leaf node then convert the dict
+        to a DataFrame and append to _list.
+        Otherwise remove children from _dict, convert the remaining items to a
+        DataFrame and append to _list, then call function on left and right
+        children.
         """
 
         if "children" in _dict.keys():
 
             children = _dict.pop("children")
 
-            if verbose:
-
-                print(_dict)
-
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-            self._recursive_pop_children(children[0], _list, verbose)
+            self._recursive_pop_children(children[0], _list)
 
-            self._recursive_pop_children(children[1], _list, verbose)
+            self._recursive_pop_children(children[1], _list)
 
         else:
 
-            if verbose:
-
-                print(_dict)
-
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-    def _fill_depth_for_terminal_nodes(self, df):
+    def _fill_depth_for_terminal_nodes(self, df: pd.DataFrame):
         """Function to fill in the depth column for terminal nodes.
 
         The json dump from xgboost does not contain this information.
@@ -141,15 +135,17 @@ class JsonDumpReader(DumpReader):
 
 
 class TextDumpReader(DumpReader):
-    """Class to read xgboost model (json) file dumps."""
+    """Class to read xgboost model (text) file dumps."""
 
     dump_type = "text"
 
     def read_dump(self, file: str) -> pd.DataFrame:
-        """Reads an xgboost model dump text file and parses it into a tabular structure.
+        """Read an xgboost model dump text file dump and parse it into a
+        tabular structure.
 
-        Text file to read must be the output from xgboost.Booster.dump_model with dump_format = 'text'.
-        Note this argument was only added in 0.81 and text dump was the default prior to this release.
+        Text file to read must be the output from xgboost.Booster.dump_model
+        with dump_format = 'text'. Note this argument was only added in 0.81
+        and text dump was the default prior to this release.
 
         Parameters
         ----------
@@ -159,8 +155,9 @@ class TextDumpReader(DumpReader):
         Returns
         -------
         pd.DataFrame
-            DataFrame with columns; tree, nodeid, depth, yes, no, missing, split, split_condition, leaf. If
-            the model dump file was output with with_stats = True then gain and cover columns are also in
+            DataFrame with columns; tree, nodeid, depth, yes, no, missing,
+            split, split_condition, leaf. If the model dump file was output
+            with with_stats = True then gain and cover columns are also in
             the output DataFrame.
 
         """
@@ -267,7 +264,17 @@ class TextDumpReader(DumpReader):
 
 
 class XGBoostParser:
-    """Class that dumps an xgboost Booster then parses the dumped file."""
+    """Class that dumps an xgboost Booster then parses the dumped file.
+
+    Parameters
+    ----------
+    model : xgb.core.Booster
+        Model to parse trees into tabular data.
+
+    reader : DumpReader, default = JsonDumpReader()
+        Object capable of reading dumped xgboost model.
+
+    """
 
     def __init__(
         self, model: xgb.core.Booster, reader: DumpReader = JsonDumpReader()
@@ -286,13 +293,9 @@ class XGBoostParser:
         )
 
     def parse_model(self) -> ParsedXGBoostTabularTrees:
-        """Extract predictions for all nodes in an xgboost model.
+        """Dump model and then parse into tabular structure.
 
-        Returns
-        -------
-        tabular_trees : TabularTrees
-            Model parsed into tabular structure.
-
+        Tree data is returned in a ParsedXGBoostTabularTrees object.
         """
 
         with tempfile.TemporaryDirectory() as tmp_dir:

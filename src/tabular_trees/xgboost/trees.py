@@ -7,7 +7,26 @@ from .. import checks
 
 @dataclass
 class XGBoostTabularTrees:
-    """Class to hold the xgboost models in tabular format."""
+    """Class to hold the xgboost trees in tabular format.
+
+    Parameters
+    ----------
+    trees : pd.DataFrame
+        XGBoost tree data output from Booster.trees_to_dataframe.
+
+    lambda_ : float = 1.0
+        Lambda value used in the xgboost model.
+
+    alpha : float = 0.0
+        Alpha value used in the xgboost model. An exception will be raised if
+        alpha is non-zero.
+
+    Attributes
+    ----------
+    n_trees : int
+        Number of trees in the model. Indexed from 0.
+
+    """
 
     trees: pd.DataFrame
     lambda_: float = 1.0
@@ -29,6 +48,34 @@ class XGBoostTabularTrees:
     ]
 
     def __post_init__(self):
+        """Post init checks and processing.
+
+        Number of trees in the model is calculated and stored in the n_trees
+        atttribute.
+
+        Processing on the trees attribute is as follows;
+        - Columns are ordered into REQUIRED_COLUMNS order
+        - Rows are sorted by Tree and Node column
+        - The index is reset and original index dropped.
+
+        Raises
+        ------
+        TypeError
+            If self.trees is not a pd.DataFrame.
+
+        TypeError
+            If self.lambda_ is not a float.
+
+        TypeError
+            If self.alpha is not a float.
+
+        ValueError
+            If self.alpha is not 0.
+
+        ValueError
+            If REQUIRED_COLUMNS are not in self.trees.
+
+        """
 
         checks.check_type(self.trees, pd.DataFrame, "trees")
         checks.check_type(self.lambda_, float, "lambda_")
@@ -47,7 +94,14 @@ class XGBoostTabularTrees:
         self.trees = self.trees.reset_index(drop=True)
 
     def get_trees(self, tree_indexes: list[int]):
-        """Return the tabular data for specified tree(s) from model."""
+        """Return the tabular data for specified tree(s) from model.
+
+        Parameters
+        ----------
+        tree_indexes : list[int]
+            Indexes of trees to return.
+
+        """
 
         checks.check_type(tree_indexes, list, "tree_indexes")
 
@@ -62,8 +116,15 @@ class XGBoostTabularTrees:
 
         return self.trees.loc[self.trees["Tree"].isin(tree_indexes)].copy()
 
-    def derive_depths(self):
-        """Derive node depth for all nodes."""
+    def derive_depths(self) -> pd.DataFrame:
+        """Derive node depth for all nodes.
+
+        Returns
+        -------
+        pd.DataFrame
+            Tree data (trees attribute) with 'Depth' column added.
+
+        """
 
         df = self.trees.copy()
 
@@ -133,9 +194,9 @@ class XGBoostTabularTrees:
     def _derive_internal_node_G(self, tree_df: pd.DataFrame) -> pd.DataFrame:
         """Function to derive predictons for internal nodes in a single tree.
 
-        This involves starting at each leaf node in the tree and propagating the
-        G value back up through the tree, adding this leaf node G to each node
-        that is travelled to.
+        This involves starting at each leaf node in the tree and propagating
+        the G value back up through the tree, adding this leaf node G to each
+        node that is travelled to.
 
         Parameters:
         -----------
@@ -145,8 +206,8 @@ class XGBoostTabularTrees:
         Returns
         -------
         pd.DataFrame
-            Updated tree_df with G propagated up the tree s.t. each internal node's G value
-            is the sum of G for it's child nodes.
+            Updated tree_df with G propagated up the tree s.t. each internal
+            node's G value is the sum of G for it's child nodes.
 
         """
 
@@ -187,7 +248,19 @@ class XGBoostTabularTrees:
 @dataclass
 class ParsedXGBoostTabularTrees:
     """Class to hold the xgboost models that have been parsed from either text
-    or json file, in tabular format."""
+    or json file, in tabular format.
+
+    Parameters
+    ----------
+    trees : pd.DataFrame
+        XGBoost tree data parsed from the output of Booster.dump_model.
+
+    Attributes
+    ----------
+    has_stats : bool
+        Does the tree data contain 'gain' and 'cover' columns?
+
+    """
 
     trees: pd.DataFrame
     has_stats: bool = field(init=False)
