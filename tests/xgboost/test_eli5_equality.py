@@ -32,9 +32,9 @@ def test_prediction_decomposition_eqal_eli5():
         column_mapping
     )
 
-    tabular_trees_trees_df = tabular_trees.xgb.parser.parse_model(model)
+    tabular_trees_trees_df = tabular_trees.xgboost.parser.parse_model(model)
 
-    tabular_trees_decomposition = tabular_trees.xgb.explainer.decompose_prediction(
+    tabular_trees_decomposition = tabular_trees.xgboost.explainer.decompose_prediction(
         tabular_trees_trees_df.tree_data, row_data
     )
 

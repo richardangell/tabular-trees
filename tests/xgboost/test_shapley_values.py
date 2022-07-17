@@ -10,11 +10,11 @@ def test_expected_shapley_values():
 
     model = build_model.build_example_shap_model()
 
-    tree_df = tabular_trees.xgb.parser.parse_model(model)
+    tree_df = tabular_trees.xgboost.parser.parse_model(model)
 
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 
-    shapley_values = tabular_trees.xgb.explainer.shapley_values(
+    shapley_values = tabular_trees.xgboost.explainer.shapley_values(
         tree_df.tree_data, row_to_explain, False
     )
 

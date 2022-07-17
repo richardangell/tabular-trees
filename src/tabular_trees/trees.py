@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from . import helpers as h
+from . import checks
 
 
 class TabularTrees:
@@ -49,9 +49,9 @@ class TabularTrees:
 
     def __init__(self, data, package, package_version):
 
-        h.check_type(data, "data", pd.DataFrame)
-        h.check_type(package, "package", str)
-        h.check_type(package_version, "package_version", str)
+        checks.check_type(data, pd.DataFrame, "data")
+        checks.check_type(package, str, "package")
+        checks.check_type(package_version, str, "package_version")
 
         self.package = package
         self.package_version = package_version
@@ -75,7 +75,7 @@ class TabularTrees:
             If tree_df has no rows.
 
         ValueError
-            If any of the checks in h.check_df_columns fail.
+            If any of the checks in checks.check_df_columns fail.
 
         ValueError
             If there are nulls in any of the INTEGER_COLUMNS.
@@ -123,7 +123,7 @@ class TabularTrees:
         if not tree_df.shape[0] > 0:
             raise ValueError("tree data has not rows")
 
-        h.check_df_columns(
+        checks.check_df_columns(
             df=tree_df,
             expected_columns=self.REQUIRED_COLUMNS,
             allow_unspecified_columns=True,
