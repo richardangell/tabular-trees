@@ -11,6 +11,7 @@ class XGBoostTabularTrees:
 
     trees: pd.DataFrame
     lambda_: float = 1.0
+    alpha: float = 0.0
     n_trees: int = field(init=False)
 
     REQUIRED_COLUMNS = [
@@ -31,6 +32,10 @@ class XGBoostTabularTrees:
 
         checks.check_type(self.trees, pd.DataFrame, "trees")
         checks.check_type(self.lambda_, float, "lambda_")
+        checks.check_type(self.alpha, float, "alpha")
+
+        checks.check_condition(self.alpha == 0, "alpha = 0")
+
         checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
 
         self.n_trees = int(self.trees["Tree"].max())

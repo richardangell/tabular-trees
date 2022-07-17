@@ -26,7 +26,7 @@ class TestXGBoostTabularTreesInit:
             trees.XGBoostTabularTrees(12345)
 
     def test_lambda_not_float_exception(self):
-        """Test an exception is raised if trees is not a pd.DataFrame."""
+        """Test an exception is raised if lambda_ is not a float."""
 
         with pytest.raises(
             TypeError,
@@ -34,6 +34,26 @@ class TestXGBoostTabularTreesInit:
         ):
 
             trees.XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), "1")
+
+    def test_alpha_not_float_exception(self):
+        """Test an exception is raised if alpha is not a float."""
+
+        with pytest.raises(
+            TypeError,
+            match="alpha is not in expected types <class 'float'>, got <class 'str'>",
+        ):
+
+            trees.XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), 1.0, "1")
+
+    def test_alpha_not_zero_exception(self):
+        """Test an exception is raised if trees is not a pd.DataFrame."""
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("condition: [alpha = 0] not met"),
+        ):
+
+            trees.XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), 1.0, 1.0)
 
     @pytest.mark.parametrize(
         "drop_columns", [(["Yes"]), (["No"]), (["Yes", "No", "Missing"])]
