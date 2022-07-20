@@ -1,6 +1,8 @@
 """Module for tree structure classes."""
 
 import pandas as pd
+from typing import Any
+from functools import singledispatch
 from abc import ABC, abstractmethod
 
 from . import checks
@@ -74,6 +76,13 @@ class BaseModelTabularTrees(ABC):
         processing."""
 
         pass
+
+
+@singledispatch
+def export_tree_data(model: Any):
+    """Export tree data from passed model."""
+
+    raise NotImplementedError(f"model type not supported; {type(model)}")
 
 
 class TabularTrees:
