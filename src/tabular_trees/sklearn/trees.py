@@ -1,7 +1,20 @@
 import pandas as pd
+from typing import Union
 from dataclasses import dataclass
 
+try:
+    from sklearn.ensemble import (
+        HistGradientBoostingClassifier,
+        HistGradientBoostingRegressor,
+    )
+except ModuleNotFoundError as err:
+    raise ImportError(
+        "scikit-learn must be installed to use functionality in sklearn module"
+    ) from err
+
+from .. import checks
 from ..trees import BaseModelTabularTrees
+from ..trees import export_tree_data
 
 
 @dataclass
@@ -43,3 +56,37 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         """No model specific post init processing."""
 
         pass
+
+
+@export_tree_data.register(HistGradientBoostingClassifier)
+@export_tree_data.register(HistGradientBoostingRegressor)
+def export_tree_data__hist_gradient_boosting_model(
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+) -> ScikitLearnHistTabularTrees:
+    """Export tree data from HistGradientBoostingRegressor or Classifier object."""
+
+    checks.check_type(
+        model, (HistGradientBoostingClassifier, HistGradientBoostingRegressor), "model"
+    )
+
+    if not model._is_fitted():
+        raise ValueError("model is not fitted, cannot export trees")
+
+    if len(model._predictors[0]) > 1:
+        raise NotImplementedError("model with multiple responses not supported")
+
+    tree_data_list = []
+
+    for tree_no in range(model.n_iter_):
+
+        tree_df = pd.DataFrame(model._predictors[tree_no][0].nodes)
+
+        tree_df["tree"] = tree_no
+
+        tree_df = tree_df.reset_index().rename(columns={"index": "node"})
+
+        tree_data_list.append(tree_df)
+
+    tree_data = pd.concat(tree_data_list, axis=0)
+
+    return ScikitLearnHistTabularTrees(tree_data)
