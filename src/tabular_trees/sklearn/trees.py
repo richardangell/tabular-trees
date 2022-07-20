@@ -1,11 +1,11 @@
 import pandas as pd
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from .. import checks
+from ..trees import BaseModelTabularTrees
 
 
 @dataclass
-class ScikitLearnHistTabularTrees:
+class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
     """Class to hold the scikit-learn HistGradientBoosting trees in tabular
     format.
 
@@ -15,15 +15,9 @@ class ScikitLearnHistTabularTrees:
         HistGradientBoostingRegressor or Classifier tree data extracted from
         ._predictors attribute.
 
-    Attributes
-    ----------
-    n_trees : int
-        Number of trees in the model. Indexed from 0.
-
     """
 
     trees: pd.DataFrame
-    n_trees: int = field(init=False)
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -43,34 +37,9 @@ class ScikitLearnHistTabularTrees:
         "bitset_idx",
     ]
 
-    def __post_init__(self):
-        """Post init checks and processing.
+    SORT_BY_COLUMNS = ["tree", "node"]
 
-        Number of trees in the model is calculated and stored in the n_trees
-        atttribute.
+    def __post__post__init__(self) -> None:
+        """No model specific post init processing."""
 
-        Processing on the trees attribute is as follows;
-        - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by tree and node columns
-        - The index is reset and original index dropped.
-
-        Raises
-        ------
-        TypeError
-            If self.trees is not a pd.DataFrame.
-
-        ValueError
-            If REQUIRED_COLUMNS are not in self.trees.
-
-        """
-
-        checks.check_type(self.trees, pd.DataFrame, "trees")
-        checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
-
-        self.n_trees = int(self.trees["tree"].max())
-
-        # reorder columns and sort
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
-        self.trees = self.trees.sort_values(["tree", "node"])
-
-        self.trees = self.trees.reset_index(drop=True)
+        pass
