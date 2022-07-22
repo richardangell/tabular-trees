@@ -54,9 +54,11 @@ class TestLightGBMTabularTreesInit:
             getattr(LightGBMTabularTrees, attribute_name) == expected_value
         ), f"{attribute_name} not expected on LightGBMTabularTrees class"
 
+        tabular_trees = LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe)
+
         assert (
             getattr(
-                LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe),
+                tabular_trees,
                 attribute_name,
             )
             == expected_value
