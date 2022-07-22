@@ -59,8 +59,19 @@ class BaseModelTabularTrees(ABC):
 
         """
 
+        if not hasattr(self, "trees"):
+            raise AttributeError("trees attribute not set")
+
         checks.check_type(self.trees, pd.DataFrame, "trees")
+        checks.check_type(self.REQUIRED_COLUMNS, list, "REQUIRED_COLUMNS")
+        checks.check_type(self.SORT_BY_COLUMNS, list, "SORT_BY_COLUMNS")
+
         checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
+
+        checks.check_condition(
+            all([column in self.REQUIRED_COLUMNS for column in self.SORT_BY_COLUMNS]),
+            "SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS",
+        )
 
         # reorder columns and sort
         self.trees = self.trees[self.REQUIRED_COLUMNS]
@@ -68,10 +79,10 @@ class BaseModelTabularTrees(ABC):
 
         self.trees = self.trees.reset_index(drop=True)
 
-        self.__post__post__init__()
+        self.__post_post_init__()
 
     @abstractmethod
-    def __post__post__init__(self):
+    def __post_post_init__(self):
         """Method to be called at the end of __post_init__ for model specific
         processing."""
 
