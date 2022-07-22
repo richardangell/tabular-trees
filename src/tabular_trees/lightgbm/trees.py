@@ -37,7 +37,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
     SORT_BY_COLUMNS = ["tree_index", "node_depth", "node_index"]
 
-    def __post__post__init__(self) -> None:
+    def __post_post_init__(self) -> None:
         """No model specific post init processing."""
 
         pass

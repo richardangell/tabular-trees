@@ -52,7 +52,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 
     SORT_BY_COLUMNS = ["tree", "node"]
 
-    def __post__post__init__(self) -> None:
+    def __post_post_init__(self) -> None:
         """No model specific post init processing."""
 
         pass
