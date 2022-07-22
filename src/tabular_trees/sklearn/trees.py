@@ -63,7 +63,14 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 def export_tree_data__hist_gradient_boosting_model(
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
 ) -> ScikitLearnHistTabularTrees:
-    """Export tree data from HistGradientBoostingRegressor or Classifier object."""
+    """Export tree data from HistGradientBoostingRegressor or Classifier object.
+
+    Parameters
+    ----------
+    model : Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+        Model to export tree data from.
+
+    """
 
     checks.check_type(
         model, (HistGradientBoostingClassifier, HistGradientBoostingRegressor), "model"
@@ -74,6 +81,24 @@ def export_tree_data__hist_gradient_boosting_model(
 
     if len(model._predictors[0]) > 1:
         raise NotImplementedError("model with multiple responses not supported")
+
+    tree_data = _extract_hist_gbm_tree_data(model)
+
+    return ScikitLearnHistTabularTrees(tree_data)
+
+
+def _extract_hist_gbm_tree_data(
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+) -> pd.DataFrame:
+    """Extract tree data from _predictors objects in HistGradientBoostingClassifier
+    or HistGradientBoostingRegressor model.
+
+    Parameters
+    ----------
+    model : Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+        Model to extract tree data from.
+
+    """
 
     tree_data_list = []
 
@@ -89,4 +114,4 @@ def export_tree_data__hist_gradient_boosting_model(
 
     tree_data = pd.concat(tree_data_list, axis=0)
 
-    return ScikitLearnHistTabularTrees(tree_data)
+    return tree_data
