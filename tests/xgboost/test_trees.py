@@ -322,69 +322,6 @@ class TestXGBoostTabularTreesDeriveDepths:
         pd.testing.assert_frame_equal(derived_depths, tree_structure)
 
 
-class TestXGBoostTabularTreesGetTrees:
-    """Tests for the XGBoostTabularTrees.get_trees method."""
-
-    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test successfull initialisation of the XGBoostTabularTrees class."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        xgboost_tabular_trees.get_trees([0, 1, 2, 5, 9])
-
-    @pytest.mark.parametrize(
-        "tree_indexes,exception,text",
-        [
-            (
-                [0, 1, "abc", 9],
-                TypeError,
-                re.escape(
-                    "tree_indexes[2] is not in expected types <class 'int'>, got <class 'str'>"
-                ),
-            ),
-            (
-                [-1, 0, 1],
-                ValueError,
-                re.escape("condition: [tree_indexes[0] >= 0] not met"),
-            ),
-            (
-                [0, 1, 5, 10],
-                ValueError,
-                re.escape(
-                    "condition: [tree_indexes[3] in range for number of trees (9)] not met"
-                ),
-            ),
-        ],
-    )
-    def test_trees_non_integer_exception(
-        self, tree_indexes, exception, text, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test the correct exception is raised if tree_indexes arg is not in
-        the correct format."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        with pytest.raises(exception, match=text):
-
-            xgboost_tabular_trees.get_trees(tree_indexes)
-
-    @pytest.mark.parametrize("tree_indexes", [([0]), ([0, 1]), ([2, 3, 9])])
-    def test_correct_trees_returned(
-        self, tree_indexes, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test that the correct rows are returned when get_trees is called."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        expected = xgb_diabetes_model_trees_dataframe.loc[
-            xgb_diabetes_model_trees_dataframe["Tree"].isin(tree_indexes)
-        ]
-
-        result = xgboost_tabular_trees.get_trees(tree_indexes)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-
 class TestParsedXGBoostTabularTreesInit:
     """Tests for the ParsedXGBoostTabularTrees.__init__ method."""
 

@@ -70,31 +70,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         checks.check_condition(self.alpha == 0, "alpha = 0")
 
-    def get_trees(self, tree_indexes: list[int]):
-        """Return the tabular data for specified tree(s) from model.
-
-        Parameters
-        ----------
-        tree_indexes : list[int]
-            Indexes of trees to return.
-
-        """
-
-        checks.check_type(tree_indexes, list, "tree_indexes")
-
-        n_trees = int(self.trees["Tree"].max())
-
-        for i, tree_index in enumerate(tree_indexes):
-
-            checks.check_type(tree_index, int, f"tree_indexes[{i}]")
-            checks.check_condition(tree_index >= 0, f"tree_indexes[{i}] >= 0")
-            checks.check_condition(
-                tree_index <= n_trees,
-                f"""tree_indexes[{i}] in range for number of trees ({n_trees})""",
-            )
-
-        return self.trees.loc[self.trees["Tree"].isin(tree_indexes)].copy()
-
     def derive_depths(self) -> pd.DataFrame:
         """Derive node depth for all nodes.
 
