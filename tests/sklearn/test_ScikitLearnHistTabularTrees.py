@@ -4,10 +4,10 @@ from tabular_trees.trees import BaseModelTabularTrees
 from tabular_trees.sklearn.trees import ScikitLearnHistTabularTrees
 
 
-def test_successfull_call(sklearn_diabetes_model_trees_dataframe):
+def test_successfull_call(sklearn_hist_gbm_trees_dataframe):
     """Test successfull initialisation of the ScikitLearnHistTabularTrees class."""
 
-    ScikitLearnHistTabularTrees(sklearn_diabetes_model_trees_dataframe)
+    ScikitLearnHistTabularTrees(sklearn_hist_gbm_trees_dataframe)
 
 
 def test_inheritance():
@@ -45,7 +45,7 @@ def test_inheritance():
     ],
 )
 def test_sort_by_columns(
-    attribute_name, expected_value, sklearn_diabetes_model_trees_dataframe
+    attribute_name, expected_value, sklearn_hist_gbm_trees_dataframe
 ):
     """Test column related attributes are set as expected."""
 
@@ -53,7 +53,7 @@ def test_sort_by_columns(
         getattr(ScikitLearnHistTabularTrees, attribute_name) == expected_value
     ), f"{attribute_name} not expected on ScikitLearnHistTabularTrees class"
 
-    tabular_trees = ScikitLearnHistTabularTrees(sklearn_diabetes_model_trees_dataframe)
+    tabular_trees = ScikitLearnHistTabularTrees(sklearn_hist_gbm_trees_dataframe)
 
     assert (
         getattr(
@@ -64,11 +64,11 @@ def test_sort_by_columns(
     ), f"{attribute_name} not expected on ScikitLearnHistTabularTrees object after initialisation"
 
 
-def test_trees_not_same_object(sklearn_diabetes_model_trees_dataframe):
+def test_trees_not_same_object(sklearn_hist_gbm_trees_dataframe):
     """Test the trees attribute is not the same object as that passed into
     the init method."""
 
-    input_df = sklearn_diabetes_model_trees_dataframe.copy()
+    input_df = sklearn_hist_gbm_trees_dataframe.copy()
 
     tabular_trees = ScikitLearnHistTabularTrees(input_df)
 

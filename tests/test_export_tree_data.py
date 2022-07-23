@@ -4,10 +4,10 @@ from tabular_trees.trees import export_tree_data
 from tabular_trees.sklearn.trees import ScikitLearnHistTabularTrees
 
 
-def test_successful_call(sklearn_diabetes_model):
+def test_successful_call(sklearn_diabetes_hist_gbr):
     """Test a successful call to export tree data."""
 
-    export_tree_data(sklearn_diabetes_model)
+    export_tree_data(sklearn_diabetes_hist_gbr)
 
 
 def test_non_supported_type_exception():
@@ -24,7 +24,7 @@ def test_non_supported_type_exception():
 @pytest.mark.parametrize(
     "model_fixture_name,expected_type",
     [
-        ("sklearn_diabetes_model", ScikitLearnHistTabularTrees),
+        ("sklearn_diabetes_hist_gbr", ScikitLearnHistTabularTrees),
         ("sklearn_breast_cancer_model", ScikitLearnHistTabularTrees),
     ],
 )

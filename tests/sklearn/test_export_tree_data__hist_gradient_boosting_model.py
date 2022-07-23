@@ -5,10 +5,10 @@ import pandas as pd
 from tabular_trees.sklearn import trees
 
 
-def test_successful_call(sklearn_diabetes_model):
+def test_successful_call(sklearn_diabetes_hist_gbr):
     """Test a successful call to export_tree_data__hist_gradient_boosting_model."""
 
-    trees.export_tree_data__hist_gradient_boosting_model(sklearn_diabetes_model)
+    trees.export_tree_data__hist_gradient_boosting_model(sklearn_diabetes_hist_gbr)
 
 
 def test_model_not_correct_type_exception():
@@ -37,7 +37,7 @@ def test_multiple_responses_exception(sklearn_iris_model):
         trees.export_tree_data__hist_gradient_boosting_model(sklearn_iris_model)
 
 
-def test_output(mocker, sklearn_diabetes_model):
+def test_output(mocker, sklearn_diabetes_hist_gbr):
     """Test that the output of the function is a ScikitLearnHistTabularTrees
     object with the output from _extract_hist_gbm_tree_data."""
 
@@ -67,7 +67,7 @@ def test_output(mocker, sklearn_diabetes_model):
     )
 
     exported_trees = trees.export_tree_data__hist_gradient_boosting_model(
-        sklearn_diabetes_model
+        sklearn_diabetes_hist_gbr
     )
 
     assert (
