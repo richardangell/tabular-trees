@@ -75,21 +75,11 @@ class TestXGBoostTabularTreesInit:
             input_df
         ), "trees attribute is the same object as passed into initialisation"
 
-    def test_n_trees_set(self, xgb_diabetes_model_trees_dataframe):
-        """Test the n_trees attribute is set to the correct value."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        assert (
-            xgboost_tabular_trees.n_trees
-            == xgb_diabetes_model_trees_dataframe["Tree"].max()
-        ), "n_trees attribute not set correctly"
-
 
 class TestXGBoostTabularTreesPostPostInit:
     """Tests for the XGBoostTabularTrees.__post_post_init__ method."""
 
-    def test_lambda_not_float_exception(self):
+    def test_lambda_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if lambda_ is not a float."""
 
         with pytest.raises(
@@ -97,9 +87,9 @@ class TestXGBoostTabularTreesPostPostInit:
             match="lambda_ is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), "1")
+            XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe, lambda_="1")
 
-    def test_alpha_not_float_exception(self):
+    def test_alpha_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if alpha is not a float."""
 
         with pytest.raises(
@@ -107,9 +97,11 @@ class TestXGBoostTabularTreesPostPostInit:
             match="alpha is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), 1.0, "1")
+            XGBoostTabularTrees(
+                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha="1"
+            )
 
-    def test_alpha_not_zero_exception(self):
+    def test_alpha_not_zero_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if trees is not a pd.DataFrame."""
 
         with pytest.raises(
@@ -117,7 +109,9 @@ class TestXGBoostTabularTreesPostPostInit:
             match=re.escape("condition: [alpha = 0] not met"),
         ):
 
-            XGBoostTabularTrees(pd.DataFrame({"a": [1, 2]}), 1.0, 1.0)
+            XGBoostTabularTrees(
+                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha=1.0
+            )
 
 
 class TestXGBoostTabularTreesDerivePredictions:
@@ -399,133 +393,130 @@ class TestParsedXGBoostTabularTreesInit:
 
         ParsedXGBoostTabularTrees(xgb_diabetes_model_parsed_trees_dataframe)
 
-    def test_has_stats_attribute_true(self, xgb_diabetes_model_parsed_trees_dataframe):
-        """Test the has_stats attribute is True if cover and gain are present
-        in the tree data."""
+    def test_inheritance(self):
+        """Test that ParsedXGBoostTabularTrees inherits from BaseModelTabularTrees."""
 
+        assert (
+            ParsedXGBoostTabularTrees.__mro__[1] is BaseModelTabularTrees
+        ), "ParsedXGBoostTabularTrees does not inherit from BaseModelTabularTrees"
+
+    @pytest.mark.parametrize(
+        "attribute_name,expected_value",
+        [
+            ("SORT_BY_COLUMNS", ["tree", "nodeid"]),
+            (
+                "REQUIRED_COLUMNS",
+                [
+                    "tree",
+                    "nodeid",
+                    "depth",
+                    "yes",
+                    "no",
+                    "missing",
+                    "split",
+                    "split_condition",
+                    "leaf",
+                    "gain",
+                    "cover",
+                ],
+            ),
+            ("STATS_COLUMNS", ["gain", "cover"]),
+            (
+                "COLUMNS_MAPPING",
+                {
+                    "tree": "Tree",
+                    "nodeid": "Node",
+                    "yes": "Yes",
+                    "no": "No",
+                    "missing": "Missing",
+                    "split": "Feature",
+                    "split_condition": "Split",
+                    "gain": "Gain",
+                    "cover": "Cover",
+                },
+            ),
+        ],
+    )
+    def test_column_attributes(
+        self, attribute_name, expected_value, xgb_diabetes_model_parsed_trees_dataframe
+    ):
+        """Test column related attributes are set as expected."""
+
+        assert (
+            getattr(ParsedXGBoostTabularTrees, attribute_name) == expected_value
+        ), f"{attribute_name} not expected on ParsedXGBoostTabularTrees class"
+
+        tabular_trees = ParsedXGBoostTabularTrees(
+            xgb_diabetes_model_parsed_trees_dataframe
+        )
+
+        assert (
+            getattr(
+                tabular_trees,
+                attribute_name,
+            )
+            == expected_value
+        ), f"{attribute_name} not expected on XGBoostTabularTrees object after initialisation"
+
+    def test_trees_not_same_object(self, xgb_diabetes_model_parsed_trees_dataframe):
+        """Test the trees attribute is not the same object as that passed into
+        the init method."""
+
+        input_df = xgb_diabetes_model_parsed_trees_dataframe.copy()
+
+        tabular_trees = ParsedXGBoostTabularTrees(input_df)
+
+        assert id(tabular_trees.trees) != id(
+            input_df
+        ), "trees attribute is the same object as passed into initialisation"
+
+
+class TestParsedXGBoostTabularTreesPostInit:
+    """Tests for the ParsedXGBoostTabularTrees.__post_init__ method."""
+
+    def test_exception_if_no_stats(
+        self, xgb_diabetes_model_parsed_trees_dataframe_no_stats
+    ):
+        """Test a ValueError is raised if convert_to_xgboost_tabular_trees is
+        called when the tree data does not have cover and gain columns."""
+
+        expected_exception_message = (
+            "Cannot create ParsedXGBoostTabularTrees object unless statistics"
+            " are output. Rerun dump_model with with_stats = True."
+        )
+
+        with pytest.raises(ValueError, match=expected_exception_message):
+
+            ParsedXGBoostTabularTrees(
+                xgb_diabetes_model_parsed_trees_dataframe_no_stats
+            )
+
+    def test_super_post_init_called(
+        self, mocker, xgb_diabetes_model_parsed_trees_dataframe
+    ):
+        """Test that BaseModelTabularTrees.__post_init__ method is called."""
+
+        # initialise object then overwrite trees attribute with data that does
+        # not contain the stats columns
         parsed_tabular_trees = ParsedXGBoostTabularTrees(
             xgb_diabetes_model_parsed_trees_dataframe
         )
 
-        assert "gain" in xgb_diabetes_model_parsed_trees_dataframe.columns.values
-        assert "cover" in xgb_diabetes_model_parsed_trees_dataframe.columns.values
+        mocked = mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        parsed_tabular_trees.__post_init__()
 
         assert (
-            parsed_tabular_trees.has_stats
-        ), "has_stats not set to True when gain and cover are in the tree data"
-
-    def test_has_stats_attribute_false(
-        self, xgb_diabetes_model_parsed_trees_dataframe_no_stats
-    ):
-        """Test the has_stats attribute is False if cover and gain are not
-        present in the tree data."""
-
-        parsed_tabular_trees = ParsedXGBoostTabularTrees(
-            xgb_diabetes_model_parsed_trees_dataframe_no_stats
-        )
+            mocked.call_count == 1
+        ), "BaseModelTabularTrees.__post_init__ not called when ParsedXGBoostTabularTrees.__post_init__ runs"
 
         assert (
-            "gain"
-            not in xgb_diabetes_model_parsed_trees_dataframe_no_stats.columns.values
-        )
-        assert (
-            "cover"
-            not in xgb_diabetes_model_parsed_trees_dataframe_no_stats.columns.values
-        )
+            mocked.call_args_list[0][0] == ()
+        ), "positional args in BaseModelTabularTrees.__post_init__ call not correct"
 
         assert (
-            not parsed_tabular_trees.has_stats
-        ), "has_stats not set to False when gain and cover are in the tree data"
-
-    @pytest.mark.parametrize(
-        "tree_data_fixture_name",
-        [
-            ("xgb_diabetes_model_parsed_trees_dataframe_no_stats"),
-            ("xgb_diabetes_model_parsed_trees_dataframe"),
-        ],
-    )
-    @pytest.mark.parametrize(
-        "missing_column",
-        [col for col in ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS],
-    )
-    def test_required_columns_not_present_exception(
-        self, request, missing_column, tree_data_fixture_name
-    ):
-        """Test that if the REQUIRED_BASE_COLUMNS are not present in tree data
-        then an exception is raised."""
-
-        tree_data = request.getfixturevalue(tree_data_fixture_name)
-
-        with pytest.raises(
-            ValueError,
-            match=re.escape(f"expected columns not in df; ['{missing_column}']"),
-        ):
-
-            ParsedXGBoostTabularTrees(tree_data.drop(columns=[missing_column]))
-
-    @pytest.mark.parametrize(
-        "tree_data_fixture_name,column_order",
-        [
-            (
-                "xgb_diabetes_model_parsed_trees_dataframe_no_stats",
-                ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS,
-            ),
-            (
-                "xgb_diabetes_model_parsed_trees_dataframe",
-                ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS
-                + ParsedXGBoostTabularTrees.STATS_COLUMNS,
-            ),
-        ],
-    )
-    def test_trees_sorted(self, request, tree_data_fixture_name, column_order):
-        """Test that the trees attribute is sorted by tree and nodeid columns."""
-
-        tree_data = request.getfixturevalue(tree_data_fixture_name)
-
-        # set the correct column order beforehand, so only the row ordering
-        # is varying
-        tree_data = tree_data[column_order]
-
-        tree_data = tree_data.copy().sort_values(["split_condition"])
-
-        parsed_tabular_trees = ParsedXGBoostTabularTrees(tree_data)
-
-        pd.testing.assert_frame_equal(
-            tree_data.sort_values(["tree", "nodeid"]), parsed_tabular_trees.trees
-        )
-
-    @pytest.mark.parametrize(
-        "tree_data_fixture_name,column_order",
-        [
-            (
-                "xgb_diabetes_model_parsed_trees_dataframe_no_stats",
-                ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS,
-            ),
-            (
-                "xgb_diabetes_model_parsed_trees_dataframe",
-                ParsedXGBoostTabularTrees.REQUIRED_BASE_COLUMNS
-                + ParsedXGBoostTabularTrees.STATS_COLUMNS,
-            ),
-        ],
-    )
-    def test_column_order(self, request, tree_data_fixture_name, column_order):
-        """Test that the trees attribute columns are in the correct order."""
-
-        tree_data = request.getfixturevalue(tree_data_fixture_name)
-
-        # set the correct row order beforehand, so only the column ordering
-        # is varying
-        tree_data = tree_data.sort_values(["tree", "nodeid"])
-
-        assert (
-            tree_data.columns.values.tolist() != column_order
-        ), "tree_data columns are already in correct order"
-
-        parsed_tabular_trees = ParsedXGBoostTabularTrees(tree_data)
-
-        pd.testing.assert_frame_equal(
-            tree_data[column_order], parsed_tabular_trees.trees
-        )
+            mocked.call_args_list[0][1] == {}
+        ), "keyword args in BaseModelTabularTrees.__post_init__ call not correct"
 
 
 class TestParsedXGBoostTabularTreesConvert:
@@ -539,25 +530,6 @@ class TestParsedXGBoostTabularTreesConvert:
         )
 
         parsed_tabular_trees.convert_to_xgboost_tabular_trees()
-
-    def test_exception_if_no_stats(
-        self, xgb_diabetes_model_parsed_trees_dataframe_no_stats
-    ):
-        """Test a ValueError is raised if convert_to_xgboost_tabular_trees is
-        called when the tree data does not have cover and gain columns."""
-
-        parsed_tabular_trees = ParsedXGBoostTabularTrees(
-            xgb_diabetes_model_parsed_trees_dataframe_no_stats
-        )
-
-        expected_exception_message = (
-            "Cannot convert to XGBoostTabularTrees class unless statistics"
-            " are output. Rerun dump_model with with_stats = True."
-        )
-
-        with pytest.raises(ValueError, match=expected_exception_message):
-
-            parsed_tabular_trees.convert_to_xgboost_tabular_trees()
 
     def test_output_same_format_as_xgboost(
         self,
