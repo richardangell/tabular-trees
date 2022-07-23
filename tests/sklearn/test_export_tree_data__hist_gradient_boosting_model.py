@@ -26,7 +26,7 @@ def test_model_not_correct_type_exception():
         trees.export_tree_data__hist_gradient_boosting_model(["a", "b"])
 
 
-def test_multiple_responses_exception(sklearn_iris_model):
+def test_multiple_responses_exception(sklearn_iris_hist_gbc):
     """Test a NotImplementedError is raised if the model passed has multiple
     responses e.g. multiclass classification."""
 
@@ -34,7 +34,7 @@ def test_multiple_responses_exception(sklearn_iris_model):
         NotImplementedError, match="model with multiple responses not supported"
     ):
 
-        trees.export_tree_data__hist_gradient_boosting_model(sklearn_iris_model)
+        trees.export_tree_data__hist_gradient_boosting_model(sklearn_iris_hist_gbc)
 
 
 def test_output(mocker, sklearn_diabetes_hist_gbr):
