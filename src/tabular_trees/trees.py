@@ -81,7 +81,6 @@ class BaseModelTabularTrees(ABC):
 
         self.__post_post_init__()
 
-    @abstractmethod
     def __post_post_init__(self):
         """Method to be called at the end of __post_init__ for model specific
         processing."""
