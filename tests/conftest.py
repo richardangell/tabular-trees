@@ -5,6 +5,7 @@ from sklearn.ensemble import (
     HistGradientBoostingRegressor,
     HistGradientBoostingClassifier,
     GradientBoostingRegressor,
+    GradientBoostingClassifier,
 )
 
 
@@ -60,11 +61,23 @@ def sklearn_diabetes_gbr(diabetes_data):
 
 
 @pytest.fixture(scope="session")
-def sklearn_breast_cancer_model(breast_cancer_data):
+def sklearn_breast_cancer_hist_gbc(breast_cancer_data):
     """Build an sklearn HistGradientBoostingClassifier with 10 trees and depth
     3 on the breast cancer dataset."""
 
     model = HistGradientBoostingClassifier(max_iter=10, max_depth=3)
+
+    model.fit(breast_cancer_data["data"], breast_cancer_data["target"])
+
+    return model
+
+
+@pytest.fixture(scope="session")
+def sklearn_breast_cancer_gbc(breast_cancer_data):
+    """Build an sklearn GradientBoostingClassifier with 10 trees and depth
+    3 on the breast cancer dataset."""
+
+    model = GradientBoostingClassifier(n_estimators=10, max_depth=3)
 
     model.fit(breast_cancer_data["data"], breast_cancer_data["target"])
 

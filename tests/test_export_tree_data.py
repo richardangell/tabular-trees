@@ -1,7 +1,10 @@
 import pytest
 
 from tabular_trees.trees import export_tree_data
-from tabular_trees.sklearn.trees import ScikitLearnHistTabularTrees
+from tabular_trees.sklearn.trees import (
+    ScikitLearnHistTabularTrees,
+    ScikitLearnTabularTrees,
+)
 
 
 def test_successful_call(sklearn_diabetes_hist_gbr):
@@ -25,7 +28,9 @@ def test_non_supported_type_exception():
     "model_fixture_name,expected_type",
     [
         ("sklearn_diabetes_hist_gbr", ScikitLearnHistTabularTrees),
-        ("sklearn_breast_cancer_model", ScikitLearnHistTabularTrees),
+        ("sklearn_breast_cancer_hist_gbc", ScikitLearnHistTabularTrees),
+        ("sklearn_diabetes_gbr", ScikitLearnTabularTrees),
+        ("sklearn_breast_cancer_gbc", ScikitLearnTabularTrees),
     ],
 )
 def test_model_specific_function_dispatch(request, model_fixture_name, expected_type):
