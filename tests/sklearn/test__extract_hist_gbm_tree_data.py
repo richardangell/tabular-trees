@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pytest
 from collections import namedtuple
 
 from tabular_trees.sklearn import trees
@@ -11,7 +12,7 @@ def test_successful_call(sklearn_diabetes_hist_gbr):
     trees._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbr)
 
 
-def test_output():
+def test_output_approach():
     """Test the output from _extract_hist_gbm_tree_data is correct."""
 
     DummyNodes = namedtuple("DummyNodes", ["nodes"])
@@ -55,3 +56,10 @@ def test_output():
     )
 
     pd.testing.assert_frame_equal(results, expected_results)
+
+
+@pytest.mark.skip(reason="not implemented")
+def test_output_values():
+    """Test that the values output are correct for a simple, known tree."""
+
+    pass
