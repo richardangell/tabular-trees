@@ -16,6 +16,13 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
+0.2.0.dev4 (unreleased) `#14 <https://github.com/richardangell/tabular-trees/pull/14>`_
+---------------------------------------------------------------------------------------
+
+Changed
+^^^^^^^
+- Update xgboost.trees.XGBoostTabularTrees and ParsedXGBoostTabularTrees to inherit from trees.BaseModelTabularTrees
+
 0.2.0.dev3 (unreleased) `#13 <https://github.com/richardangell/tabular-trees/pull/13>`_
 ---------------------------------------------------------------------------------------
 
