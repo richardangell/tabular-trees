@@ -147,6 +147,31 @@ class TestXGBoostTabularTreesPostInit:
             mocked.call_args_list[0][1] == {}
         ), "keyword args in BaseModelTabularTrees.__post_init__ call not correct"
 
+    def test_trees_attribute_updated(self, mocker, xgb_diabetes_model_trees_dataframe):
+        """Test the trees attribute is updated with the output from derive_predictions."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        derive_predictions_output = 0
+
+        # mock derive_predictions to set return value
+        mocker.patch.object(
+            XGBoostTabularTrees,
+            "derive_predictions",
+            return_value=derive_predictions_output,
+        )
+
+        # mock __post_init__ so it does nothing when called
+        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        assert type(tabular_trees.trees) != type(derive_predictions_output)
+
+        tabular_trees.__post_init__()
+
+        assert (
+            tabular_trees.trees == derive_predictions_output
+        ), "trees attribute not updated with the output from derive_predictions"
+
 
 class TestXGBoostTabularTreesDerivePredictions:
     """Tests for the XGBoostTabularTrees.derive_predictions method."""
@@ -162,6 +187,31 @@ class TestXGBoostTabularTreesDerivePredictions:
     def test_predictions_calculated_correctly(self, lambda_, xgb_diabetes_dmatrix):
         """Test that the derived node prediction values are correct."""
 
+        def derive_depths(df) -> pd.DataFrame:
+            """Derive node depth for all nodes.
+            Returns
+            -------
+            pd.DataFrame
+                Tree data (trees attribute) with 'Depth' column added.
+            """
+
+            if not (df.groupby("Tree")["Node"].first() == 0).all():
+                raise ValueError("first node by tree must be the root node (0)")
+
+            df["Depth"] = 0
+
+            for row_number in range(df.shape[0]):
+
+                row = df.iloc[row_number]
+
+                # for non-leaf nodes, increase child node depths by 1
+                if row["Feature"] != "Leaf":
+
+                    df.loc[df["ID"] == row["Yes"], "Depth"] = row["Depth"] + 1
+                    df.loc[df["ID"] == row["No"], "Depth"] = row["Depth"] + 1
+
+            return df
+
         model_for_predictions = xgb.train(
             params={"verbosity": 0, "max_depth": 3, "lambda": lambda_},
             dtrain=xgb_diabetes_dmatrix,
@@ -174,7 +224,7 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         predictions = xgboost_tabular_trees.derive_predictions()
 
-        depths = xgboost_tabular_trees.derive_depths()
+        depths = derive_depths(xgboost_tabular_trees.trees.copy())
 
         predictions["Depth"] = depths["Depth"]
 
@@ -402,4 +452,7 @@ class TestParsedXGBoostTabularTreesConvert:
 
         xgboost_tabular_trees = parsed_tabular_trees.convert_to_xgboost_tabular_trees()
 
-        pd.testing.assert_frame_equal(xgboost_tabular_trees.trees, expected_output)
+        pd.testing.assert_frame_equal(
+            xgboost_tabular_trees.trees.drop(columns=["weight", "G", "H"]),
+            expected_output,
+        )
