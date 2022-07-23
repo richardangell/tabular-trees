@@ -35,8 +35,8 @@ def BaseModelTabularTreesImplementation():
 
         SORT_BY_COLUMNS = ["column2"]
 
-        def __post_post_init__(self) -> None:
-            """Model specific post init processing."""
+        def __post_post_init__(self):
+            """No processing after post_init."""
 
             pass
 
@@ -98,11 +98,6 @@ class TestBaseModelTabularTreesInit:
 
                 SORT_BY_COLUMNS = ["column2"]
 
-                def __post_post_init__(self) -> None:
-                    """Model specific post init processing."""
-
-                    pass
-
     def test_exception_sort_by_columns_not_defined(self):
         """Test an implementation of BaseModelTabularTrees cannot be
         initialised if it does not set the SORT_BY_COLUMNS attribute.
@@ -124,37 +119,6 @@ class TestBaseModelTabularTreesInit:
 
                 REQUIRED_COLUMNS = ["column1", "column2", "column3"]
 
-                def __post_post_init__(self) -> None:
-                    """Model specific post init processing."""
-
-                    pass
-
-    def test_exception_post_post_init_not_defined(self, dummy_model_tree_data):
-        """Test an implementation of BaseModelTabularTrees raises a TypeError
-        when initialised if __post_post_init__ is not defined.
-        """
-
-        @dataclass
-        class DummyModelTabularTrees(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
-
-            This impementation does have the SORT_BY_COLUMNS attribute.
-            """
-
-            trees: pd.DataFrame
-
-            REQUIRED_COLUMNS = ["column1", "column2", "column3"]
-
-            SORT_BY_COLUMNS = ["column2"]
-
-        with pytest.raises(
-            TypeError,
-            match="Can't instantiate abstract class DummyModelTabularTrees with abstract method __post_post_init__",
-        ):
-
-            DummyModelTabularTrees(trees=dummy_model_tree_data)
-
 
 class TestBaseModelTabularTreesPostInit:
     """Tests for the BaseModelTabularTrees.__post_init__ method."""
@@ -175,11 +139,6 @@ class TestBaseModelTabularTreesPostInit:
             REQUIRED_COLUMNS = ["column1", "column2", "column3"]
 
             SORT_BY_COLUMNS = ["column2"]
-
-            def __post_post_init__(self) -> None:
-                """Model specific post init processing."""
-
-                pass
 
         with pytest.raises(AttributeError, match="trees attribute not set"):
 
@@ -212,11 +171,6 @@ class TestBaseModelTabularTreesPostInit:
 
             SORT_BY_COLUMNS = ["column2"]
 
-            def __post_post_init__(self) -> None:
-                """Model specific post init processing."""
-
-                pass
-
         with pytest.raises(
             TypeError,
             match="REQUIRED_COLUMNS is not in expected types <class 'list'>, got <class 'str'>",
@@ -240,11 +194,6 @@ class TestBaseModelTabularTreesPostInit:
             REQUIRED_COLUMNS = ["column1", "column2", "column3"]
 
             SORT_BY_COLUMNS = "a"
-
-            def __post_post_init__(self) -> None:
-                """Model specific post init processing."""
-
-                pass
 
         with pytest.raises(
             TypeError,
@@ -300,11 +249,6 @@ class TestBaseModelTabularTreesPostInit:
             REQUIRED_COLUMNS = ["column1", "column2", "column3"]
 
             SORT_BY_COLUMNS = ["a"]
-
-            def __post_post_init__(self) -> None:
-                """Model specific post init processing."""
-
-                pass
 
         with pytest.raises(
             ValueError,

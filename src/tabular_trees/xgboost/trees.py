@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .. import checks
+from ..trees import BaseModelTabularTrees
 
 
 @dataclass
-class XGBoostTabularTrees:
+class XGBoostTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost trees in tabular format.
 
     Parameters
@@ -31,7 +32,6 @@ class XGBoostTabularTrees:
     trees: pd.DataFrame
     lambda_: float = 1.0
     alpha: float = 0.0
-    n_trees: int = field(init=False)
 
     REQUIRED_COLUMNS = [
         "Tree",
@@ -47,22 +47,13 @@ class XGBoostTabularTrees:
         "Category",
     ]
 
-    def __post_init__(self):
-        """Post init checks and processing.
+    SORT_BY_COLUMNS = ["Tree", "Node"]
 
-        Number of trees in the model is calculated and stored in the n_trees
-        atttribute.
-
-        Processing on the trees attribute is as follows;
-        - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by Tree and Node column
-        - The index is reset and original index dropped.
+    def __post_post_init__(self):
+        """Post post init checks on regularisation parameters.
 
         Raises
         ------
-        TypeError
-            If self.trees is not a pd.DataFrame.
-
         TypeError
             If self.lambda_ is not a float.
 
@@ -72,26 +63,12 @@ class XGBoostTabularTrees:
         ValueError
             If self.alpha is not 0.
 
-        ValueError
-            If REQUIRED_COLUMNS are not in self.trees.
-
         """
 
-        checks.check_type(self.trees, pd.DataFrame, "trees")
         checks.check_type(self.lambda_, float, "lambda_")
         checks.check_type(self.alpha, float, "alpha")
 
         checks.check_condition(self.alpha == 0, "alpha = 0")
-
-        checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
-
-        self.n_trees = int(self.trees["Tree"].max())
-
-        # reorder columns and sort
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
-        self.trees = self.trees.sort_values(["Tree", "Node"])
-
-        self.trees = self.trees.reset_index(drop=True)
 
     def get_trees(self, tree_indexes: list[int]):
         """Return the tabular data for specified tree(s) from model.
@@ -105,13 +82,15 @@ class XGBoostTabularTrees:
 
         checks.check_type(tree_indexes, list, "tree_indexes")
 
+        n_trees = int(self.trees["Tree"].max())
+
         for i, tree_index in enumerate(tree_indexes):
 
             checks.check_type(tree_index, int, f"tree_indexes[{i}]")
             checks.check_condition(tree_index >= 0, f"tree_indexes[{i}] >= 0")
             checks.check_condition(
-                tree_index <= self.n_trees,
-                f"tree_indexes[{i}] in range for number of trees ({self.n_trees})",
+                tree_index <= n_trees,
+                f"""tree_indexes[{i}] in range for number of trees ({n_trees})""",
             )
 
         return self.trees.loc[self.trees["Tree"].isin(tree_indexes)].copy()
@@ -159,6 +138,7 @@ class XGBoostTabularTrees:
         """
 
         df = self.trees.copy()
+        n_trees = df["Tree"].max()
 
         # identify leaf and internal nodes
         leaf_nodes = df["Feature"] == "Leaf"
@@ -178,7 +158,7 @@ class XGBoostTabularTrees:
         # propagate G up from the leaf nodes to internal nodes, for each tree
         df_G_list = [
             self._derive_internal_node_G(df.loc[df["Tree"] == n])
-            for n in range(self.n_trees + 1)
+            for n in range(n_trees + 1)
         ]
 
         # append all updated trees
@@ -246,7 +226,7 @@ class XGBoostTabularTrees:
 
 
 @dataclass
-class ParsedXGBoostTabularTrees:
+class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost models that have been parsed from either text
     or json file, in tabular format.
 
@@ -263,9 +243,8 @@ class ParsedXGBoostTabularTrees:
     """
 
     trees: pd.DataFrame
-    has_stats: bool = field(init=False)
 
-    REQUIRED_BASE_COLUMNS = [
+    REQUIRED_COLUMNS = [
         "tree",
         "nodeid",
         "depth",
@@ -275,7 +254,11 @@ class ParsedXGBoostTabularTrees:
         "split",
         "split_condition",
         "leaf",
+        "gain",
+        "cover",
     ]
+
+    SORT_BY_COLUMNS = ["tree", "nodeid"]
 
     STATS_COLUMNS = [
         "gain",
@@ -298,23 +281,16 @@ class ParsedXGBoostTabularTrees:
 
     def __post_init__(self):
 
-        checks.check_type(self.trees, pd.DataFrame, "trees")
+        if not all(
+            [column in self.trees.columns.values for column in self.STATS_COLUMNS]
+        ):
 
-        if all([column in self.trees.columns.values for column in self.STATS_COLUMNS]):
+            raise ValueError(
+                "Cannot create ParsedXGBoostTabularTrees object unless statistics"
+                " are output. Rerun dump_model with with_stats = True."
+            )
 
-            all_columns = self.REQUIRED_BASE_COLUMNS + self.STATS_COLUMNS
-
-            checks.check_df_columns(self.trees, all_columns)
-            self.trees = self.trees[all_columns]
-            self.has_stats = True
-
-        else:
-
-            checks.check_df_columns(self.trees, self.REQUIRED_BASE_COLUMNS)
-            self.trees = self.trees[self.REQUIRED_BASE_COLUMNS]
-            self.has_stats = False
-
-        self.trees = self.trees.sort_values(["tree", "nodeid"])
+        super().__post_init__()
 
     def convert_to_xgboost_tabular_trees(self) -> XGBoostTabularTrees:
         """Return the tree structures as XGBoostTabularTrees class.
@@ -326,18 +302,9 @@ class ParsedXGBoostTabularTrees:
 
         """
 
-        if not self.has_stats:
+        converted_data = self._create_same_columns_as_xgboost_output(self.trees)
 
-            raise ValueError(
-                "Cannot convert to XGBoostTabularTrees class unless statistics"
-                " are output. Rerun dump_model with with_stats = True."
-            )
-
-        else:
-
-            converted_data = self._create_same_columns_as_xgboost_output(self.trees)
-
-            return XGBoostTabularTrees(converted_data)
+        return XGBoostTabularTrees(converted_data)
 
     def _create_same_columns_as_xgboost_output(self, df: pd.DataFrame) -> pd.DataFrame:
         """This method converts the DataFrame structure that has been created

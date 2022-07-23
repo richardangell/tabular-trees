@@ -44,7 +44,7 @@ def test_inheritance():
         ),
     ],
 )
-def test_sort_by_columns(
+def test_column_attributes(
     attribute_name, expected_value, sklearn_hist_gbm_trees_dataframe
 ):
     """Test column related attributes are set as expected."""
