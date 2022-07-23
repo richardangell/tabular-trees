@@ -9,8 +9,21 @@ trees module
 .. autosummary::
     :toctree: api/
 
+    trees.BaseModelTabularTrees
+    trees.export_tree_data
     trees.TabularTrees
-         
+          
+sklearn.trees module
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    sklearn.trees.ScikitLearnTabularTrees
+    sklearn.trees.ScikitLearnHistTabularTrees
+    sklearn.trees.export_tree_data__gradient_boosting_model
+    sklearn.trees.export_tree_data__hist_gradient_boosting_model
+
 lightgbm.trees module
 --------------------------
 
