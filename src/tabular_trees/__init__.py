@@ -11,6 +11,11 @@ except ImportError:
     pass
 
 try:
+    from . import sklearn
+except ImportError:
+    pass
+
+try:
     from . import xgboost
 except ImportError:
     pass

@@ -16,12 +16,29 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.2.0.dev2 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/12>`_
+0.2.0.dev3 (unreleased) `#13 <https://github.com/richardangell/tabular-trees/pull/13>`_
 ---------------------------------------------------------------------------------------
 
 Added
 ^^^^^
-- Added lightgbm.trees.LightGBMTabularTrees class to hold output from lgb.Booster.trees_to_dataframe
+- Add sklearn module
+- Add sklearn.trees.ScikitLearnTabularTrees class to hold tree data from GradientBoostingClassifier or Regressor objects
+- Add export_tree_data__gradient_boosting_model to export tree data from GradientBoostingClassifier or Regressor objects to ScikitLearnTabularTrees
+- Add sklearn.trees.ScikitLearnHistTabularTrees class to hold tree data from HistGradientBoostingClassifier or Regressor objects
+- Add export_tree_data__hist_gradient_boosting_model function to export tree data from from HistGradientBoostingClassifier or Regressor objects to ScikitLearnHistTabularTrees
+- Add new trees.BaseModelTabularTrees abstract base class for model specific tree data class implementations to inherit from
+- Add trees.export_tree_data as the user interface to export tree data for any model, dispatching to the correct model specific function
+
+Changed
+^^^^^^^
+- Change lightgbm.trees.LightGBMTabularTrees to inherit from trees.BaseModelTabularTrees
+
+0.2.0.dev2 (unreleased) `#12 <https://github.com/richardangell/tabular-trees/pull/12>`_
+---------------------------------------------------------------------------------------
+
+Added
+^^^^^
+- Add lightgbm.trees.LightGBMTabularTrees class to hold output from lgb.Booster.trees_to_dataframe
 
 0.2.0.dev1 (unreleased) `#11 <https://github.com/richardangell/tabular-trees/pull/11>`_
 ---------------------------------------------------------------------------------------
@@ -29,14 +46,14 @@ Added
 Added
 ^^^^^
 
-- Added XGBoostTabularTrees to hold xgb.Booster.trees_to_dataframe output
-- Added ParsedXGBoostTabularTrees class to hold the outout of parser classes
-- Added DumpReader, JsonDumpReader, TextDumpReader classes in xgboost.parser module.
+- Add XGBoostTabularTrees to hold xgb.Booster.trees_to_dataframe output
+- Add ParsedXGBoostTabularTrees class to hold the outout of parser classes
+- Add DumpReader, JsonDumpReader, TextDumpReader classes in xgboost.parser module.
 
 Changed
 ^^^^^^^
 
-- Renamed xgb module to xgboost
+- Rename xgb module to xgboost
 - Exclude .tox directory in bandit
 - Refactor xgboost.parser and move some functionality into xgboost.trees classes
 
