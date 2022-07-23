@@ -45,12 +45,15 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "Gain",
         "Cover",
         "Category",
+        "G",
+        "H",
+        "weight",
     ]
 
     SORT_BY_COLUMNS = ["Tree", "Node"]
 
-    def __post_post_init__(self):
-        """Post post init checks on regularisation parameters.
+    def __post_init__(self):
+        """Post init checks on regularisation parameters.
 
         Raises
         ------
@@ -67,8 +70,11 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         checks.check_type(self.lambda_, float, "lambda_")
         checks.check_type(self.alpha, float, "alpha")
-
         checks.check_condition(self.alpha == 0, "alpha = 0")
+
+        self.trees = self.derive_predictions()
+
+        super().__post_init__()
 
     def derive_predictions(self) -> pd.DataFrame:
         """Derive predictons for internal nodes in trees.

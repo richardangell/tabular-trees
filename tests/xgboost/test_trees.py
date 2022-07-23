@@ -40,6 +40,9 @@ class TestXGBoostTabularTreesInit:
                     "Gain",
                     "Cover",
                     "Category",
+                    "G",
+                    "H",
+                    "weight",
                 ],
             ),
         ],
@@ -76,42 +79,73 @@ class TestXGBoostTabularTreesInit:
         ), "trees attribute is the same object as passed into initialisation"
 
 
-class TestXGBoostTabularTreesPostPostInit:
+class TestXGBoostTabularTreesPostInit:
     """Tests for the XGBoostTabularTrees.__post_post_init__ method."""
 
     def test_lambda_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if lambda_ is not a float."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.lambda_ = "1"
 
         with pytest.raises(
             TypeError,
             match="lambda_ is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe, lambda_="1")
+            tabular_trees.__post_init__()
 
     def test_alpha_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if alpha is not a float."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.alpha = "1"
 
         with pytest.raises(
             TypeError,
             match="alpha is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(
-                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha="1"
-            )
+            tabular_trees.__post_init__()
 
     def test_alpha_not_zero_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if trees is not a pd.DataFrame."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.alpha = 1.0
 
         with pytest.raises(
             ValueError,
             match=re.escape("condition: [alpha = 0] not met"),
         ):
 
-            XGBoostTabularTrees(
-                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha=1.0
-            )
+            tabular_trees.__post_init__()
+
+    def test_super_post_init_called(self, mocker, xgb_diabetes_model_trees_dataframe):
+        """Test that BaseModelTabularTrees.__post_init__ method is called."""
+
+        # initialise object then overwrite trees attribute with data that does
+        # not contain the stats columns
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        mocked = mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        tabular_trees.__post_init__()
+
+        assert (
+            mocked.call_count == 1
+        ), "BaseModelTabularTrees.__post_init__ not called when XGBoostTabularTrees.__post_init__ runs"
+
+        assert (
+            mocked.call_args_list[0][0] == ()
+        ), "positional args in BaseModelTabularTrees.__post_init__ call not correct"
+
+        assert (
+            mocked.call_args_list[0][1] == {}
+        ), "keyword args in BaseModelTabularTrees.__post_init__ call not correct"
 
 
 class TestXGBoostTabularTreesDerivePredictions:
