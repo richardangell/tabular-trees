@@ -70,35 +70,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         checks.check_condition(self.alpha == 0, "alpha = 0")
 
-    def derive_depths(self) -> pd.DataFrame:
-        """Derive node depth for all nodes.
-
-        Returns
-        -------
-        pd.DataFrame
-            Tree data (trees attribute) with 'Depth' column added.
-
-        """
-
-        df = self.trees.copy()
-
-        if not (df.groupby("Tree")["Node"].first() == 0).all():
-            raise ValueError("first node by tree must be the root node (0)")
-
-        df["Depth"] = 0
-
-        for row_number in range(df.shape[0]):
-
-            row = df.iloc[row_number]
-
-            # for non-leaf nodes, increase child node depths by 1
-            if row["Feature"] != "Leaf":
-
-                df.loc[df["ID"] == row["Yes"], "Depth"] = row["Depth"] + 1
-                df.loc[df["ID"] == row["No"], "Depth"] = row["Depth"] + 1
-
-        return df
-
     def derive_predictions(self) -> pd.DataFrame:
         """Derive predictons for internal nodes in trees.
 
