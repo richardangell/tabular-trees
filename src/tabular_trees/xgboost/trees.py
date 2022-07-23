@@ -3,10 +3,11 @@ import numpy as np
 from dataclasses import dataclass, field
 
 from .. import checks
+from ..trees import BaseModelTabularTrees
 
 
 @dataclass
-class XGBoostTabularTrees:
+class XGBoostTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost trees in tabular format.
 
     Parameters
@@ -47,22 +48,13 @@ class XGBoostTabularTrees:
         "Category",
     ]
 
-    def __post_init__(self):
-        """Post init checks and processing.
+    SORT_BY_COLUMNS = ["Tree", "Node"]
 
-        Number of trees in the model is calculated and stored in the n_trees
-        atttribute.
-
-        Processing on the trees attribute is as follows;
-        - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by Tree and Node column
-        - The index is reset and original index dropped.
+    def __post_post_init__(self):
+        """Post post init checks on regularisation parameters.
 
         Raises
         ------
-        TypeError
-            If self.trees is not a pd.DataFrame.
-
         TypeError
             If self.lambda_ is not a float.
 
@@ -72,26 +64,12 @@ class XGBoostTabularTrees:
         ValueError
             If self.alpha is not 0.
 
-        ValueError
-            If REQUIRED_COLUMNS are not in self.trees.
-
         """
 
-        checks.check_type(self.trees, pd.DataFrame, "trees")
         checks.check_type(self.lambda_, float, "lambda_")
         checks.check_type(self.alpha, float, "alpha")
 
         checks.check_condition(self.alpha == 0, "alpha = 0")
-
-        checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
-
-        self.n_trees = int(self.trees["Tree"].max())
-
-        # reorder columns and sort
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
-        self.trees = self.trees.sort_values(["Tree", "Node"])
-
-        self.trees = self.trees.reset_index(drop=True)
 
     def get_trees(self, tree_indexes: list[int]):
         """Return the tabular data for specified tree(s) from model.
