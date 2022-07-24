@@ -290,6 +290,19 @@ class TestXGBoostTabularTreesDerivePredictions:
                 ), f"""derived internal node prediction for node {row["ID"]} incorrect (rounding to 3dp)"""
 
 
+class TestXGBoostTabularTreesConvert:
+    """Tests for the XGBoostTabularTrees.convert_to_tabular_trees method."""
+
+    def test_successful_call(self, xgb_diabetes_model_trees_dataframe):
+        """"""
+
+        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        x = xgboost_tabular_trees.convert_to_tabular_trees()
+
+        raise ValueError("a")
+
+
 class TestParsedXGBoostTabularTreesInit:
     """Tests for the ParsedXGBoostTabularTrees.__init__ method."""
 

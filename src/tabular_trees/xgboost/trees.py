@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from .. import checks
-from ..trees import BaseModelTabularTrees
+from ..trees import BaseModelTabularTrees, TabularTrees
 
 
 @dataclass
@@ -52,6 +52,18 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
     SORT_BY_COLUMNS = ["Tree", "Node"]
 
+    COLUMN_MAPPING = {
+        "Tree": "tree",
+        "ID": "node",
+        "Yes": "left_child",
+        "No": "right_child",
+        "Missing": "missing",
+        "Feature": "feature",
+        "Split": "split_condition",
+        "weight": "prediction",
+        "leaf": "leaf",
+    }
+
     def __post_init__(self):
         """Post init checks on regularisation parameters.
 
@@ -75,6 +87,26 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         self.trees = self.derive_predictions()
 
         super().__post_init__()
+
+    def convert_to_tabular_trees(self) -> TabularTrees:
+        """Convert the tree data to a TabularTrees object."""
+
+        trees = self.trees.copy()
+
+        trees = self._derive_leaf_node_flag(trees)
+
+        tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
+            columns=self.COLUMN_MAPPING
+        )
+
+        return TabularTrees(tree_data_converted)
+
+    def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Derive a leaf node indiciator flag column."""
+
+        df["leaf"] = (df["Feature"] == "Leaf").astype(int)
+
+        return df
 
     def derive_predictions(self) -> pd.DataFrame:
         """Derive predictons for internal nodes in trees.

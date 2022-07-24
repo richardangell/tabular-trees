@@ -1,7 +1,7 @@
 import pandas as pd
 from dataclasses import dataclass
 
-from ..trees import BaseModelTabularTrees
+from ..trees import BaseModelTabularTrees, TabularTrees
 
 
 @dataclass
@@ -36,3 +36,28 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
     ]
 
     SORT_BY_COLUMNS = ["tree_index", "node_depth", "node_index"]
+
+    COLUMN_MAPPING = {
+        "tree_index": "tree",
+        "node_index": "node",
+        "left_child": "left_child",
+        "right_child": "right_child",
+        "missing_direction": "missing",
+        "split_feature": "feature",
+        "threshold": "split_condition",
+        "leaf": "leaf",
+        "value": "prediction",
+    }
+
+    def convert_to_tabular_trees(self) -> TabularTrees:
+        """Convert the tree data to a TabularTrees object."""
+
+        trees = self.trees.copy()
+
+        trees = self._derive_leaf_node_flag(trees)
+
+        tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
+            columns=self.COLUMN_MAPPING
+        )
+
+        return TabularTrees(tree_data_converted)
