@@ -1,9 +1,8 @@
+import pytest
 import xgboost as xgb
 from sklearn.datasets import load_diabetes
 
 from tabular_trees.xgboost.parser import JsonDumpReader
-
-import pytest
 
 
 @pytest.fixture(scope="session")

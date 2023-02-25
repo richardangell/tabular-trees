@@ -1,8 +1,7 @@
+import build_model
 import pandas as pd
 
 import tabular_trees
-
-import build_model
 
 
 def test_prediction_decomposition_eqal_eli5():

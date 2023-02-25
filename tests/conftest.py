@@ -1,11 +1,11 @@
 import pandas as pd
 import pytest
-from sklearn.datasets import load_diabetes, load_iris, load_breast_cancer
+from sklearn.datasets import load_breast_cancer, load_diabetes, load_iris
 from sklearn.ensemble import (
-    HistGradientBoostingRegressor,
-    HistGradientBoostingClassifier,
-    GradientBoostingRegressor,
     GradientBoostingClassifier,
+    GradientBoostingRegressor,
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
 )
 
 

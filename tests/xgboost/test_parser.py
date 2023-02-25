@@ -1,7 +1,8 @@
-import pandas as pd
-import xgboost as xgb
 import re
+
+import pandas as pd
 import pytest
+import xgboost as xgb
 
 import tabular_trees.xgboost.parser as parser
 

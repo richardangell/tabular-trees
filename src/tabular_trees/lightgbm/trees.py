@@ -1,5 +1,6 @@
-import pandas as pd
 from dataclasses import dataclass
+
+import pandas as pd
 
 from ..trees import BaseModelTabularTrees, TabularTrees
 

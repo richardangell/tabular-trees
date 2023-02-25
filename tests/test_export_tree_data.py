@@ -1,10 +1,10 @@
 import pytest
 
-from tabular_trees.trees import export_tree_data
 from tabular_trees.sklearn.trees import (
     ScikitLearnHistTabularTrees,
     ScikitLearnTabularTrees,
 )
+from tabular_trees.trees import export_tree_data
 
 
 def test_successful_call(sklearn_diabetes_hist_gbr):

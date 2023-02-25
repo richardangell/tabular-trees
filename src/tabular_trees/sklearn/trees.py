@@ -1,13 +1,14 @@
-import pandas as pd
-from typing import Union
 from dataclasses import dataclass
+from typing import Union
+
+import pandas as pd
 
 try:
     from sklearn.ensemble import (
-        HistGradientBoostingClassifier,
-        HistGradientBoostingRegressor,
         GradientBoostingClassifier,
         GradientBoostingRegressor,
+        HistGradientBoostingClassifier,
+        HistGradientBoostingRegressor,
     )
     from sklearn.tree._tree import Tree
 except ModuleNotFoundError as err:
@@ -16,8 +17,7 @@ except ModuleNotFoundError as err:
     ) from err
 
 from .. import checks
-from ..trees import BaseModelTabularTrees
-from ..trees import export_tree_data
+from ..trees import BaseModelTabularTrees, export_tree_data
 
 
 @dataclass

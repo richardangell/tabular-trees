@@ -1,7 +1,8 @@
 """Module for validating xgboost trees."""
 
-import pandas as pd
 from copy import deepcopy
+
+import pandas as pd
 
 from ..checks import check_df_columns
 

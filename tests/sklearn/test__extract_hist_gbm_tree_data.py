@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
-import pytest
 from collections import namedtuple
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from tabular_trees.sklearn import trees
 

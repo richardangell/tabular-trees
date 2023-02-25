@@ -1,6 +1,5 @@
-import pandas as pd
-
 import build_model
+import pandas as pd
 
 import tabular_trees
 

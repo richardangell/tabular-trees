@@ -1,10 +1,10 @@
-from sklearn.ensemble import HistGradientBoostingClassifier, GradientBoostingClassifier
-from tabular_trees.sklearn.trees import (
-    _extract_hist_gbm_tree_data,
-    _extract_gbm_tree_data,
-)
-
 import pytest
+from sklearn.ensemble import GradientBoostingClassifier, HistGradientBoostingClassifier
+
+from tabular_trees.sklearn.trees import (
+    _extract_gbm_tree_data,
+    _extract_hist_gbm_tree_data,
+)
 
 
 @pytest.fixture(scope="session")

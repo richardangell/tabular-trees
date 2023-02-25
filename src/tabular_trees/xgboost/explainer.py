@@ -1,10 +1,11 @@
 """Explanations for xgboost models."""
 
-import pandas as pd
-import numpy as np
-import warnings
 import itertools
+import warnings
 from math import factorial
+
+import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 

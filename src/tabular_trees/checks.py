@@ -1,8 +1,9 @@
 """Module containing checks to be used elsewhere in the package."""
 
-import pandas as pd
 import abc
-from typing import Any, Union, Type, Tuple
+from typing import Any, Tuple, Type, Union
+
+import pandas as pd
 
 
 def check_type(

@@ -1,10 +1,11 @@
 """Module for tree structure classes."""
 
-import pandas as pd
-from typing import Any
-from functools import singledispatch
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import singledispatch
+from typing import Any
+
+import pandas as pd
 
 from . import checks
 

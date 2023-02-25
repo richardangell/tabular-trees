@@ -1,11 +1,11 @@
+import build_model
 import pandas as pd
 import pytest
 from eli5 import explain_prediction_df
-from sklearn.datasets import load_boston
 from pandas.testing import assert_series_equal
-import tabular_trees
+from sklearn.datasets import load_boston
 
-import build_model
+import tabular_trees
 
 
 def test_prediction_decomposition_eqal_eli5():

@@ -1,7 +1,6 @@
 import lightgbm as lgb
-from sklearn.datasets import load_diabetes
-
 import pytest
+from sklearn.datasets import load_diabetes
 
 
 @pytest.fixture(scope="session")

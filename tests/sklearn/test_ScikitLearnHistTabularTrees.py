@@ -1,7 +1,7 @@
 import pytest
 
-from tabular_trees.trees import BaseModelTabularTrees
 from tabular_trees.sklearn.trees import ScikitLearnHistTabularTrees
+from tabular_trees.trees import BaseModelTabularTrees
 
 
 def test_successfull_call(sklearn_hist_gbm_trees_dataframe):

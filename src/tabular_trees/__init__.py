@@ -1,9 +1,7 @@
 """tabular_trees"""
 
+from . import checks, trees
 from ._version import __version__
-
-from . import checks
-from . import trees
 
 try:
     from . import lightgbm

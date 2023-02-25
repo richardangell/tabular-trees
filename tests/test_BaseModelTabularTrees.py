@@ -1,8 +1,9 @@
+import abc
+import re
+from dataclasses import dataclass
+
 import pandas as pd
 import pytest
-import re
-import abc
-from dataclasses import dataclass
 
 from tabular_trees.trees import BaseModelTabularTrees
 

@@ -1,13 +1,14 @@
 """Module for parsing xgboost models."""
 
-import pandas as pd
-import numpy as np
 import json
 import tempfile
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
+
+import numpy as np
+import pandas as pd
 
 try:
     import xgboost as xgb

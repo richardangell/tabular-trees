@@ -1,7 +1,7 @@
 import pytest
 
-from tabular_trees.trees import BaseModelTabularTrees
 from tabular_trees.lightgbm.trees import LightGBMTabularTrees
+from tabular_trees.trees import BaseModelTabularTrees
 
 
 def test_successfull_call(lgb_diabetes_model_trees_dataframe):

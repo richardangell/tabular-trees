@@ -1,10 +1,11 @@
-import pandas as pd
-import xgboost as xgb
-import pytest
 import re
 
+import pandas as pd
+import pytest
+import xgboost as xgb
+
 from tabular_trees.trees import BaseModelTabularTrees
-from tabular_trees.xgboost.trees import XGBoostTabularTrees, ParsedXGBoostTabularTrees
+from tabular_trees.xgboost.trees import ParsedXGBoostTabularTrees, XGBoostTabularTrees
 
 
 class TestXGBoostTabularTreesInit:

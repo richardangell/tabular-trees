@@ -1,6 +1,7 @@
-import pytest
 import re
+
 import pandas as pd
+import pytest
 
 from tabular_trees.sklearn import trees
 
