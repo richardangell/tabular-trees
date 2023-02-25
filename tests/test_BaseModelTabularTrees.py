@@ -66,47 +66,53 @@ class TestBaseModelTabularTreesInit:
             dummy_model_tabular_trees.trees, dummy_model_tree_data
         )
 
-    def test_exception_required_columns_not_defined(self):
+    def test_exception_required_columns_not_defined(self, dummy_model_tree_data):
         """Test an implementation of BaseModelTabularTrees cannot be
         initialised if it does not set the REQUIRED_COLUMNS attribute.
         """
 
+        @dataclass
+        class DummyModelTabularTreesMissingAttribute(BaseModelTabularTrees):
+            """Dummy class mimicking a model specific class inheriting from
+            BaseModelTabularTrees.
+
+            This impementation does not have the REQUIRED_COLUMNS attribute.
+            """
+
+            trees: pd.DataFrame
+
+            SORT_BY_COLUMNS = ["column2"]
+
         with pytest.raises(
-            NotImplementedError, match="REQUIRED_COLUMNS attribute not defined"
+            TypeError,
+            match="Can't instantiate abstract class DummyModelTabularTreesMissingAttribute with abstract method REQUIRED_COLUMNS",
         ):
 
-            @dataclass
-            class DummyModelTabularTrees(BaseModelTabularTrees):
-                """Dummy class mimicking a model specific class inheriting from
-                BaseModelTabularTrees.
+            DummyModelTabularTreesMissingAttribute(trees=dummy_model_tree_data)
 
-                This impementation does have the REQUIRED_COLUMNS attribute.
-                """
-
-                trees: pd.DataFrame
-
-                SORT_BY_COLUMNS = ["column2"]
-
-    def test_exception_sort_by_columns_not_defined(self):
+    def test_exception_sort_by_columns_not_defined(self, dummy_model_tree_data):
         """Test an implementation of BaseModelTabularTrees cannot be
         initialised if it does not set the SORT_BY_COLUMNS attribute.
         """
 
+        @dataclass
+        class DummyModelTabularTreesMissingAttribute(BaseModelTabularTrees):
+            """Dummy class mimicking a model specific class inheriting from
+            BaseModelTabularTrees.
+
+            This impementation does not have the SORT_BY_COLUMNS attribute.
+            """
+
+            trees: pd.DataFrame
+
+            REQUIRED_COLUMNS = ["column1", "column2", "column3"]
+
         with pytest.raises(
-            NotImplementedError, match="SORT_BY_COLUMNS attribute not defined"
+            TypeError,
+            match="Can't instantiate abstract class DummyModelTabularTreesMissingAttribute with abstract method SORT_BY_COLUMNS",
         ):
 
-            @dataclass
-            class DummyModelTabularTrees(BaseModelTabularTrees):
-                """Dummy class mimicking a model specific class inheriting from
-                BaseModelTabularTrees.
-
-                This impementation does have the SORT_BY_COLUMNS attribute.
-                """
-
-                trees: pd.DataFrame
-
-                REQUIRED_COLUMNS = ["column1", "column2", "column3"]
+            DummyModelTabularTreesMissingAttribute(trees=dummy_model_tree_data)
 
 
 class TestBaseModelTabularTreesPostInit:

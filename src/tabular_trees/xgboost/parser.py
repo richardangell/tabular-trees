@@ -24,10 +24,9 @@ from .trees import ParsedXGBoostTabularTrees
 class DumpReader(ABC):
     """Abstract base class for xgboost mode dump readers."""
 
-    @classmethod
     @property
     @abstractmethod
-    def dump_type(cls):
+    def dump_type(self):
         raise NotImplementedError
 
     @abstractmethod

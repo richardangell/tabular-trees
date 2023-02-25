@@ -27,19 +27,17 @@ class BaseModelTabularTrees(ABC):
 
         pass
 
-    @classmethod
     @property
     @abstractmethod
-    def REQUIRED_COLUMNS(cls):  # noqa: N802
+    def REQUIRED_COLUMNS(self):  # noqa: N802
         """REQUIRED_COLUMNS attribute that must be defined in classes
         inheriting from BaseModelTabularTrees."""
 
         raise NotImplementedError("REQUIRED_COLUMNS attribute not defined")
 
-    @classmethod
     @property
     @abstractmethod
-    def SORT_BY_COLUMNS(cls):  # noqa: N802
+    def SORT_BY_COLUMNS(self):  # noqa: N802
         """SORT_BY_COLUMNS attribute that must be defined in classes inheriting
         from BaseModelTabularTrees."""
 
