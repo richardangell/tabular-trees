@@ -288,7 +288,7 @@ class XGBoostParser:
         checks.check_type(reader, DumpReader, "reader", True)
 
         if reader is None:
-            reader_object = JsonDumpReader()
+            reader_object: DumpReader = JsonDumpReader()
         else:
             reader_object = reader
 
