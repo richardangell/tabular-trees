@@ -55,8 +55,6 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
         trees = self.trees.copy()
 
-        trees = self._derive_leaf_node_flag(trees)
-
         tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
             columns=self.COLUMN_MAPPING
         )
