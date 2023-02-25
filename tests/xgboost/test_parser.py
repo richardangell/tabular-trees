@@ -47,7 +47,7 @@ class TestDumpReaderReadDump:
             dump_reader.read_dump("does_not_exist.txt")
 
 
-class TestDumpReader_Implementations:
+class TestDumpReaderImplementations:
     """Tests for the DumpReader subclasses."""
 
     def test_text_dump_reader_dump_type(self):

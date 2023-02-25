@@ -141,22 +141,22 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         )
 
         # propagate G up from the leaf nodes to internal nodes, for each tree
-        df_G_list = [
-            self._derive_internal_node_G(df.loc[df["Tree"] == n])
+        df_g_list = [
+            self._derive_internal_node_g(df.loc[df["Tree"] == n])
             for n in range(n_trees + 1)
         ]
 
         # append all updated trees
-        df_G = pd.concat(df_G_list, axis=0)
+        df_g = pd.concat(df_g_list, axis=0)
 
         # update weight values for internal nodes
-        df_G.loc[internal_nodes, "weight"] = -df_G.loc[internal_nodes, "G"] / (
-            df_G.loc[internal_nodes, "H"] + self.lambda_
+        df_g.loc[internal_nodes, "weight"] = -df_g.loc[internal_nodes, "G"] / (
+            df_g.loc[internal_nodes, "H"] + self.lambda_
         )
 
-        return df_G
+        return df_g
 
-    def _derive_internal_node_G(self, tree_df: pd.DataFrame) -> pd.DataFrame:
+    def _derive_internal_node_g(self, tree_df: pd.DataFrame) -> pd.DataFrame:
         """Function to derive predictons for internal nodes in a single tree.
 
         This involves starting at each leaf node in the tree and propagating
@@ -172,7 +172,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         -------
         pd.DataFrame
             Updated tree_df with G propagated up the tree s.t. each internal
-            node's G value is the sum of G for it's child nodes.
+            node's g value is the sum of G for it's child nodes.
 
         """
 
@@ -185,7 +185,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
             leaf_row = leaf_df.loc[[i]]
 
-            leaf_G = leaf_row["G"].item()
+            leaf_g = leaf_row["G"].item()
             current_node = leaf_row["Node"].item()
             current_tree_node = leaf_row["ID"].item()
 
@@ -200,7 +200,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
                 )
 
                 # get parent node G
-                tree_df.loc[parent, "G"] = tree_df.loc[parent, "G"] + leaf_G
+                tree_df.loc[parent, "G"] = tree_df.loc[parent, "G"] + leaf_g
 
                 # update the current node to be the parent node
                 leaf_row = tree_df.loc[parent]

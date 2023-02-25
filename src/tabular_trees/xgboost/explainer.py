@@ -278,7 +278,7 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
 
             selected_features.append(feature)
 
-            expected_value_given_features = EXPVALUE(
+            expected_value_given_features = expvalue(
                 row, selected_features, tree_df_cols_subset
             )
 
@@ -307,7 +307,7 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
         return results_feature_level
 
 
-def EXPVALUE(x, S, tree):
+def expvalue(x, s, tree):
     """Function to estimate E[f(x)|x_S] - Algorithm 1 from Consistent Individualized Feature Attribution
     for TreeEnsembles.
 
@@ -320,7 +320,7 @@ def EXPVALUE(x, S, tree):
     x : pd.Series
         Single row of data to estimate E[f(x)|x_S] for.
 
-    S : list
+    s : list
         subset of features
 
     tree : pd.DataFrame
@@ -336,10 +336,10 @@ def EXPVALUE(x, S, tree):
 
     """
 
-    return G(0, 1, x, S, tree)
+    return g(0, 1, x, s, tree)
 
 
-def G(j, w, x, S, tree):
+def g(j, w, x, s, tree):
     """Function to recusively traverse down tree and return prediction for x from tree using only
     the selected features in S.
 
@@ -357,7 +357,7 @@ def G(j, w, x, S, tree):
     x : pd.Series
         Row of data to explain prediction for
 
-    S : list
+    s : list
         Subset of features being considered
 
     tree : pd.DataFrame
@@ -378,18 +378,18 @@ def G(j, w, x, S, tree):
 
     else:
 
-        if d[j] in S:
+        if d[j] in s:
 
             if x[d[j]] <= t[j]:
 
-                return G(a[j], w, x, S, tree)
+                return g(a[j], w, x, s, tree)
 
             else:
 
-                return G(b[j], w, x, S, tree)
+                return g(b[j], w, x, s, tree)
 
         else:
 
-            return G(a[j], w * r[a[j]] / r[j], x, S, tree) + G(
-                b[j], w * r[b[j]] / r[j], x, S, tree
+            return g(a[j], w * r[a[j]] / r[j], x, s, tree) + g(
+                b[j], w * r[b[j]] / r[j], x, s, tree
             )

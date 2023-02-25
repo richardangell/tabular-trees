@@ -22,13 +22,15 @@ class BaseModelTabularTrees(ABC):
 
     trees: pd.DataFrame
 
+    @abstractmethod
     def __init__(self, trees: pd.DataFrame) -> None:
+
         pass
 
     @classmethod
     @property
     @abstractmethod
-    def REQUIRED_COLUMNS(cls):
+    def REQUIRED_COLUMNS(cls):  # noqa: N802
         """REQUIRED_COLUMNS attribute that must be defined in classes
         inheriting from BaseModelTabularTrees."""
 
@@ -37,7 +39,7 @@ class BaseModelTabularTrees(ABC):
     @classmethod
     @property
     @abstractmethod
-    def SORT_BY_COLUMNS(cls):
+    def SORT_BY_COLUMNS(cls):  # noqa: N802
         """SORT_BY_COLUMNS attribute that must be defined in classes inheriting
         from BaseModelTabularTrees."""
 
@@ -83,7 +85,7 @@ class BaseModelTabularTrees(ABC):
 
         self.__post_post_init__()
 
-    def __post_post_init__(self):
+    def __post_post_init__(self):  # noqa: B027
         """Method to be called at the end of __post_init__ for model specific
         processing."""
 

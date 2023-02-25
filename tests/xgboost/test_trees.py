@@ -299,7 +299,7 @@ class TestXGBoostTabularTreesConvert:
 
         xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
-        x = xgboost_tabular_trees.convert_to_tabular_trees()
+        xgboost_tabular_trees.convert_to_tabular_trees()
 
         raise ValueError("a")
 

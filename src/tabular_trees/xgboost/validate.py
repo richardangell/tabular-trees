@@ -12,7 +12,7 @@ def validate_monotonic_constraints_df(
 ):
     """Function to check that monotonic constraints are as expected in an xgboost model."""
 
-    EXPECTED_COLUMNS = [
+    expected_columns = [
         "tree",
         "nodeid",
         "depth",
@@ -30,7 +30,7 @@ def validate_monotonic_constraints_df(
         "G",
     ]
 
-    check_df_columns(df=trees_df, expected_columns=EXPECTED_COLUMNS)
+    check_df_columns(df=trees_df, expected_columns=expected_columns)
 
     constraints = deepcopy(constraints)
 

@@ -18,30 +18,24 @@ def dummy_model_tree_data() -> pd.DataFrame:
     return dummy_model_tree_data
 
 
-@pytest.fixture
-def BaseModelTabularTreesImplementation():
-    """Return an object of type DummyModelTabularTrees with dummy tree data."""
+@dataclass
+class DummyModelTabularTrees(BaseModelTabularTrees):
+    """Dummy class mimicking a model specific class inheriting from
+    BaseModelTabularTrees.
 
-    @dataclass
-    class DummyModelTabularTrees(BaseModelTabularTrees):
-        """Dummy class mimicking a model specific class inheriting from
-        BaseModelTabularTrees.
+    This implements eevrything required to use the class.
+    """
 
-        This implements eevrything required to use the class.
-        """
+    trees: pd.DataFrame
 
-        trees: pd.DataFrame
+    REQUIRED_COLUMNS = ["column1", "column2", "column3"]
 
-        REQUIRED_COLUMNS = ["column1", "column2", "column3"]
+    SORT_BY_COLUMNS = ["column2"]
 
-        SORT_BY_COLUMNS = ["column2"]
+    def __post_post_init__(self):
+        """No processing after post_init."""
 
-        def __post_post_init__(self):
-            """No processing after post_init."""
-
-            pass
-
-    return DummyModelTabularTrees
+        pass
 
 
 class TestBaseModelTabularTreesInit:
@@ -54,25 +48,19 @@ class TestBaseModelTabularTreesInit:
             BaseModelTabularTrees.__mro__[1] is abc.ABC
         ), "BaseModelTabularTrees is not an abstract base class"
 
-    def test_successful_initialisation(
-        self, BaseModelTabularTreesImplementation, dummy_model_tree_data
-    ):
+    def test_successful_initialisation(self, dummy_model_tree_data):
         """Test successful initialisation of an implementation of
         BaseModelTabularTrees."""
 
-        BaseModelTabularTreesImplementation(trees=dummy_model_tree_data)
+        DummyModelTabularTrees(trees=dummy_model_tree_data)
 
-    def test_trees_attribute_set(
-        self, BaseModelTabularTreesImplementation, dummy_model_tree_data, mocker
-    ):
+    def test_trees_attribute_set(self, dummy_model_tree_data, mocker):
         """Test the trees attribute is set to the value passed in init."""
 
         # mock the post init method so no other processing happens to trees arg
         mocker.patch.object(BaseModelTabularTrees, "__post_init__")
 
-        dummy_model_tabular_trees = BaseModelTabularTreesImplementation(
-            trees=dummy_model_tree_data
-        )
+        dummy_model_tabular_trees = DummyModelTabularTrees(trees=dummy_model_tree_data)
 
         pd.testing.assert_frame_equal(
             dummy_model_tabular_trees.trees, dummy_model_tree_data
@@ -145,7 +133,7 @@ class TestBaseModelTabularTreesPostInit:
 
             DummyModelTabularTrees()
 
-    def test_trees_not_dataframe_exception(self, BaseModelTabularTreesImplementation):
+    def test_trees_not_dataframe_exception(self):
         """Test a TypeError is raised if trees is not a pd.DataFrame."""
 
         with pytest.raises(
@@ -153,7 +141,7 @@ class TestBaseModelTabularTreesPostInit:
             match="trees is not in expected types <class 'pandas.core.frame.DataFrame'>, got <class 'int'>",
         ):
 
-            BaseModelTabularTreesImplementation(trees=12345)
+            DummyModelTabularTrees(trees=12345)
 
     def test_required_columns_not_list_exception(self, dummy_model_tree_data):
         """Test a TypeError is raised if REQUIRED_COLUMNS is not a list."""
@@ -217,7 +205,6 @@ class TestBaseModelTabularTreesPostInit:
     def test_missing_columns_exception(
         self,
         drop_columns,
-        BaseModelTabularTreesImplementation,
         dummy_model_tree_data,
     ):
         """Test an exception is raised if columns from REQUIRED_COLUMNS are
@@ -230,14 +217,14 @@ class TestBaseModelTabularTreesPostInit:
             match=re.escape(f"expected columns not in df; {sorted(drop_columns)}"),
         ):
 
-            BaseModelTabularTreesImplementation(dropped_columns)
+            DummyModelTabularTrees(dropped_columns)
 
     def test_sort_by_not_subset_required_exception(self, dummy_model_tree_data):
         """Test a ValueError is raised if SORT_BY_COLUMNS is not a subset of
         REQUIRED_COLUMNS."""
 
         @dataclass
-        class DummyModelTabularTrees(BaseModelTabularTrees):
+        class DummyModelTabularTreesSortNotSubset(BaseModelTabularTrees):
             """Dummy class mimicking a model specific class inheriting from
             BaseModelTabularTrees.
 
@@ -258,64 +245,52 @@ class TestBaseModelTabularTreesPostInit:
             ),
         ):
 
-            DummyModelTabularTrees(trees=dummy_model_tree_data)
+            DummyModelTabularTreesSortNotSubset(trees=dummy_model_tree_data)
 
-    def test_trees_attribute_sorted(
-        self, BaseModelTabularTreesImplementation, dummy_model_tree_data
-    ):
+    def test_trees_attribute_sorted(self, dummy_model_tree_data):
         """Test the rows of trees are sorted by SORT_BY_COLUMNS."""
 
         out_of_order_rows = dummy_model_tree_data.sort_values("column1")
 
-        tabular_trees = BaseModelTabularTreesImplementation(out_of_order_rows)
+        tabular_trees = DummyModelTabularTrees(out_of_order_rows)
 
         pd.testing.assert_frame_equal(
             tabular_trees.trees,
-            out_of_order_rows.sort_values(
-                BaseModelTabularTreesImplementation.SORT_BY_COLUMNS
-            ),
+            out_of_order_rows.sort_values(DummyModelTabularTrees.SORT_BY_COLUMNS),
         )
 
-    def test_trees_attribute_columns_ordered(
-        self, BaseModelTabularTreesImplementation, dummy_model_tree_data
-    ):
+    def test_trees_attribute_columns_ordered(self, dummy_model_tree_data):
         """Test the columns of trees are sorted into REQUIRED_COLUMNS order."""
 
         out_of_order_columns = dummy_model_tree_data[
             ["column2", "column3", "column1"]
         ].copy()
 
-        tabular_trees = BaseModelTabularTreesImplementation(out_of_order_columns)
+        tabular_trees = DummyModelTabularTrees(out_of_order_columns)
 
         pd.testing.assert_frame_equal(
             tabular_trees.trees,
-            out_of_order_columns[BaseModelTabularTreesImplementation.REQUIRED_COLUMNS],
+            out_of_order_columns[DummyModelTabularTrees.REQUIRED_COLUMNS],
         )
 
-    def test_trees_attribute_index_reset(
-        self, BaseModelTabularTreesImplementation, dummy_model_tree_data
-    ):
+    def test_trees_attribute_index_reset(self, dummy_model_tree_data):
         """Test that the index is reset on the trees attribute."""
 
         new_index = dummy_model_tree_data.copy()
         new_index.index = [9, -1, 3]
 
-        tabular_trees = BaseModelTabularTreesImplementation(new_index)
+        tabular_trees = DummyModelTabularTrees(new_index)
 
         pd.testing.assert_frame_equal(
             tabular_trees.trees, new_index.reset_index(drop=True)
         )
 
-    def test_post_post_init_called(
-        self, mocker, BaseModelTabularTreesImplementation, dummy_model_tree_data
-    ):
+    def test_post_post_init_called(self, mocker, dummy_model_tree_data):
         """Test that the __post_post_init__ method is called once."""
 
-        mocked = mocker.patch.object(
-            BaseModelTabularTreesImplementation, "__post_post_init__"
-        )
+        mocked = mocker.patch.object(DummyModelTabularTrees, "__post_post_init__")
 
-        BaseModelTabularTreesImplementation(dummy_model_tree_data)
+        DummyModelTabularTrees(dummy_model_tree_data)
 
         assert mocked.call_count == 1, "__post_post_init__ not called once"
 

@@ -5,7 +5,7 @@ import tempfile
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -23,9 +23,6 @@ from .trees import ParsedXGBoostTabularTrees
 
 class DumpReader(ABC):
     """Abstract base class for xgboost mode dump readers."""
-
-    def __init__(self) -> None:
-        pass
 
     @classmethod
     @property
@@ -278,20 +275,26 @@ class XGBoostParser:
     model : xgb.core.Booster
         Model to parse trees into tabular data.
 
-    reader : DumpReader, default = JsonDumpReader()
-        Object capable of reading dumped xgboost model.
+    reader : Optional[DumpReader], default = None
+        Object capable of reading dumped xgboost model. If no value is passed
+        then JsonDumpReader() is used.
 
     """
 
     def __init__(
-        self, model: xgb.core.Booster, reader: DumpReader = JsonDumpReader()
+        self, model: xgb.core.Booster, reader: Optional[DumpReader] = None
     ) -> None:
 
         checks.check_type(model, xgb.core.Booster, "model")
-        checks.check_type(reader, DumpReader, "reader")
+        checks.check_type(reader, DumpReader, "reader", True)
+
+        if reader is None:
+            reader_object = JsonDumpReader()
+        else:
+            reader_object = reader
 
         self.model = model
-        self.reader = reader
+        self.reader = reader_object
 
         warnings.warn(
             "XGBoostDumpParser class is depreceated, "
