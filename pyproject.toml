@@ -20,6 +20,24 @@ pytest-cov = "4.0.0"
 tox = "4.4.6"
 eli5 = "0.13.0"
 
+[tool.poetry.group.xgboost]
+optional = true
+
+[tool.poetry.group.xgboost.dependencies]
+xgboost = "^1.4.0"
+
+[tool.poetry.group.lightgbm]
+optional = true
+
+[tool.poetry.group.lightgbm.dependencies]
+lightgbm = "^3.0.0"
+
+[tool.poetry.group.sklearn]
+optional = true
+
+[tool.poetry.group.sklearn.dependencies]
+scikit-learn = "^1.0.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
