@@ -939,4 +939,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "cbce6c0124b88aca37abb1765118dd37ed8ce5a178e92d43623f4d6febf021dd"
+content-hash = "be1d165c7f88c3fa8cded8afd1e2678f97de49ca846ad576c5070f48d7871dba"
