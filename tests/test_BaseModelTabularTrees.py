@@ -32,11 +32,6 @@ class DummyModelTabularTrees(BaseModelTabularTrees):
 
     SORT_BY_COLUMNS = ["column2"]
 
-    def __post_post_init__(self):
-        """No processing after post_init."""
-
-        pass
-
 
 class TestBaseModelTabularTreesInit:
     """Tests for the BaseModelTabularTrees.__init__ method."""
@@ -290,20 +285,3 @@ class TestBaseModelTabularTreesPostInit:
         pd.testing.assert_frame_equal(
             tabular_trees.trees, new_index.reset_index(drop=True)
         )
-
-    def test_post_post_init_called(self, mocker, dummy_model_tree_data):
-        """Test that the __post_post_init__ method is called once."""
-
-        mocked = mocker.patch.object(DummyModelTabularTrees, "__post_post_init__")
-
-        DummyModelTabularTrees(dummy_model_tree_data)
-
-        assert mocked.call_count == 1, "__post_post_init__ not called once"
-
-        assert (
-            mocked.call_args_list[0][0] == ()
-        ), "positional args not as expected in __post_post_init__ call"
-
-        assert (
-            mocked.call_args_list[0][1] == {}
-        ), "keyword args not as expected in __post_post_init__ call"

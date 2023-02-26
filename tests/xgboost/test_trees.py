@@ -81,7 +81,7 @@ class TestXGBoostTabularTreesInit:
 
 
 class TestXGBoostTabularTreesPostInit:
-    """Tests for the XGBoostTabularTrees.__post_post_init__ method."""
+    """Tests for the XGBoostTabularTrees.__post_init__ method."""
 
     def test_lambda_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if lambda_ is not a float."""

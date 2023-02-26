@@ -69,17 +69,9 @@ class BaseModelTabularTrees(ABC):
             "SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS",
         )
 
-        # reorder columns and sort
         self.trees = self.trees[self.REQUIRED_COLUMNS]
         self.trees = self.trees.sort_values(self.SORT_BY_COLUMNS)
-
         self.trees = self.trees.reset_index(drop=True)
-
-        self.__post_post_init__()
-
-    def __post_post_init__(self):  # noqa: B027
-        """Further model specific processing called at the end of __post_init__."""
-        pass
 
 
 @singledispatch
