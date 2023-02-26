@@ -3,13 +3,13 @@ import re
 import pandas as pd
 import pytest
 
-from tabular_trees.sklearn import trees
+from tabular_trees import sklearn
 
 
 def test_successful_call(sklearn_diabetes_gbm_regressor):
     """Test a successful call to export_tree_data__gradient_boosting_model."""
 
-    trees.export_tree_data__gradient_boosting_model(sklearn_diabetes_gbm_regressor)
+    sklearn.export_tree_data__gradient_boosting_model(sklearn_diabetes_gbm_regressor)
 
 
 def test_model_not_correct_type_exception():
@@ -24,7 +24,7 @@ def test_model_not_correct_type_exception():
 
     with pytest.raises(TypeError, match=re.escape(msg)):
 
-        trees.export_tree_data__gradient_boosting_model(["a", "b"])
+        sklearn.export_tree_data__gradient_boosting_model(["a", "b"])
 
 
 def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
@@ -35,7 +35,7 @@ def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
         NotImplementedError, match="model with multiple responses not supported"
     ):
 
-        trees.export_tree_data__gradient_boosting_model(sklearn_iris_gbm_classifier)
+        sklearn.export_tree_data__gradient_boosting_model(sklearn_iris_gbm_classifier)
 
 
 def test_output(mocker, sklearn_diabetes_gbm_regressor):
@@ -58,14 +58,14 @@ def test_output(mocker, sklearn_diabetes_gbm_regressor):
         index=[0],
     )
 
-    mocker.patch.object(trees, "_extract_gbm_tree_data", return_value=dummy_tree_data)
+    mocker.patch.object(sklearn, "_extract_gbm_tree_data", return_value=dummy_tree_data)
 
-    exported_trees = trees.export_tree_data__gradient_boosting_model(
+    exported_trees = sklearn.export_tree_data__gradient_boosting_model(
         sklearn_diabetes_gbm_regressor
     )
 
     assert (
-        type(exported_trees) is trees.ScikitLearnTabularTrees
+        type(exported_trees) is sklearn.ScikitLearnTabularTrees
     ), "output from export_tree_data__gradient_boosting_model incorrect type"
 
     pd.testing.assert_frame_equal(exported_trees.trees, dummy_tree_data)

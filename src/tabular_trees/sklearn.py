@@ -18,8 +18,8 @@ except ModuleNotFoundError as err:
         "scikit-learn must be installed to use functionality in sklearn module"
     ) from err
 
-from .. import checks
-from ..trees import BaseModelTabularTrees, export_tree_data
+from . import checks
+from .trees import BaseModelTabularTrees, export_tree_data
 
 
 @dataclass

@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tabular_trees.sklearn import trees
+from tabular_trees import sklearn
 
 
 def test_successful_call(sklearn_diabetes_hist_gbm_regressor):
     """Test a successful call to _extract_hist_gbm_tree_data."""
 
-    trees._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
+    sklearn._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
 
 
 def test_output_approach():
@@ -44,7 +44,7 @@ def test_output_approach():
     # set the _predictors and n_iter_ attributes to known values
     dummy_model = DummyModel(n_iter_=2, predictor_data=[predictor_1, predictor_2])
 
-    results = trees._extract_hist_gbm_tree_data(dummy_model)
+    results = sklearn._extract_hist_gbm_tree_data(dummy_model)
 
     expected_results = pd.DataFrame(
         {

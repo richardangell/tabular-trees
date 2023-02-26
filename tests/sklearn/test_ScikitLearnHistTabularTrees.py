@@ -1,6 +1,6 @@
 import pytest
 
-from tabular_trees.sklearn.trees import ScikitLearnHistTabularTrees
+from tabular_trees.sklearn import ScikitLearnHistTabularTrees
 from tabular_trees.trees import BaseModelTabularTrees
 
 
