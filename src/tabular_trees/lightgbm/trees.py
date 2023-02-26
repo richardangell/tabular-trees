@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass
 
+import lightgbm as lgb
 import pandas as pd
 
-from ..trees import BaseModelTabularTrees, TabularTrees
+from .. import checks
+from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
 @dataclass
@@ -69,3 +71,20 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         df["leaf"] = (df["split_feature"].isnull()).astype(int)
 
         return df
+
+
+@export_tree_data.register(lgb.Booster)
+def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
+    """Export tree data from Booster object.
+
+    Parameters
+    ----------
+    model : Booster
+        Model to export tree data from.
+
+    """
+    checks.check_type(model, lgb.Booster, "model")
+
+    tree_data = model.trees_to_dataframe()
+
+    return LightGBMTabularTrees(tree_data)
