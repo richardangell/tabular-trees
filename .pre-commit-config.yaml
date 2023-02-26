@@ -37,3 +37,4 @@ repos:
     hooks:
     -   id: pydocstyle
         args: [--convention, numpy]
+        exclude: ^docs/
