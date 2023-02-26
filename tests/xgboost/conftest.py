@@ -3,18 +3,17 @@
 import pandas as pd
 import pytest
 import xgboost as xgb
-from sklearn.datasets import load_diabetes
 
 from tabular_trees.xgboost.parser import JsonDumpReader
 
 
 @pytest.fixture(scope="session")
-def xgb_diabetes_dmatrix() -> xgb.DMatrix:
+def xgb_diabetes_dmatrix(diabetes_data) -> xgb.DMatrix:
     """Return the diabetes dataset in a single xgb.DMatrix."""
-    data = load_diabetes()
-
     xgb_data = xgb.DMatrix(
-        data["data"], label=data["target"], feature_names=data["feature_names"]
+        diabetes_data["data"],
+        label=diabetes_data["target"],
+        feature_names=diabetes_data["feature_names"],
     )
 
     return xgb_data

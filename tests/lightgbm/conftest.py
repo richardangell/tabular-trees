@@ -3,16 +3,15 @@
 import lightgbm as lgb
 import pandas as pd
 import pytest
-from sklearn.datasets import load_diabetes
 
 
 @pytest.fixture(scope="session")
-def lgb_diabetes_dataset() -> lgb.Dataset:
+def lgb_diabetes_dataset(diabetes_data) -> lgb.Dataset:
     """Return the diabetes dataset in a single lgb.Dataset."""
-    data = load_diabetes()
-
     lgb_data = lgb.Dataset(
-        data["data"], label=data["target"], feature_name=data["feature_names"]
+        diabetes_data["data"],
+        label=diabetes_data["target"],
+        feature_name=diabetes_data["feature_names"],
     )
 
     return lgb_data
