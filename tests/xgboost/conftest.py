@@ -1,3 +1,5 @@
+"""Fixtures for XGBoost specific data and models."""
+
 import pytest
 import xgboost as xgb
 from sklearn.datasets import load_diabetes
@@ -8,7 +10,6 @@ from tabular_trees.xgboost.parser import JsonDumpReader
 @pytest.fixture(scope="session")
 def xgb_diabetes_dmatrix():
     """Return the diabetes dataset in a single xgb.DMatrix."""
-
     data = load_diabetes()
 
     xgb_data = xgb.DMatrix(
@@ -20,8 +21,7 @@ def xgb_diabetes_dmatrix():
 
 @pytest.fixture(scope="session")
 def xgb_diabetes_model(xgb_diabetes_dmatrix):
-    """Build an xgboost model with 10 trees and depth 3 on the diabetes dataset."""
-
+    """Xgboost model with 10 trees and depth 3 on the diabetes dataset."""
     model = xgb.train(
         params={"verbosity": 0, "max_depth": 3},
         dtrain=xgb_diabetes_dmatrix,
@@ -34,7 +34,6 @@ def xgb_diabetes_model(xgb_diabetes_dmatrix):
 @pytest.fixture(scope="session")
 def xgb_diabetes_model_trees_dataframe(xgb_diabetes_model):
     """Return the trees from xgb_diabetes_model in DataFrame structure."""
-
     return xgb_diabetes_model.trees_to_dataframe()
 
 
@@ -44,8 +43,8 @@ def xgb_diabetes_model_parsed_trees_dataframe(tmp_path, xgb_diabetes_model):
 
     Trees are dumped to json and then loaded from there so the data
     has different column names than if trees_to_dataframe was used.
-    """
 
+    """
     json_file = str(tmp_path / "model.json")
 
     xgb_diabetes_model.dump_model(json_file, with_stats=True, dump_format="json")
@@ -57,13 +56,12 @@ def xgb_diabetes_model_parsed_trees_dataframe(tmp_path, xgb_diabetes_model):
 
 @pytest.fixture()
 def xgb_diabetes_model_parsed_trees_dataframe_no_stats(tmp_path, xgb_diabetes_model):
-    """Return the trees from xgb_diabetes_model in DataFrame structure
-    without gain and cover stats.
+    """Trees from xgb_diabetes_model in DataFrame structure without gain and cover.
 
-    Trees are dumped to json and then loaded from there so the data
-    has different column names than if trees_to_dataframe was used.
+    Trees are dumped to json and then loaded from there so the data has different
+    column names than if trees_to_dataframe was used.
+
     """
-
     json_file = str(tmp_path / "model.json")
 
     xgb_diabetes_model.dump_model(json_file, with_stats=False, dump_format="json")

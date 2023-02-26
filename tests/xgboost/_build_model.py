@@ -6,7 +6,6 @@ from sklearn.datasets import load_boston
 
 def build_depth_3_model(n_trees=10, return_data=False, drop_columns=None):
     """Build xgboost model on boston dataset with 10 trees and depth 3."""
-
     boston = load_boston()
 
     boston_df = pd.DataFrame(boston["data"], columns=boston["feature_names"])
@@ -33,8 +32,7 @@ def build_depth_3_model(n_trees=10, return_data=False, drop_columns=None):
 
 
 def build_example_shap_model():
-    """Function to build simple model on 10 row dataset where expected shapley values are known."""
-
+    """Xgboost regression model on dataset where expected shapley values are known."""
     np.random.seed(100)
     x_train = pd.DataFrame(
         {
