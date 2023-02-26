@@ -25,11 +25,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         Alpha value used in the xgboost model. An exception will be raised if
         alpha is non-zero.
 
-    Attributes
-    ----------
-    n_trees : int
-        Number of trees in the model. Indexed from 0.
-
     """
 
     trees: pd.DataFrame
