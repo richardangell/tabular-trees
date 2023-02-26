@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.trees import BaseModelTabularTrees
+from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
 from tabular_trees.xgboost.trees import ParsedXGBoostTabularTrees, XGBoostTabularTrees
 
 
@@ -295,13 +295,15 @@ class TestXGBoostTabularTreesConvert:
     """Tests for the XGBoostTabularTrees.convert_to_tabular_trees method."""
 
     def test_successful_call(self, xgb_diabetes_model_trees_dataframe):
-        """"""
+        """Test a successful call to convert_to_tabular_trees."""
 
         xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
-        xgboost_tabular_trees.convert_to_tabular_trees()
+        output = xgboost_tabular_trees.convert_to_tabular_trees()
 
-        raise ValueError("a")
+        assert (
+            type(output) is TabularTrees
+        ), "output from XGBoostTabularTrees.convert_to_tabular_trees is not TabularTrees type"
 
 
 class TestParsedXGBoostTabularTreesInit:
