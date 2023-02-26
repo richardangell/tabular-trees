@@ -6,10 +6,10 @@ import pytest
 from tabular_trees.sklearn import trees
 
 
-def test_successful_call(sklearn_diabetes_gbr):
+def test_successful_call(sklearn_diabetes_gbm_regressor):
     """Test a successful call to export_tree_data__gradient_boosting_model."""
 
-    trees.export_tree_data__gradient_boosting_model(sklearn_diabetes_gbr)
+    trees.export_tree_data__gradient_boosting_model(sklearn_diabetes_gbm_regressor)
 
 
 def test_model_not_correct_type_exception():
@@ -27,7 +27,7 @@ def test_model_not_correct_type_exception():
         trees.export_tree_data__gradient_boosting_model(["a", "b"])
 
 
-def test_multiple_responses_exception(sklearn_iris_gbc):
+def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
     """Test a NotImplementedError is raised if the model passed has multiple
     responses e.g. multiclass classification."""
 
@@ -35,10 +35,10 @@ def test_multiple_responses_exception(sklearn_iris_gbc):
         NotImplementedError, match="model with multiple responses not supported"
     ):
 
-        trees.export_tree_data__gradient_boosting_model(sklearn_iris_gbc)
+        trees.export_tree_data__gradient_boosting_model(sklearn_iris_gbm_classifier)
 
 
-def test_output(mocker, sklearn_diabetes_gbr):
+def test_output(mocker, sklearn_diabetes_gbm_regressor):
     """Test that the output of the function is a ScikitLearnTabularTrees
     object with the output from _extract_hist_gbm_tree_data."""
 
@@ -61,7 +61,7 @@ def test_output(mocker, sklearn_diabetes_gbr):
     mocker.patch.object(trees, "_extract_gbm_tree_data", return_value=dummy_tree_data)
 
     exported_trees = trees.export_tree_data__gradient_boosting_model(
-        sklearn_diabetes_gbr
+        sklearn_diabetes_gbm_regressor
     )
 
     assert (

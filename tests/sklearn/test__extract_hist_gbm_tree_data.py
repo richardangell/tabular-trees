@@ -7,10 +7,10 @@ import pytest
 from tabular_trees.sklearn import trees
 
 
-def test_successful_call(sklearn_diabetes_hist_gbr):
+def test_successful_call(sklearn_diabetes_hist_gbm_regressor):
     """Test a successful call to _extract_hist_gbm_tree_data."""
 
-    trees._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbr)
+    trees._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
 
 
 def test_output_approach():

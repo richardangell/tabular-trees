@@ -10,10 +10,10 @@ from tabular_trees.trees import export_tree_data
 @pytest.mark.parametrize(
     "model_fixture_name,expected_type",
     [
-        ("sklearn_diabetes_hist_gbr", ScikitLearnHistTabularTrees),
-        ("sklearn_breast_cancer_hist_gbc", ScikitLearnHistTabularTrees),
-        ("sklearn_diabetes_gbr", ScikitLearnTabularTrees),
-        ("sklearn_breast_cancer_gbc", ScikitLearnTabularTrees),
+        ("sklearn_diabetes_hist_gbm_regressor", ScikitLearnHistTabularTrees),
+        ("sklearn_breast_cancer_hist_gbm_classifier", ScikitLearnHistTabularTrees),
+        ("sklearn_diabetes_gbm_regressor", ScikitLearnTabularTrees),
+        ("sklearn_breast_cancer_gbm_classifier", ScikitLearnTabularTrees),
     ],
 )
 def test_model_specific_function_dispatch(request, model_fixture_name, expected_type):
