@@ -19,6 +19,7 @@ pytest-mock = "3.10.0"
 pytest-cov = "4.0.0"
 tox = "4.4.6"
 eli5 = "0.13.0"
+scikit-learn = "^1.0.1"
 
 [tool.poetry.group.xgboost]
 optional = true
@@ -31,12 +32,6 @@ optional = true
 
 [tool.poetry.group.lightgbm.dependencies]
 lightgbm = "^3.0.0"
-
-[tool.poetry.group.sklearn]
-optional = true
-
-[tool.poetry.group.sklearn.dependencies]
-scikit-learn = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core"]
