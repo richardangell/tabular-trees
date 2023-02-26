@@ -1,3 +1,5 @@
+"""LightGBM trees in tabular format."""
+
 from dataclasses import dataclass
 
 import pandas as pd
@@ -52,7 +54,6 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
     def convert_to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
-
         trees = self.trees.copy()
 
         tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(

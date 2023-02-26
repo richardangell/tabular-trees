@@ -12,7 +12,8 @@ def check_type(
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:
-    """Function to check object is of given types and raise a TypeError if not.
+    """Check object is of given types and raise a TypeError if not.
+
     Parameters
     ----------
     obj : Any
@@ -21,8 +22,8 @@ def check_type(
         Expected type or tuple of expected types of obj.
     none_allowed : bool = False
         Is None an allowed value for obj?
-    """
 
+    """
     if type(expected_types) is tuple:
 
         if not all(
@@ -54,16 +55,18 @@ def check_type(
 
 
 def check_condition(condition: bool, error_message_text: str):
-    """Check that condition (which evaluates to a bool) is True and raise a
-    ValueError if not.
+    """Check that condition, which evaluates to a bool, is True.
+
+    If condition is not True then a ValueError is raised.
+
     Parameters
     ----------
     condition : bool
         Condition that evaluates to bool, to check.
     error_message_text : str
         Message to print in ValueError if condition does not evalute to True.
-    """
 
+    """
     check_type(condition, bool, "condition")
     check_type(error_message_text, str, "error_message_text")
 
@@ -73,7 +76,7 @@ def check_condition(condition: bool, error_message_text: str):
 
 
 def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
-    """Function to check if a pd.DataFrame has expected columns.
+    """Check if a pd.DataFrame has expected columns.
 
     Extra columns can be allowed by specifying the allow_unspecified_columns argument.
 
@@ -89,7 +92,6 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
         Should extra, unspecified columns in df be allowed?
 
     """
-
     check_type(df, pd.DataFrame, "df")
     check_type(expected_columns, list, "expected_columns")
     check_type(allow_unspecified_columns, bool, "allow_unspecified_columns")

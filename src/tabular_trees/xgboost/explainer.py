@@ -10,7 +10,24 @@ from tqdm import tqdm
 
 
 def decompose_prediction(trees_df, row):
+    """Decompose prediction from tree based model with Saabas method[1].
 
+    Parameters
+    ----------
+    tree_df : pd.DataFrame
+        Subset of output from pygbm.expl.xgb.extract_model_predictions
+        for a single tree.
+
+    row : pd.DataFrame
+        Single row DataFrame to explain prediction.
+
+    Notes
+    -----
+    [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19
+        October. Available at http://blog.datadive.net/interpreting-random-forests/
+        (Accessed 26 February 2023).
+
+    """
     n_trees = trees_df.tree.max()
 
     # run terminal_node_path for each tree
@@ -28,16 +45,21 @@ def decompose_prediction(trees_df, row):
 def terminal_node_path(tree_df, row):
     """Traverse tree according to the values in the given row of data.
 
-    Args:
-        tree_df (pd.DataFrame): df subset of output from pygbm.expl.xgb.extract_model_predictions
-            for single tree.
-        row (pd.DataFrame): single row df to explain prediction.
+    Parameters
+    ----------
+    tree_df : pd.DataFrame
+        Subset of output from pygbm.expl.xgb.extract_model_predictions
+        for a single tree.
 
-    Returns:
-        pd.DataFrame: df where each successive row shows the path of row through the tree.
+    row : pd.DataFrame
+        Single row DataFrame to explain prediction.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame where each successive row shows the path of row through the tree.
 
     """
-
     # get column headers no rows
     path = tree_df.loc[tree_df.nodeid == -1]
 
@@ -132,7 +154,7 @@ def terminal_node_path(tree_df, row):
 
 
 def shapley_values(tree_df, row, return_permutations=False):
-    """Function to calculate shapley values for xgboost model.
+    """Calculate shapley values for an xgboost model.
 
     This is Algorithm 1 as presented in https://arxiv.org/pdf/1802.03888.pdf.
 
@@ -149,19 +171,20 @@ def shapley_values(tree_df, row, return_permutations=False):
     Parameters
     ----------
     tree_df : pd.DataFrame
-        Model (multiple trees) in tabular structure. Should be the output of pygbm.expl.xgb.extract_model_predictions.
+        Model (multiple trees) in tabular structure. Should be the output of
+        pygbm.expl.xgb.extract_model_predictions.
 
     row : pd.Series
         Single row of data to explain prediction.
 
     return_permutations : bool, default = False
-        Should contributions for each feature permutation for each tree (i.e. most granular level) be
-        returned? If not overall shapley values are returned.
+        Should contributions for each feature permutation for each tree (i.e. most
+        granular level) be returned? If not overall shapley values are returned.
 
     """
-
     warnings.warn(
-        "This algorithm is likely to run very slow, it gives the same results but is not the more efficient treeSHAP algorithm."
+        "This algorithm is likely to run very slow, it gives the same results but is "
+        "not the more efficient treeSHAP algorithm."
     )
 
     tree_df.reset_index(drop=True, inplace=True)
@@ -198,22 +221,22 @@ def shapley_values(tree_df, row, return_permutations=False):
 
 
 def shapley_values_tree(tree_df, row, return_permutations=False):
-    """Function to calculate shapley values for single tree.
+    """Calculate shapley values for single tree.
 
     Parameters
     ----------
     tree_df : pd.DataFrame
-        Single tree in tabular structure. Should be subset of output of pygbm.expl.xgb.extract_model_predictions.
+        Single tree in tabular structure. Should be subset of output of
+        pygbm.expl.xgb.extract_model_predictions.
 
     row : pd.Series
         Single row of data to explain prediction.
 
     return_permutations : bool, default = False
-        Should contributions for each feature permutation be returned? If not overall shapley values (i.e. average
-        over all permutations) are returned.
+        Should contributions for each feature permutation be returned? If not overall
+        shapley values (i.e. average over all permutations) are returned.
 
     """
-
     internal_nodes = tree_df["node_type"] == "internal"
 
     mean_prediction = (
@@ -308,10 +331,12 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
 
 
 def expvalue(x, s, tree):
-    """Function to estimate E[f(x)|x_S] - Algorithm 1 from Consistent Individualized Feature Attribution
-    for TreeEnsembles.
+    """Estimate E[f(x)|x_S].
 
-    Note, the node indices start at 0 for this implementation whereas in the paper they start at 1.
+    Algorithm 1 from Consistent Individualized Feature Attribution for Tree Ensembles.
+
+    Note, the node indices start at 0 for this implementation whereas in the paper they
+    start at 1.
 
     Note, the arguments [v, a, b, t, r, d] define the tree under consideration.
 
@@ -333,18 +358,16 @@ def expvalue(x, s, tree):
         r - cover for each node (# samples)
         d - split variable for each node
 
-
     """
-
     return g(0, 1, x, s, tree)
 
 
 def g(j, w, x, s, tree):
-    """Function to recusively traverse down tree and return prediction for x from tree using only
-    the selected features in S.
+    """Recusively traverse down tree and return prediction for x.
 
-    This algorithm follows the route allowed by the features in S, if a node is encountered that
-    is made on a feature not in S then an average of predictions fro both child nodes is used.
+    This algorithm follows the route allowed by the features in s, if a node is
+    encountered that is made on a feature not in s then an average of predictions
+    for both child nodes is used.
 
     Parameters
     ----------
@@ -364,7 +387,6 @@ def g(j, w, x, s, tree):
         Tree structure in tabular form
 
     """
-
     v = tree["v"].tolist()
     a = tree["a"].tolist()
     b = tree["b"].tolist()

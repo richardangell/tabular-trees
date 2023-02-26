@@ -27,11 +27,12 @@ class DumpReader(ABC):
     @property
     @abstractmethod
     def dump_type(self):
+        """Attribute indicating the model dump format supported."""
         raise NotImplementedError
 
     @abstractmethod
     def read_dump(self, file: str) -> None:
-
+        """Read xgboost model dump, in specific format."""
         checks.check_type(file, str, "file")
         checks.check_condition(Path(file).exists(), f"{file} exists")
 
@@ -42,11 +43,10 @@ class JsonDumpReader(DumpReader):
     dump_type = "json"
 
     def read_dump(self, file: str) -> pd.DataFrame:
-        """Reads an xgboost model dump json file and parses it into a tabular
-        structure.
+        """Read an xgboost model dump json file and parse it into a tabular structure.
 
-        Json file to read must be the output from xgboost.Booster.dump_model
-        with dump_format = 'json'.
+        Json file to read must be the output from xgboost.Booster.dump_model with
+        dump_format = 'json'.
 
         Returns
         -------
@@ -57,7 +57,6 @@ class JsonDumpReader(DumpReader):
             the output DataFrame.
 
         """
-
         super().read_dump(file)
 
         with open(file) as f:
@@ -87,8 +86,7 @@ class JsonDumpReader(DumpReader):
         return trees_df
 
     def _recursive_pop_children(self, _dict: dict, _list: list):
-        """Function to recursively extract nodes from nested structure and
-        append to list.
+        """Recursively extract nodes from nested structure and append to list.
 
         The procedure is as follows;
         If _dict has no childen i.e. this is a leaf node then convert the dict
@@ -96,8 +94,8 @@ class JsonDumpReader(DumpReader):
         Otherwise remove children from _dict, convert the remaining items to a
         DataFrame and append to _list, then call function on left and right
         children.
-        """
 
+        """
         if "children" in _dict.keys():
 
             children = _dict.pop("children")
@@ -113,11 +111,11 @@ class JsonDumpReader(DumpReader):
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
     def _fill_depth_for_terminal_nodes(self, df: pd.DataFrame):
-        """Function to fill in the depth column for terminal nodes.
+        """Fill in the depth column for terminal nodes.
 
         The json dump from xgboost does not contain this information.
-        """
 
+        """
         for i, row in df.iterrows():
 
             if np.isnan(row["depth"]):
@@ -143,8 +141,7 @@ class TextDumpReader(DumpReader):
     dump_type = "text"
 
     def read_dump(self, file: str) -> pd.DataFrame:
-        """Read an xgboost model dump text file dump and parse it into a
-        tabular structure.
+        """Read an xgboost model dump text file dump and parse into tabular structure.
 
         Text file to read must be the output from xgboost.Booster.dump_model
         with dump_format = 'text'. Note this argument was only added in 0.81
@@ -164,7 +161,6 @@ class TextDumpReader(DumpReader):
             the output DataFrame.
 
         """
-
         super().read_dump(file)
 
         with open(file) as f:
@@ -305,8 +301,8 @@ class XGBoostParser:
         """Dump model and then parse into tabular structure.
 
         Tree data is returned in a ParsedXGBoostTabularTrees object.
-        """
 
+        """
         with tempfile.TemporaryDirectory() as tmp_dir:
 
             tmp_model_dump = str(

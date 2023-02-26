@@ -1,3 +1,5 @@
+"""XGBoost trees in tabular format."""
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -80,7 +82,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             If self.alpha is not 0.
 
         """
-
         checks.check_type(self.lambda_, float, "lambda_")
         checks.check_type(self.alpha, float, "alpha")
         checks.check_condition(self.alpha == 0, "alpha = 0")
@@ -91,7 +92,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
     def convert_to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
-
         trees = self.trees.copy()
 
         trees = self._derive_leaf_node_flag(trees)
@@ -104,7 +104,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
     def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
         """Derive a leaf node indiciator flag column."""
-
         df["leaf"] = (df["Feature"] == "Leaf").astype(int)
 
         return df
@@ -121,7 +120,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             added.
 
         """
-
         df = self.trees.copy()
         n_trees = df["Tree"].max()
 
@@ -157,14 +155,14 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         return df_g
 
     def _derive_internal_node_g(self, tree_df: pd.DataFrame) -> pd.DataFrame:
-        """Function to derive predictons for internal nodes in a single tree.
+        """Derive predictons for internal nodes in a single tree.
 
         This involves starting at each leaf node in the tree and propagating
         the G value back up through the tree, adding this leaf node G to each
         node that is travelled to.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         tree_df : pd.DataFrame
             Rows from corresponding to a single tree, from _derive_predictions.
 
@@ -175,7 +173,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             node's g value is the sum of G for it's child nodes.
 
         """
-
         tree_df = tree_df.copy()
 
         leaf_df = tree_df.loc[tree_df["Feature"] == "Leaf"]
@@ -212,8 +209,9 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
 @dataclass
 class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost models that have been parsed from either text
-    or json file, in tabular format.
+    """Dataclass for xgboost models that have been parsed from model dump.
+
+    Data maybe have been parsed from text or json file dump.
 
     Parameters
     ----------
@@ -265,7 +263,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     }
 
     def __post_init__(self):
-
+        """Check that STATS_COLUMNS are present in the data."""
         if not all(
             [column in self.trees.columns.values for column in self.STATS_COLUMNS]
         ):
@@ -286,15 +284,12 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
             If both gain and cover columns are not present in the trees data.
 
         """
-
         converted_data = self._create_same_columns_as_xgboost_output(self.trees)
 
         return XGBoostTabularTrees(converted_data)
 
     def _create_same_columns_as_xgboost_output(self, df: pd.DataFrame) -> pd.DataFrame:
-        """This method converts the DataFrame structure that has been created
-        from importing a dump of an xgb.Booster to the same format as that
-        output from xgb.Booster.trees_to_dataframe.
+        """Convert parsed DataFrame dump to xgb.Booster.trees_to_dataframe format.
 
         This involves the following steps;
         - converting the cover column to float type
@@ -312,7 +307,6 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
             Tree data to convert.
 
         """
-
         df = self._convert_cover_dtype(df)
         df = self._create_id_columns(df)
         df = self._create_category_column(df)
@@ -326,45 +320,31 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
     def _convert_cover_dtype(self, df: pd.DataFrame) -> pd.DataFrame:
         """Convert the cover column to float type."""
-
         df["cover"] = df["cover"].astype(float)
-
         return df
 
     def _rename_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Rename columns according to the mapping defined in COLUMNS_MAPPING."""
-
         return df.rename(columns=self.COLUMNS_MAPPING)
 
     def _drop_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Drop columns not needed in XGBoostTabularTrees structure.
-
-        The columns to be dropped are; depth, leaf.
-        """
-
+        """Drop depth, leaf columns not needed in XGBoostTabularTrees structure."""
         return df.drop(columns=["depth", "leaf"])
 
     def _create_id_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add an ID column onto df by concatenating tree and nodeid."""
-
         df["ID"] = df["tree"].astype(str) + "-" + df["nodeid"].astype(str)
-
         return df
 
     def _create_category_column(self, df: pd.DataFrame) -> pd.DataFrame:
         """Create the Category column in df."""
-
         df["Category"] = np.NaN
-
         return df
 
     def _populate_leaf_node_split_column(self, df: pd.DataFrame) -> pd.DataFrame:
         """Populate leaf node rows of the split column with the value 'Leaf'."""
-
         leaf_nodes = df["gain"].isnull()
-
         df.loc[leaf_nodes, "split"] = "Leaf"
-
         return df
 
     def _combine_leaf_and_gain(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -372,8 +352,8 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
         The leaf column should only be populated for leaf nodes (giving their
         predicted value) and gain should only be populated for interval nodes.
-        """
 
+        """
         leaf_nodes = df["gain"].isnull()
 
         df.loc[leaf_nodes, "gain"] = df.loc[leaf_nodes, "leaf"]
@@ -392,10 +372,10 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
     def _convert_node_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Convert yes, no and missing columns into tree-node format."""
-
         columns = ["yes", "no", "missing"]
 
         for column in columns:
+
             df = self._convert_node_column_to_tree_node_format(df, column)
 
         return df
@@ -404,7 +384,6 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         self, df: pd.DataFrame, column: str
     ) -> pd.DataFrame:
         """Convert a given column into tree-node format."""
-
         null_rows = df[column].isnull()
 
         df[column] = (

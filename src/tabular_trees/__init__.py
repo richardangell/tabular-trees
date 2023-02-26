@@ -1,4 +1,4 @@
-"""tabular_trees"""
+"""tabular_trees module."""
 
 from . import checks, trees
 from ._version import __version__

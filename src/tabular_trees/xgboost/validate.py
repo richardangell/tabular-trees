@@ -10,8 +10,7 @@ from ..checks import check_df_columns
 def validate_monotonic_constraints_df(
     trees_df, constraints, return_detailed_results=False
 ):
-    """Function to check that monotonic constraints are as expected in an xgboost model."""
-
+    """Check that monotonic constraints are as expected in an xgboost model."""
     expected_columns = [
         "tree",
         "nodeid",
@@ -152,30 +151,48 @@ def traverse_tree_down(
     print_note="start",
     verbose=False,
 ):
-    """Function to find a value for variable of interest (name) that would end up in each node in the tree.
+    """Find a value for variable of interest (name) that would end up in each node in the tree.
 
-    Args:
-        df (pd.DataFrame): single tree structure output from parser.read_dump_text() or parser.read_dump_json()
-        node (int): node number
-        name (str): name of variable of interest, function will determine values for this variable that would allow a data point
-            to visit each node
-        value (int or float or None): value that has been sent to current node, default value of None is only
-            used at the top of the tree
-        lower (int or float or None): lower bound for value of variable (name) that would allow a data point to visit current node,
-            default value of None is used from the top of the tree until an lower bound is found i.e. right (no) split is traversed
-        upper (int or float or None): upper bound for value of variable (name) that would allow a data point to visit current node,
-            default value of None is used from the top of the tree until an upper bound is found i.e. left (yes) split is traversed
-        print_note (str): note to print if verbose = True, only able to set for first call of function
-        verbose (bool): should notes be printed as function runs
-        nodes_list (list): list to record the node numbers that are visited
-        values_list (list): list to record the values of variable (name) which allow each node to be visited (same order as nodes_list)
+    Parameters
+    ----------
+        df : pd.DataFrame
+            Single tree structure output from parser.read_dump_text() or
+            parser.read_dump_json().
+        node : int
+            Node number.
+        name : str
+            Name of variable of interest, function will determine values for this
+            variable that would allow a data point to visit each node.
+        value : int, float or None
+            Value that has been sent to current node, default value of None is only
+            used at the top of the tree.
+        lower : int, float or None:
+            Lower bound for value of variable (name) that would allow a data point to
+            visit current node, default value of None is used from the top of the tree
+            until an lower bound is found i.e. right (no) split is traversed.
+        upper : int, float or None:
+            Upper bound for value of variable (name) that would allow a data point to
+            visit current node, default value of None is used from the top of the tree
+            until an upper bound is found i.e. left (yes) split is traversed.
+        print_note : str
+            Note to print if verbose = True, only able to set for first call of
+            function.
+        verbose : bool
+            Should notes be printed as function runs.
+        nodes_list : list
+            List to record the node numbers that are visited.
+        values_list : list
+            List to record the values of variable (name) which allow each node to be
+            visited (same order as nodes_list).
 
-    Returns:
-        No returns from function. However nodes_list (list) and values_list (list) which are lists of nodes and corresponding data values of
-        variable of interest (name) that would allow each node to be visited - are updated as the function runs
+    Returns
+    -------
+        No returns from function. However nodes_list (list) and values_list (list)
+        which are lists of nodes and corresponding data values of variable of
+        interest (name) that would allow each node to be visited - are updated as
+        the function runs
 
     """
-
     if not isinstance(nodes_list, list):
 
         raise TypeError("nodes_list must be a list")
@@ -394,8 +411,7 @@ def traverse_tree_down(
 
 
 def gather_traverse_tree_down_results(nodes, values, name):
-    """Function to gather results from traverse_tree_down into pd.DataFrame."""
-
+    """Gather results from traverse_tree_down into pd.DataFrame."""
     if not isinstance(nodes, list):
 
         raise TypeError("nodes must be a list")
@@ -424,8 +440,7 @@ def gather_traverse_tree_down_results(nodes, values, name):
 def check_monotonicity_at_split(
     tree_df, tree_no, trend, variable, node, child_nodes_left, child_nodes_right
 ):
-    """Function to check monotonic trend is in place at a given split in a single tree."""
-
+    """Check monotonic trend is in place at a given split in a single tree."""
     if not isinstance(tree_df, pd.DataFrame):
 
         raise TypeError("tree_df should be a pd.DataFrame")

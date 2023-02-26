@@ -24,23 +24,18 @@ class BaseModelTabularTrees(ABC):
 
     @abstractmethod
     def __init__(self, trees: pd.DataFrame) -> None:
-
         pass
 
     @property
     @abstractmethod
     def REQUIRED_COLUMNS(self):  # noqa: N802
-        """REQUIRED_COLUMNS attribute that must be defined in classes
-        inheriting from BaseModelTabularTrees."""
-
+        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("REQUIRED_COLUMNS attribute not defined")
 
     @property
     @abstractmethod
     def SORT_BY_COLUMNS(self):  # noqa: N802
-        """SORT_BY_COLUMNS attribute that must be defined in classes inheriting
-        from BaseModelTabularTrees."""
-
+        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
 
     def __post_init__(self) -> None:
@@ -60,7 +55,6 @@ class BaseModelTabularTrees(ABC):
             If REQUIRED_COLUMNS are not in self.trees.
 
         """
-
         if not hasattr(self, "trees"):
             raise AttributeError("trees attribute not set")
 
@@ -84,16 +78,13 @@ class BaseModelTabularTrees(ABC):
         self.__post_post_init__()
 
     def __post_post_init__(self):  # noqa: B027
-        """Method to be called at the end of __post_init__ for model specific
-        processing."""
-
+        """Further model specific processing called at the end of __post_init__."""
         pass
 
 
 @singledispatch
 def export_tree_data(model: Any):
     """Export tree data from passed model."""
-
     raise NotImplementedError(f"model type not supported; {type(model)}")
 
 

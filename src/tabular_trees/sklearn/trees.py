@@ -1,3 +1,5 @@
+"""Scikit-learn trees in tabular format."""
+
 from dataclasses import dataclass
 from typing import Union
 
@@ -22,8 +24,7 @@ from ..trees import BaseModelTabularTrees, export_tree_data
 
 @dataclass
 class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
-    """Class to hold the scikit-learn HistGradientBoosting trees in tabular
-    format.
+    """Scikit-learn HistGradientBoosting trees in tabular format.
 
     Parameters
     ----------
@@ -69,7 +70,6 @@ def export_tree_data__hist_gradient_boosting_model(
         Model to export tree data from.
 
     """
-
     checks.check_type(
         model, (HistGradientBoostingClassifier, HistGradientBoostingRegressor), "model"
     )
@@ -88,8 +88,10 @@ def export_tree_data__hist_gradient_boosting_model(
 def _extract_hist_gbm_tree_data(
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
 ) -> pd.DataFrame:
-    """Extract tree data from _predictors objects in HistGradientBoostingClassifier
-    or HistGradientBoostingRegressor model.
+    """Extract tree data from HistGradientBoosting model.
+
+    Tree data is pulled from _predictors attributes in HistGradientBoostingClassifier
+    or HistGradientBoostingRegressor object.
 
     Parameters
     ----------
@@ -97,7 +99,6 @@ def _extract_hist_gbm_tree_data(
         Model to extract tree data from.
 
     """
-
     tree_data_list = []
 
     for tree_no in range(model.n_iter_):
@@ -117,8 +118,7 @@ def _extract_hist_gbm_tree_data(
 
 @dataclass
 class ScikitLearnTabularTrees(BaseModelTabularTrees):
-    """Class to hold the scikit-learn GradientBoosting trees in tabular
-    format.
+    """Scikit-learn GradientBoosting trees in tabular format.
 
     Parameters
     ----------
@@ -147,7 +147,6 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
 
     def __post_post_init__(self) -> None:
         """No model specific post init processing."""
-
         pass
 
 
@@ -164,7 +163,6 @@ def export_tree_data__gradient_boosting_model(
         Model to export tree data from.
 
     """
-
     checks.check_type(
         model, (GradientBoostingClassifier, GradientBoostingRegressor), "model"
     )
@@ -183,8 +181,10 @@ def export_tree_data__gradient_boosting_model(
 def _extract_gbm_tree_data(
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
 ) -> pd.DataFrame:
-    """Extract tree data from estimators_ objects in GradientBoostingClassifier
-    or GradientBoostingRegressor model.
+    """Extract tree data from GradientBoosting model.
+
+    Tree data is extracted from estimators_ objects on either
+    GradientBoostingClassifier or GradientBoostingRegressor.
 
     Parameters
     ----------
@@ -192,7 +192,6 @@ def _extract_gbm_tree_data(
         Model to extract tree data from.
 
     """
-
     tree_data_list = []
 
     for tree_no in range(model.n_estimators_):
@@ -209,8 +208,14 @@ def _extract_gbm_tree_data(
 
 
 def _extract_tree_data(tree: Tree) -> pd.DataFrame:
-    """Extract node data from a sklearn.tree._tree.Tree object."""
+    """Extract node data from a sklearn.tree._tree.Tree object.
 
+    Parameters
+    ----------
+    tree : Tree
+        Tree object to extract data from.
+
+    """
     tree_data = pd.DataFrame(
         {
             "children_left": tree.children_left,
