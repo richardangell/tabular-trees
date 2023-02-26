@@ -8,16 +8,6 @@ import pytest
 from tabular_trees.trees import BaseModelTabularTrees
 
 
-@pytest.fixture
-def dummy_model_tree_data() -> pd.DataFrame:
-
-    dummy_model_tree_data = pd.DataFrame(
-        {"column1": [3, 2, 1], "column2": [4, 5, 6], "column3": ["a", "b", "c"]}
-    )
-
-    return dummy_model_tree_data
-
-
 @dataclass
 class DummyModelTabularTrees(BaseModelTabularTrees):
     """Dummy class mimicking a model specific class inheriting from
@@ -278,7 +268,7 @@ class TestBaseModelTabularTreesPostInit:
         """Test that the index is reset on the trees attribute."""
 
         new_index = dummy_model_tree_data.copy()
-        new_index.index = [9, -1, 3]
+        new_index.index = [9, -1, 3, 2]
 
         tabular_trees = DummyModelTabularTrees(new_index)
 
