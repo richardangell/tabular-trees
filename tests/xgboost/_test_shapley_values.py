@@ -5,8 +5,7 @@ import tabular_trees
 
 
 def test_expected_shapley_values():
-    """Function to test shapley values output are as expected for simple model."""
-
+    """Test shapley values output are as expected for simple model."""
     model = build_model.build_example_shap_model()
 
     tree_df = tabular_trees.xgboost.parser.parse_model(model)

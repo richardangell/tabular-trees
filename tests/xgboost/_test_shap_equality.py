@@ -5,8 +5,7 @@ import tabular_trees
 
 
 def test_prediction_decomposition_eqal_eli5():
-    """Test that the prediction decomposition outputs from xgb.explainer.decompose_prediction are eqaul to the outputs from eli5."""
-
+    """Test equality between eli5 and xgb.explainer.decompose_prediction."""
     # reduce the number of columns as the non-treeSHAP algorithm will never finish with 13 variables
     columns_to_drop = ["NOX", "RM", "AGE", "DIS", "RAD", "TAX", "PTRATIO", "B", "LSTAT"]
 

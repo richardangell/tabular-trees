@@ -9,8 +9,7 @@ import tabular_trees
 
 
 def test_prediction_decomposition_eqal_eli5():
-    """Test that the prediction decomposition outputs from xgb.explainer.decompose_prediction are eqaul to the outputs from eli5."""
-
+    """Test equality between eli5 and xgb.explainer.decompose_prediction."""
     model = build_model.build_depth_3_model()
 
     boston = load_boston()
