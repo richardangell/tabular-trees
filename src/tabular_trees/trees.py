@@ -74,12 +74,6 @@ class BaseModelTabularTrees(ABC):
         self.trees = self.trees.reset_index(drop=True)
 
 
-@singledispatch
-def export_tree_data(model: Any):
-    """Export tree data from passed model."""
-    raise NotImplementedError(f"model type not supported; {type(model)}")
-
-
 @dataclass
 class TabularTrees(BaseModelTabularTrees):
     """Generic tree structure in tabular format.
@@ -106,3 +100,9 @@ class TabularTrees(BaseModelTabularTrees):
     ]
 
     SORT_BY_COLUMNS = ["tree", "node"]
+
+
+@singledispatch
+def export_tree_data(model: Any) -> BaseModelTabularTrees:
+    """Export tree data from passed model."""
+    raise NotImplementedError(f"model type not supported; {type(model)}")
