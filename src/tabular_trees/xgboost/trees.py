@@ -4,9 +4,10 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+import xgboost as xgb
 
 from .. import checks
-from ..trees import BaseModelTabularTrees, TabularTrees
+from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
 @dataclass
@@ -200,6 +201,23 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
                 current_tree_node = leaf_row["ID"].item()
 
         return tree_df
+
+
+@export_tree_data.register(xgb.Booster)
+def export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
+    """Export tree data from Booster object.
+
+    Parameters
+    ----------
+    model : Booster
+        XGBoost booster to export tree data from.
+
+    """
+    checks.check_type(model, xgb.Booster, "model")
+
+    tree_data = model.trees_to_dataframe()
+
+    return XGBoostTabularTrees(tree_data)
 
 
 @dataclass
