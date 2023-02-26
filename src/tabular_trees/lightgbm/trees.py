@@ -56,8 +56,16 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         """Convert the tree data to a TabularTrees object."""
         trees = self.trees.copy()
 
+        trees = self._derive_leaf_node_flag(trees)
+
         tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
             columns=self.COLUMN_MAPPING
         )
 
         return TabularTrees(tree_data_converted)
+
+    def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Derive a leaf node indiciator flag column."""
+        df["leaf"] = (df["split_feature"].isnull()).astype(int)
+
+        return df
