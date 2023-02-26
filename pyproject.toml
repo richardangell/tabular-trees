@@ -20,6 +20,7 @@ pytest-cov = "4.0.0"
 tox = "4.4.6"
 eli5 = "0.13.0"
 scikit-learn = "^1.0.1"
+ipykernel = "^6.21.2"
 
 [tool.poetry.group.xgboost]
 optional = true
