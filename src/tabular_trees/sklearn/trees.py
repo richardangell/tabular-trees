@@ -23,6 +23,36 @@ from ..trees import BaseModelTabularTrees, export_tree_data
 
 
 @dataclass
+class ScikitLearnTabularTrees(BaseModelTabularTrees):
+    """Scikit-learn GradientBoosting trees in tabular format.
+
+    Parameters
+    ----------
+    trees : pd.DataFrame
+        GradientBoostingRegressor or Classifier tree data extracted from
+        .estimators_ attribute.
+
+    """
+
+    trees: pd.DataFrame
+
+    REQUIRED_COLUMNS = [
+        "tree",
+        "node",
+        "children_left",
+        "children_right",
+        "feature",
+        "impurity",
+        "n_node_samples",
+        "threshold",
+        "value",
+        "weighted_n_node_samples",
+    ]
+
+    SORT_BY_COLUMNS = ["tree", "node"]
+
+
+@dataclass
 class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
     """Scikit-learn HistGradientBoosting trees in tabular format.
 
@@ -114,36 +144,6 @@ def _extract_hist_gbm_tree_data(
     tree_data = pd.concat(tree_data_list, axis=0)
 
     return tree_data
-
-
-@dataclass
-class ScikitLearnTabularTrees(BaseModelTabularTrees):
-    """Scikit-learn GradientBoosting trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        GradientBoostingRegressor or Classifier tree data extracted from
-        .estimators_ attribute.
-
-    """
-
-    trees: pd.DataFrame
-
-    REQUIRED_COLUMNS = [
-        "tree",
-        "node",
-        "children_left",
-        "children_right",
-        "feature",
-        "impurity",
-        "n_node_samples",
-        "threshold",
-        "value",
-        "weighted_n_node_samples",
-    ]
-
-    SORT_BY_COLUMNS = ["tree", "node"]
 
 
 @export_tree_data.register(GradientBoostingClassifier)
