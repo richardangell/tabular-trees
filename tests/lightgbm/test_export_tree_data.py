@@ -1,4 +1,4 @@
-from tabular_trees.lightgbm.trees import LightGBMTabularTrees
+from tabular_trees.lightgbm import LightGBMTabularTrees
 from tabular_trees.trees import export_tree_data
 
 

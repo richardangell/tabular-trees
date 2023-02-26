@@ -5,8 +5,8 @@ from dataclasses import dataclass
 import lightgbm as lgb
 import pandas as pd
 
-from .. import checks
-from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
+from . import checks
+from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
 @dataclass
