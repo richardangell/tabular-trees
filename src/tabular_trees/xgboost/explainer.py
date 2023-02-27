@@ -30,9 +30,12 @@ def decompose_prediction(trees_df, row):
     """
     n_trees = trees_df.tree.max()
 
-    # run terminal_node_path for each tree
+    # get path from root to leaf node for each tree
+    # note, root_node logic is only appropriate for xgboost
     terminal_node_paths = [
-        terminal_node_path(tree_df=trees_df.loc[trees_df.tree == n], row=row)
+        _terminal_node_path(
+            tree_df=trees_df.loc[trees_df.tree == n], row=row, root_node=f"{n}-0"
+        )
         for n in range(n_trees + 1)
     ]
 
@@ -42,7 +45,7 @@ def decompose_prediction(trees_df, row):
     return terminal_node_paths
 
 
-def terminal_node_path(tree_df, row):
+def _terminal_node_path(tree_df, row, root_node):
     """Traverse tree according to the values in the given row of data.
 
     Parameters
@@ -54,6 +57,9 @@ def terminal_node_path(tree_df, row):
     row : pd.DataFrame
         Single row DataFrame to explain prediction.
 
+    root_node : str
+        Name of the root node in the node column.
+
     Returns
     -------
     pd.DataFrame
@@ -61,15 +67,15 @@ def terminal_node_path(tree_df, row):
 
     """
     # get column headers no rows
-    path = tree_df.loc[tree_df.nodeid == -1]
+    path = tree_df.loc[tree_df["node"] == -1]
 
     # get the first node in the tree
-    current_node = tree_df.loc[tree_df.nodeid == 0].copy()
-
+    current_node = tree_df.loc[tree_df["node"] == root_node].copy()
+    # raise ValueError("s")
     # for internal nodes record the value of the variable that will be used to split
-    if current_node["node_type"].item() != "leaf":
+    if current_node["leaf"].item() != 1:
 
-        current_node["value"] = row[current_node["split"]].values[0]
+        current_node["value"] = row[current_node["feature"]].values[0]
 
     else:
 
@@ -78,79 +84,59 @@ def terminal_node_path(tree_df, row):
     path = path.append(current_node)
 
     # as long as we are not at a leaf node already
-    if current_node["node_type"].item() != "leaf":
+    if current_node["leaf"].item() != 1:
 
         # determine if the value of the split variable sends the row left (yes) or right (no)
         if (
-            row[current_node["split"]].values[0]
+            row[current_node["feature"]].values[0]
             < current_node["split_condition"].values[0]
         ):
 
-            next_node = current_node["yes"].item()
+            next_node = current_node["left_child"].item()
 
         else:
 
-            next_node = current_node["no"].item()
+            next_node = current_node["right_child"].item()
 
         # (loop) traverse the tree until a leaf node is reached
         while True:
 
-            current_node = tree_df.loc[tree_df.nodeid == next_node].copy()
+            current_node = tree_df.loc[tree_df["node"] == next_node].copy()
 
             # for internal nodes record the value of the variable that will be used to split
-            if current_node["node_type"].item() != "leaf":
+            if current_node["leaf"].item() != 1:
 
-                current_node["value"] = row[current_node["split"]].values[0]
+                current_node["value"] = row[current_node["feature"]].values[0]
 
             path = path.append(current_node)
 
-            if current_node["node_type"].item() != "leaf":
+            if current_node["leaf"].item() != 1:
 
                 # determine if the value of the split variable sends the row left (yes) or right (no)
                 if (
-                    row[current_node["split"]].values[0]
+                    row[current_node["feature"]].values[0]
                     < current_node["split_condition"].values[0]
                 ):
 
-                    next_node = current_node["yes"].item()
+                    next_node = current_node["left_child"].item()
 
                 else:
 
-                    next_node = current_node["no"].item()
+                    next_node = current_node["right_child"].item()
 
             else:
 
                 break
 
     # shift the split_vars down by 1 to get the variable which is contributing to the change in prediction
-    path["contributing_var"] = path["split"].shift(1)
+    path["contributing_var"] = path["feature"].shift(1)
 
     # get change in predicted value due to split i.e. contribution for that variable
-    path["contribution"] = path["node_prediction"] - path["node_prediction"].shift(
-        1
-    ).fillna(0)
+    path["contribution"] = path["prediction"] - path["prediction"].shift(1).fillna(0)
 
     path.loc[path.contributing_var.isnull(), "contributing_var"] = "base"
 
-    cols_order = [
-        "tree",
-        "nodeid",
-        "yes",
-        "no",
-        "missing",
-        "split",
-        "split_condition",
-        "cover",
-        "node_prediction",
-        "node_type",
-        "H",
-        "G",
-        "value",
-        "contributing_var",
-        "contribution",
-    ]
-
-    return path[cols_order]
+    return path
 
 
 def shapley_values(tree_df, row, return_permutations=False):
