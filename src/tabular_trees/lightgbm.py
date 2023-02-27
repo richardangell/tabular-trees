@@ -9,6 +9,11 @@ from . import checks
 from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
+def lightgbm_get_root_node_given_tree(tree: int) -> str:
+    """Return the name of the root node of a given tree."""
+    return f"{tree}-S0"
+
+
 @dataclass
 class LightGBMTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost trees in tabular format.
@@ -64,7 +69,10 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
             columns=self.COLUMN_MAPPING
         )
 
-        return TabularTrees(tree_data_converted)
+        return TabularTrees(
+            trees=tree_data_converted,
+            get_root_node_given_tree=lightgbm_get_root_node_given_tree,
+        )
 
     def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
         """Derive a leaf node indiciator flag column."""

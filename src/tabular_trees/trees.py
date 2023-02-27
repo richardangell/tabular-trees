@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import singledispatch
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 
@@ -86,6 +86,7 @@ class TabularTrees(BaseModelTabularTrees):
     """
 
     trees: pd.DataFrame
+    get_root_node_given_tree: Callable
 
     REQUIRED_COLUMNS = [
         "tree",

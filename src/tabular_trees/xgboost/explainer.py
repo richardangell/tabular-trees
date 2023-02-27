@@ -9,7 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 
 
-def decompose_prediction(trees_df, row):
+def decompose_prediction(trees_df, row, calculate_root_node):
     """Decompose prediction from tree based model with Saabas method[1].
 
     Parameters
@@ -20,6 +20,9 @@ def decompose_prediction(trees_df, row):
 
     row : pd.DataFrame
         Single row DataFrame to explain prediction.
+
+    calculate_root_node : callable
+        Function that can return the root node id when passed tree index.
 
     Notes
     -----
@@ -34,7 +37,9 @@ def decompose_prediction(trees_df, row):
     # note, root_node logic is only appropriate for xgboost
     terminal_node_paths = [
         _terminal_node_path(
-            tree_df=trees_df.loc[trees_df.tree == n], row=row, root_node=f"{n}-0"
+            tree_df=trees_df.loc[trees_df.tree == n],
+            row=row,
+            calculate_root_node=calculate_root_node,
         )
         for n in range(n_trees + 1)
     ]
@@ -45,7 +50,7 @@ def decompose_prediction(trees_df, row):
     return terminal_node_paths
 
 
-def _terminal_node_path(tree_df, row, root_node):
+def _terminal_node_path(tree_df, row, calculate_root_node):
     """Traverse tree according to the values in the given row of data.
 
     Parameters
@@ -57,8 +62,8 @@ def _terminal_node_path(tree_df, row, root_node):
     row : pd.DataFrame
         Single row DataFrame to explain prediction.
 
-    root_node : str
-        Name of the root node in the node column.
+    calculate_root_node : callable
+        Function that can return the root node id when passed tree index.
 
     Returns
     -------
@@ -69,9 +74,11 @@ def _terminal_node_path(tree_df, row, root_node):
     # get column headers no rows
     path = tree_df.loc[tree_df["node"] == -1]
 
+    root_node_index_for_tree = calculate_root_node(tree_df["tree"].values[0])
+
     # get the first node in the tree
-    current_node = tree_df.loc[tree_df["node"] == root_node].copy()
-    # raise ValueError("s")
+    current_node = tree_df.loc[tree_df["node"] == root_node_index_for_tree].copy()
+
     # for internal nodes record the value of the variable that will be used to split
     if current_node["leaf"].item() != 1:
 
