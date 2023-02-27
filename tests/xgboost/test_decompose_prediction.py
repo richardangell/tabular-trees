@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from eli5 import explain_prediction_df
@@ -60,9 +61,8 @@ def test_prediction_decomposition_eli5_equality(
         )
 
     # check equality between prediction decomposition values
-    pd.testing.assert_series_equal(
-        left=decomposition_compare_df["weight"],
-        right=decomposition_compare_df["contribution"],
-        check_names=False,
-        check_exact=False,
+    np.testing.assert_almost_equal(
+        decomposition_compare_df["weight"].values,
+        decomposition_compare_df["contribution"].values,
+        decimal=9,
     )
