@@ -6,8 +6,9 @@ from tabular_trees.trees import export_tree_data
 from tabular_trees.xgboost.explainer import decompose_prediction
 
 
+@pytest.mark.parametrize("row_number_to_score", [(0), (1), (2), (20), (100), (222)])
 def test_prediction_decomposition_eli5_equality(
-    diabetes_data, xgb_diabetes_model_lambda_0
+    row_number_to_score, diabetes_data, xgb_diabetes_model_lambda_0
 ):
     """Test xgboost.explainer.decompose_prediction and eli5.explain_prediction_df give
     the same results."""
@@ -16,7 +17,7 @@ def test_prediction_decomposition_eli5_equality(
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
     )
-    row_data = diabetes_data_df.iloc[[0]]
+    row_data = diabetes_data_df.iloc[[row_number_to_score]]
 
     # get decomposition with eli5
     eli5_decomposition = explain_prediction_df(xgb_diabetes_model_lambda_0, row_data)
