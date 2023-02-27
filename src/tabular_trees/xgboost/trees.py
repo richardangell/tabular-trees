@@ -1,5 +1,6 @@
 """XGBoost trees in tabular format."""
 
+import json
 from dataclasses import dataclass
 
 import numpy as np
@@ -215,9 +216,18 @@ def export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
     """
     checks.check_type(model, xgb.Booster, "model")
 
+    model_config = json.loads(model.save_config())
+    train_params = model_config["learner"]["gradient_booster"]["updater"][
+        "grow_colmaker"
+    ]["train_param"]
+
     tree_data = model.trees_to_dataframe()
 
-    return XGBoostTabularTrees(tree_data)
+    return XGBoostTabularTrees(
+        trees=tree_data,
+        lambda_=float(train_params["lambda"]),
+        alpha=float(train_params["alpha"]),
+    )
 
 
 @dataclass
