@@ -71,7 +71,7 @@ class BaseModelTabularTrees(ABC):
 
 
 @dataclass
-class TabularTrees(BaseModelTabularTrees):
+class TabularTrees:
     """Generic tree structure in tabular format.
 
     Parameters
