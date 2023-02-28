@@ -146,7 +146,7 @@ def _terminal_node_path(tree_df, row, calculate_root_node):
     return path
 
 
-def shapley_values(tree_df, row, return_permutations=False):
+def calculate_shapley_values(tree_df, row, return_permutations=False):
     """Calculate shapley values for an xgboost model.
 
     This is Algorithm 1 as presented in https://arxiv.org/pdf/1802.03888.pdf.
@@ -194,7 +194,7 @@ def shapley_values(tree_df, row, return_permutations=False):
 
             raise ValueError(f"tree number {tree_no} has no rows")
 
-        tree_values = shapley_values_tree(tree_rows, row, return_permutations)
+        tree_values = _shapley_values_tree(tree_rows, row, return_permutations)
 
         tree_values.insert(0, "tree", tree_no)
 
@@ -213,7 +213,18 @@ def shapley_values(tree_df, row, return_permutations=False):
         return results_df
 
 
-def shapley_values_tree(tree_df, row, return_permutations=False):
+def _convert_node_columns_to_integer(tree_df: pd.DataFrame) -> pd.DataFrame:
+    """Convert node, left_child and right_child columns to integer."""
+    node_mapping = {node: i for i, node in enumerate(tree_df["node"].tolist())}
+
+    tree_df["node"] = tree_df["node"].map(node_mapping).astype(int)
+    tree_df["left_child"] = tree_df["left_child"].map(node_mapping)
+    tree_df["right_child"] = tree_df["right_child"].map(node_mapping)
+
+    return tree_df
+
+
+def _shapley_values_tree(tree_df, row, return_permutations=False):
     """Calculate shapley values for single tree.
 
     Parameters
@@ -230,39 +241,41 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
         shapley values (i.e. average over all permutations) are returned.
 
     """
-    internal_nodes = tree_df["node_type"] == "internal"
+    internal_nodes = tree_df["leaf"] == 0
 
     mean_prediction = (
-        tree_df.loc[~internal_nodes, "cover"]
-        * tree_df.loc[~internal_nodes, "node_prediction"]
-    ).sum() / tree_df.loc[~internal_nodes, "cover"].sum()
+        tree_df.loc[~internal_nodes, "count"]
+        * tree_df.loc[~internal_nodes, "prediction"]
+    ).sum() / tree_df.loc[~internal_nodes, "count"].sum()
+
+    tree_df = _convert_node_columns_to_integer(tree_df)
 
     keep_cols = [
-        "yes",
-        "no",
+        "left_child",
+        "right_child",
         "split_condition",
-        "split",
-        "cover",
-        "node_type",
-        "node_prediction",
+        "feature",
+        "count",
+        "leaf",
+        "prediction",
     ]
 
     tree_df_cols_subset = tree_df[keep_cols].copy()
 
-    tree_df_cols_subset.loc[internal_nodes, "node_prediction"] = "internal"
+    tree_df_cols_subset.loc[internal_nodes, "prediction"] = "internal"
 
     cols_rename = {
-        "yes": "a",
-        "no": "b",
+        "left_child": "a",
+        "right_child": "b",
         "split_condition": "t",
-        "split": "d",
-        "cover": "r",
-        "node_prediction": "v",
+        "feature": "d",
+        "count": "r",
+        "prediction": "v",
     }
 
     tree_df_cols_subset.rename(columns=cols_rename, inplace=True)
 
-    tree_df_cols_subset.drop(columns="node_type", inplace=True)
+    tree_df_cols_subset.drop(columns="leaf", inplace=True)
 
     # convert child node index column to pandas int type with nulls
     # this is to prevent error in G when trying to select items from list by index (with float)
@@ -294,7 +307,7 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
 
             selected_features.append(feature)
 
-            expected_value_given_features = expvalue(
+            expected_value_given_features = _expvalue(
                 row, selected_features, tree_df_cols_subset
             )
 
@@ -323,7 +336,7 @@ def shapley_values_tree(tree_df, row, return_permutations=False):
         return results_feature_level
 
 
-def expvalue(x, s, tree):
+def _expvalue(x, s, tree):
     """Estimate E[f(x)|x_S].
 
     Algorithm 1 from Consistent Individualized Feature Attribution for Tree Ensembles.
@@ -352,10 +365,10 @@ def expvalue(x, s, tree):
         d - split variable for each node
 
     """
-    return g(0, 1, x, s, tree)
+    return _g(0, 1, x, s, tree)
 
 
-def g(j, w, x, s, tree):
+def _g(j, w, x, s, tree):
     """Recusively traverse down tree and return prediction for x.
 
     This algorithm follows the route allowed by the features in s, if a node is
@@ -397,14 +410,14 @@ def g(j, w, x, s, tree):
 
             if x[d[j]] <= t[j]:
 
-                return g(a[j], w, x, s, tree)
+                return _g(a[j], w, x, s, tree)
 
             else:
 
-                return g(b[j], w, x, s, tree)
+                return _g(b[j], w, x, s, tree)
 
         else:
 
-            return g(a[j], w * r[a[j]] / r[j], x, s, tree) + g(
+            return _g(a[j], w * r[a[j]] / r[j], x, s, tree) + _g(
                 b[j], w * r[b[j]] / r[j], x, s, tree
             )
