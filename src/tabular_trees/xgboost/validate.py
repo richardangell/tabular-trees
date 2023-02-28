@@ -5,6 +5,7 @@ from copy import deepcopy
 import pandas as pd
 
 from ..checks import check_df_columns
+from .explainer import _convert_node_columns_to_integer
 
 
 def validate_monotonic_constraints_df(
@@ -13,20 +14,20 @@ def validate_monotonic_constraints_df(
     """Check that monotonic constraints are as expected in an xgboost model."""
     expected_columns = [
         "tree",
-        "nodeid",
-        "depth",
-        "yes",
-        "no",
+        "node",  # "nodeid",
+        # "depth",
+        "left_child",  # "yes",
+        "right_child",  # "no",
         "missing",
-        "split",
+        "feature",  # "split",
         "split_condition",
         "leaf",
-        "node_prediction",
-        "node_type",
-        "gain",
-        "cover",
-        "H",
-        "G",
+        "prediction",  # "node_prediction",
+        # "node_type",
+        # "gain",
+        "count",  # "cover",
+        # "H",
+        # "G",
     ]
 
     check_df_columns(df=trees_df, expected_columns=expected_columns)
@@ -69,16 +70,17 @@ def validate_monotonic_constraints_df(
     for i in range(n):
 
         tree_df = trees_df.loc[trees_df["tree"] == i].copy()
+        tree_df = _convert_node_columns_to_integer(tree_df)
 
         # loop throguh each constraint
         for k, v in constraints.items():
 
             # if the constraint variable is used in the given tree
-            if (tree_df["split"] == k).sum() > 0:
+            if (tree_df["feature"] == k).sum() > 0:
 
                 # get all nodes that are split on the variable of interest
                 nodes_split_on_variable = tree_df.loc[
-                    tree_df["split"] == k, "nodeid"
+                    tree_df["feature"] == k, "node"
                 ].tolist()
 
                 # check all nodes below each node which splits on the variable of interest
@@ -92,7 +94,7 @@ def validate_monotonic_constraints_df(
 
                     traverse_tree_down(
                         df=tree_df,
-                        node=tree_df.loc[tree_df["nodeid"] == n, "yes"].iloc[0],
+                        node=tree_df.loc[tree_df["node"] == n, "left_child"].iloc[0],
                         name=k,
                         nodes_list=child_nodes_left,
                         values_list=child_values_left,
@@ -100,7 +102,7 @@ def validate_monotonic_constraints_df(
 
                     traverse_tree_down(
                         df=tree_df,
-                        node=tree_df.loc[tree_df["nodeid"] == n, "no"].iloc[0],
+                        node=tree_df.loc[tree_df["node"] == n, "right_child"].iloc[0],
                         name=k,
                         nodes_list=child_nodes_right,
                         values_list=child_values_right,
@@ -122,7 +124,7 @@ def validate_monotonic_constraints_df(
 
     constraint_results = (
         pd.concat(monotonicity_check_list, axis=0)
-        .sort_values(["variable", "tree", "nodeid"])
+        .sort_values(["variable", "tree", "node"])
         .reset_index(drop=True)
     )
 
@@ -229,7 +231,7 @@ def traverse_tree_down(
     values_list.append(value)
 
     # if we have reached a terminal node
-    if df.loc[df["nodeid"] == node, "split"].isnull().iloc[0]:
+    if df.loc[df["node"] == node, "leaf"].item() == 1:
 
         if verbose:
 
@@ -260,7 +262,7 @@ def traverse_tree_down(
             )
 
         # if the split for the current node is on the variable of interest update; value, lower, upper
-        if df.loc[df["nodeid"] == node, "split"].iloc[0] == name:
+        if df.loc[df["node"] == node, "feature"].iloc[0] == name:
 
             # pick a value and update bounds that would send a data point down the left (yes) split
 
@@ -280,13 +282,13 @@ def traverse_tree_down(
                     print("values update for recursive call; \n\tcase i. lower None")
 
                 # choose a value above the split point to go down the left (yes) split
-                value = df.loc[df["nodeid"] == node, "split_condition"].iloc[0] - 1
+                value = df.loc[df["node"] == node, "split_condition"].iloc[0] - 1
 
                 # there is no lower bound on values that will go down this path yet
                 lower = None
 
                 # the upper bound that can go down this split is the split condition (as we are now below it)
-                upper = df.loc[df["nodeid"] == node, "split_condition"].iloc[0]
+                upper = df.loc[df["node"] == node, "split_condition"].iloc[0]
 
             # if lower bound is specified, this means we have previously travelled down a right path
             # does not matter if upper bound is specified or not i.e. we have previously travelled down a left
@@ -304,7 +306,7 @@ def traverse_tree_down(
 
                 # but to send a data point to the left hand split the upper bound is the split condition
                 # for this node
-                upper = df.loc[df["nodeid"] == node, "split_condition"].iloc[0]
+                upper = df.loc[df["node"] == node, "split_condition"].iloc[0]
 
                 # set a value that falls between the bounds
                 value = (lower + upper) / 2
@@ -312,7 +314,7 @@ def traverse_tree_down(
             # recursively call function down the left child of the current node
             traverse_tree_down(
                 df,
-                df.loc[df["nodeid"] == node, "yes"].iloc[0],
+                df.loc[df["node"] == node, "left_child"].iloc[0],
                 name,
                 nodes_list,
                 values_list,
@@ -341,10 +343,10 @@ def traverse_tree_down(
                     )
 
                 # choose a value above the split point to go down the right (no) split
-                value = df.loc[df["nodeid"] == node, "split_condition"].iloc[0] + 1
+                value = df.loc[df["node"] == node, "split_condition"].iloc[0] + 1
 
                 # the lower bound that can go down this split is the split condition (as we are now above it)
-                lower = df.loc[df["nodeid"] == node, "split_condition"].iloc[0]
+                lower = df.loc[df["node"] == node, "split_condition"].iloc[0]
 
                 # there is no upper bound on values that will go down this path yet
                 upper = None
@@ -358,7 +360,7 @@ def traverse_tree_down(
                     )
 
                 # the lower bound becomes the split condition
-                lower = df.loc[df["nodeid"] == node, "split_condition"].iloc[0]
+                lower = df.loc[df["node"] == node, "split_condition"].iloc[0]
 
                 # the upper bound remains the same
                 upper = upper
@@ -368,7 +370,7 @@ def traverse_tree_down(
 
             traverse_tree_down(
                 df,
-                df.loc[df["nodeid"] == node, "no"].iloc[0],
+                df.loc[df["node"] == node, "right_child"].iloc[0],
                 name,
                 nodes_list,
                 values_list,
@@ -385,7 +387,7 @@ def traverse_tree_down(
 
             traverse_tree_down(
                 df,
-                df.loc[df["nodeid"] == node, "yes"].iloc[0],
+                df.loc[df["node"] == node, "left_child"].iloc[0],
                 name,
                 nodes_list,
                 values_list,
@@ -398,7 +400,7 @@ def traverse_tree_down(
 
             traverse_tree_down(
                 df,
-                df.loc[df["nodeid"] == node, "no"].iloc[0],
+                df.loc[df["node"] == node, "right_child"].iloc[0],
                 name,
                 nodes_list,
                 values_list,
@@ -428,9 +430,9 @@ def gather_traverse_tree_down_results(nodes, values, name):
 
         raise ValueError("nodes and values must be of the same length")
 
-    df = pd.DataFrame({"nodeid": nodes, name + "_values": values})
+    df = pd.DataFrame({"node": nodes, name + "_values": values})
 
-    if df["nodeid"].duplicated().sum() > 0:
+    if df["node"].duplicated().sum() > 0:
 
         raise ValueError("duplicated nodes; " + str(nodes))
 
@@ -467,7 +469,7 @@ def check_monotonicity_at_split(
 
     all_child_nodes = child_nodes_left + child_nodes_right
 
-    tree_nodes = tree_df["nodeid"].tolist()
+    tree_nodes = tree_df["node"].tolist()
 
     child_nodes_not_in_tree = list(set(all_child_nodes) - set(tree_nodes))
 
@@ -479,11 +481,11 @@ def check_monotonicity_at_split(
         )
 
     left_nodes_max_pred = tree_df.loc[
-        tree_df["nodeid"].isin(child_nodes_left), "weight"
+        tree_df["node"].isin(child_nodes_left), "prediction"
     ].max()
 
     right_nodes_min_pred = tree_df.loc[
-        tree_df["nodeid"].isin(child_nodes_right), "weight"
+        tree_df["node"].isin(child_nodes_right), "prediction"
     ].min()
 
     if trend == 1:
@@ -520,7 +522,7 @@ def check_monotonicity_at_split(
     results = {
         "variable": variable,
         "tree": tree_no,
-        "nodeid": node,
+        "node": node,
         "monotonic_trend": trend,
         "monotonic": monotonic,
         "child_nodes_left_max_prediction": left_nodes_max_pred,
