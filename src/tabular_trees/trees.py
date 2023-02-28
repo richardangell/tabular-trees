@@ -22,10 +22,6 @@ class BaseModelTabularTrees(ABC):
 
     trees: pd.DataFrame
 
-    @abstractmethod
-    def __init__(self, trees: pd.DataFrame) -> None:
-        pass
-
     @property
     @abstractmethod
     def REQUIRED_COLUMNS(self):  # noqa: N802
