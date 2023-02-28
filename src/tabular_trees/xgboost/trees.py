@@ -67,6 +67,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "Split": "split_condition",
         "weight": "prediction",
         "leaf": "leaf",
+        "Cover": "count",
     }
 
     def __post_init__(self):

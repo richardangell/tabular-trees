@@ -97,6 +97,7 @@ class TabularTrees(BaseModelTabularTrees):
         "feature",
         "split_condition",
         "leaf",
+        "count",
         "prediction",
     ]
 

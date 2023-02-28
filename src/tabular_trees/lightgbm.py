@@ -56,6 +56,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "split_feature": "feature",
         "threshold": "split_condition",
         "leaf": "leaf",
+        "count": "count",
         "value": "prediction",
     }
 
