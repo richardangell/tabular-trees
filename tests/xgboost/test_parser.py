@@ -4,10 +4,16 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-import tabular_trees.xgboost.parser as parser
+from tabular_trees.xgboost.trees import (
+    DumpReader,
+    JsonDumpReader,
+    ParsedXGBoostTabularTrees,
+    TextDumpReader,
+    XGBoostParser,
+)
 
 
-class DummyDumpReader(parser.DumpReader):
+class DummyDumpReader(DumpReader):
     """Dummy class inheriting from DumpReader, to test DumpReader
     functionality."""
 
@@ -53,7 +59,7 @@ class TestDumpReaderImplementations:
     def test_text_dump_reader_dump_type(self):
         """Test TextDumpReader object has correct dump_type attribute value."""
 
-        text_dump_reader = parser.TextDumpReader()
+        text_dump_reader = TextDumpReader()
 
         assert (
             text_dump_reader.dump_type == "text"
@@ -62,7 +68,7 @@ class TestDumpReaderImplementations:
     def test_json_dump_reader_dump_type(self):
         """Test JsonDumpReader object has correct dump_type attribute value."""
 
-        text_dump_reader = parser.JsonDumpReader()
+        text_dump_reader = JsonDumpReader()
 
         assert (
             text_dump_reader.dump_type == "json"
@@ -83,10 +89,10 @@ class TestDumpReaderImplementations:
             json_dump, with_stats=with_stats, dump_format="json"
         )
 
-        text_parser = parser.TextDumpReader()
+        text_parser = TextDumpReader()
         text_output = text_parser.read_dump(text_dump)
 
-        json_parser = parser.JsonDumpReader()
+        json_parser = JsonDumpReader()
         json_output = json_parser.read_dump(json_dump)
 
         assert sorted(text_output.columns.values) == sorted(
@@ -105,7 +111,7 @@ class TestXGBoostParserInit:
     def test_successful_initialisation(self, xgb_diabetes_model):
         """Test successful initialisation of the XGBoostParser class."""
 
-        parser.XGBoostParser(xgb_diabetes_model)
+        XGBoostParser(xgb_diabetes_model)
 
     def test_model_not_booster_exception(self):
         """Test that a TypeError is raised if model is not a Booster."""
@@ -115,15 +121,13 @@ class TestXGBoostParserInit:
             match="model is not in expected types <class 'xgboost.core.Booster'>, got <class 'tuple'>",
         ):
 
-            parser.XGBoostParser((1, 2, 3))
+            XGBoostParser((1, 2, 3))
 
-    @pytest.mark.parametrize(
-        "dump_reader", [(parser.JsonDumpReader), (parser.TextDumpReader)]
-    )
+    @pytest.mark.parametrize("dump_reader", [(JsonDumpReader), (TextDumpReader)])
     def test_attributes_set(self, xgb_diabetes_model, dump_reader):
         """Test model, dump_type and reader attributes are correctly set."""
 
-        xgboost_parser = parser.XGBoostParser(xgb_diabetes_model, dump_reader())
+        xgboost_parser = XGBoostParser(xgb_diabetes_model, dump_reader())
 
         assert (
             xgboost_parser.model == xgb_diabetes_model
@@ -143,7 +147,7 @@ class TestXGBoostParserInit:
 
         with pytest.warns(FutureWarning, match=expected_warning):
 
-            parser.XGBoostParser(xgb_diabetes_model)
+            XGBoostParser(xgb_diabetes_model)
 
 
 class TestXGBoostParserParseModel:
@@ -152,32 +156,28 @@ class TestXGBoostParserParseModel:
     def test_successful_call(self, xgb_diabetes_model):
         """Test successful call of the XGBoostParser.parse_model method."""
 
-        xgboost_parser = parser.XGBoostParser(xgb_diabetes_model)
+        xgboost_parser = XGBoostParser(xgb_diabetes_model)
 
         results = xgboost_parser.parse_model()
 
         assert (
-            type(results) is parser.ParsedXGBoostTabularTrees
+            type(results) is ParsedXGBoostTabularTrees
         ), "output from parse_model not ParsedXGBoostTabularTrees type"
 
     def test_model_dumped_then_read(self, mocker, xgb_diabetes_model):
         """Test the booster calls dump_model and the output is then read
         with read_dump."""
 
-        xgboost_parser = parser.XGBoostParser(
-            xgb_diabetes_model, parser.JsonDumpReader()
-        )
+        xgboost_parser = XGBoostParser(xgb_diabetes_model, JsonDumpReader())
 
         dump_model_spy = mocker.spy(xgb.core.Booster, "dump_model")
-        read_dump_spy = mocker.spy(parser.JsonDumpReader, "read_dump")
+        read_dump_spy = mocker.spy(JsonDumpReader, "read_dump")
 
         xgboost_parser.parse_model()
 
         assert dump_model_spy.call_count == 1, "xgb.Booster.dump_model not called once"
 
-        assert (
-            read_dump_spy.call_count == 1
-        ), "parser.JsonDumpReader.read_dump not called once"
+        assert read_dump_spy.call_count == 1, "JsonDumpReader.read_dump not called once"
 
         dump_model_call_args = dump_model_spy.call_args_list[0]
 
@@ -186,8 +186,8 @@ class TestXGBoostParserParseModel:
         ], "xgboost model not dumped with with_stats = True"
 
         assert (
-            dump_model_call_args[1]["dump_format"] == parser.JsonDumpReader.dump_type
-        ), "xgboost model not dumped with dump_format from parser.JsonDumpReader"
+            dump_model_call_args[1]["dump_format"] == JsonDumpReader.dump_type
+        ), "xgboost model not dumped with dump_format from JsonDumpReader"
 
         assert (
             len(dump_model_call_args[0]) == 2
@@ -210,35 +210,33 @@ class TestXGBoostParserParseModel:
         """Test that the output from parse_model is ParsedXGBoostTabularTrees
         with the output of read_dump."""
 
-        xgboost_parser = parser.XGBoostParser(
-            xgb_diabetes_model, parser.JsonDumpReader()
-        )
+        xgboost_parser = XGBoostParser(xgb_diabetes_model, JsonDumpReader())
 
         read_dump_return_value = 12345
 
         read_dump_mock = mocker.patch.object(
-            parser.JsonDumpReader, "read_dump", return_value=read_dump_return_value
+            JsonDumpReader, "read_dump", return_value=read_dump_return_value
         )
         parsed_xgb_tabular_trees_mock = mocker.patch.object(
-            parser.ParsedXGBoostTabularTrees, "__init__", return_value=None
+            ParsedXGBoostTabularTrees, "__init__", return_value=None
         )
 
         xgboost_parser.parse_model()
 
         assert (
             read_dump_mock.call_count == 1
-        ), "parser.JsonDumpReader.read_dump not called once"
+        ), "JsonDumpReader.read_dump not called once"
 
         assert (
             parsed_xgb_tabular_trees_mock.call_count == 1
-        ), "parser.ParsedXGBoostTabularTrees.__init__ not called once"
+        ), "ParsedXGBoostTabularTrees.__init__ not called once"
 
         init_call_args = parsed_xgb_tabular_trees_mock.call_args_list[0]
 
         assert init_call_args[0] == (
             read_dump_return_value,
-        ), "parser.ParsedXGBoostTabularTrees.__init__ not called with the output from read_dump"
+        ), "ParsedXGBoostTabularTrees.__init__ not called with the output from read_dump"
 
         assert (
             init_call_args[1] == {}
-        ), "keyword args in parser.ParsedXGBoostTabularTrees.__init__ call not as expected"
+        ), "keyword args in ParsedXGBoostTabularTrees.__init__ call not as expected"
