@@ -1,5 +1,6 @@
 """Module for validating monotonic trends in trees."""
 
+from dataclasses import dataclass, field
 from typing import Optional, Union
 
 import pandas as pd
@@ -9,11 +10,29 @@ from .explain import _convert_node_columns_to_integer
 from .trees import TabularTrees
 
 
+@dataclass
+class MonotonicConstraintResults:
+    """Results of checking monotonic constraints."""
+
+    summary: dict[str, bool]
+    constraints: dict[str, int]
+    results: pd.DataFrame = field(repr=False)
+    all_constraints_met: bool = field(init=False)
+
+    def __post_init__(self):
+        """Set constraints_met attribute."""
+        self.all_constraints_met = self._all_constraints_met()
+
+    def _all_constraints_met(self) -> bool:
+        """Are constraints for all variables conformed to."""
+        return all(self.summary.values())
+
+
 def validate_monotonic_constraints(
     tabular_trees: TabularTrees,
     constraints: dict[str, int],
     return_detailed_results: bool = False,
-) -> pd.DataFrame:
+) -> MonotonicConstraintResults:
     """Validate that trees conform to monotonic constraints.
 
     Parameters
@@ -52,7 +71,7 @@ def validate_monotonic_constraints(
 
 def _validate_monotonic_constraints(
     trees_df: pd.DataFrame, constraints: dict[str, int], return_detailed_results: bool
-) -> pd.DataFrame:
+) -> MonotonicConstraintResults:
     """Loop through each tree and check monotonic constraints.
 
     Parameters
@@ -69,7 +88,7 @@ def _validate_monotonic_constraints(
         Should detailed breakdown of every split be returned?
 
     """
-    monotonicity_check_list = []
+    monotonicity_check_list: list[pd.DataFrame] = []
 
     # loop through each tree
     for tree_no in range(trees_df["tree"].max()):
@@ -135,23 +154,28 @@ def _validate_monotonic_constraints(
 
                     monotonicity_check_list.append(check_results)
 
+    return _format_constraint_results(monotonicity_check_list, constraints)
+
+
+def _format_constraint_results(
+    monotonicity_check_list: list[pd.DataFrame], constraints: dict[str, int]
+) -> MonotonicConstraintResults:
+    """Create combined check results across all variables, trees and nodes."""
     constraint_results = (
         pd.concat(monotonicity_check_list, axis=0)
         .sort_values(["variable", "tree", "node"])
         .reset_index(drop=True)
     )
 
-    if return_detailed_results:
+    summarised_constraint_results = (
+        constraint_results.groupby("variable")["monotonic"].mean() == 1
+    ).to_dict()
 
-        return constraint_results
-
-    else:
-
-        summarised_constraint_results = (
-            constraint_results.groupby("variable")["monotonic"].mean() == 1
-        )
-
-        return summarised_constraint_results
+    return MonotonicConstraintResults(
+        summary=summarised_constraint_results,
+        constraints=constraints,
+        results=constraint_results,
+    )
 
 
 def _traverse_tree_down(
@@ -164,7 +188,7 @@ def _traverse_tree_down(
     lower: Optional[Union[int, float]] = None,
     upper: Optional[Union[int, float]] = None,
 ) -> None:
-    """Find a value for variable of interest that would end up in each node in the tree.
+    """Find a value for variable that would end up in each node in the tree.
 
     Parameters
     ----------

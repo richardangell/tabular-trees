@@ -13,4 +13,4 @@ def test_successful_run(xgb_diabetes_model_monotonic):
         tabular_trees=tabular_trees, constraints=constraints
     )
 
-    assert results.all(), "unexpected violation of monotonic constraints"
+    assert results.all_constraints_met, "unexpected violation of monotonic constraints"
