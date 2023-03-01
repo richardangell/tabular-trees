@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from eli5 import explain_prediction_df
 
-from tabular_trees.explainer import decompose_prediction
+from tabular_trees.explain import decompose_prediction
 from tabular_trees.trees import export_tree_data
 
 

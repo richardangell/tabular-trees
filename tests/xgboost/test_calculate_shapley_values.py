@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.explainer import calculate_shapley_values
+from tabular_trees.explain import calculate_shapley_values
 from tabular_trees.trees import export_tree_data
 
 
