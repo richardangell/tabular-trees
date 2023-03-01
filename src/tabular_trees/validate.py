@@ -8,7 +8,7 @@ from .checks import check_df_columns
 from .explain import _convert_node_columns_to_integer
 
 
-def validate_monotonic_constraints_df(
+def validate_monotonic_constraints(
     trees_df, constraints, return_detailed_results=False
 ):
     """Check that monotonic constraints are as expected in an xgboost model."""
