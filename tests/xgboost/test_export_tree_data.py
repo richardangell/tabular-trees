@@ -1,7 +1,7 @@
 import pytest
 
 from tabular_trees.trees import export_tree_data
-from tabular_trees.xgboost.trees import XGBoostTabularTrees
+from tabular_trees.xgboost import XGBoostTabularTrees
 
 
 def test_model_specific_function_dispatch(xgb_diabetes_model):

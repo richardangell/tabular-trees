@@ -5,7 +5,7 @@ import pytest
 import xgboost as xgb
 
 from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
-from tabular_trees.xgboost.trees import ParsedXGBoostTabularTrees, XGBoostTabularTrees
+from tabular_trees.xgboost import ParsedXGBoostTabularTrees, XGBoostTabularTrees
 
 
 class TestXGBoostTabularTreesInit:

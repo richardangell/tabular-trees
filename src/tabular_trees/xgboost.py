@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from .. import checks
-from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
+from . import checks
+from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
 def xgboost_get_root_node_given_tree(tree: int) -> str:

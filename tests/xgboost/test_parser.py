@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.xgboost.trees import (
+from tabular_trees.xgboost import (
     DumpReader,
     JsonDumpReader,
     ParsedXGBoostTabularTrees,
