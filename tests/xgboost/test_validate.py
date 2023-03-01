@@ -1,5 +1,5 @@
 from tabular_trees.trees import export_tree_data
-from tabular_trees.xgboost.validate import validate_monotonic_constraints_df
+from tabular_trees.validate import validate_monotonic_constraints_df
 
 
 def test_successful_run(xgb_diabetes_model_monotonic):

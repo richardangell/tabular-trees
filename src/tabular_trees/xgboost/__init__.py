@@ -1,3 +1,3 @@
 """Module containing functionality for dealing with xgboost models."""
 
-from . import trees, validate
+from . import trees

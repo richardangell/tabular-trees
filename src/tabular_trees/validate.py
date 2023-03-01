@@ -4,8 +4,8 @@ from copy import deepcopy
 
 import pandas as pd
 
-from ..checks import check_df_columns
-from ..explainer import _convert_node_columns_to_integer
+from .checks import check_df_columns
+from .explainer import _convert_node_columns_to_integer
 
 
 def validate_monotonic_constraints_df(
