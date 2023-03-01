@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 from eli5 import explain_prediction_df
 
+from tabular_trees.explainer import decompose_prediction
 from tabular_trees.trees import export_tree_data
-from tabular_trees.xgboost.explainer import decompose_prediction
 
 
 @pytest.mark.parametrize("row_number_to_score", [(0), (1), (2), (20), (100), (222)])

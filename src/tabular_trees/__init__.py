@@ -2,7 +2,7 @@
 
 from importlib import metadata
 
-from . import checks, trees
+from . import checks, explainer, trees
 
 # single source for version number is in the pyproject.toml
 # note, for an editable install, the package version number will not be
