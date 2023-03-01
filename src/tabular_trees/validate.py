@@ -1,126 +1,135 @@
-"""Module for validating xgboost trees."""
-
-from copy import deepcopy
+"""Module for validating monotonic trends in trees."""
 
 import pandas as pd
 
-from .checks import check_df_columns
+from .checks import check_condition, check_type
 from .explain import _convert_node_columns_to_integer
+from .trees import TabularTrees
 
 
 def validate_monotonic_constraints(
-    trees_df, constraints, return_detailed_results=False
-):
-    """Check that monotonic constraints are as expected in an xgboost model."""
-    expected_columns = [
-        "tree",
-        "node",  # "nodeid",
-        # "depth",
-        "left_child",  # "yes",
-        "right_child",  # "no",
-        "missing",
-        "feature",  # "split",
-        "split_condition",
-        "leaf",
-        "prediction",  # "node_prediction",
-        # "node_type",
-        # "gain",
-        "count",  # "cover",
-        # "H",
-        # "G",
-    ]
+    tabular_trees: TabularTrees,
+    constraints: dict[str, int],
+    return_detailed_results: bool = False,
+) -> pd.DataFrame:
+    """Validate that trees conform to monotonic constraints.
 
-    check_df_columns(df=trees_df, expected_columns=expected_columns)
+    Parameters
+    ----------
+    tabular_trees : TabularTrees
+        Trees to check.
 
-    constraints = deepcopy(constraints)
+    constraints : dict[str, int]
+        Monotonic constraints to check. Should be dict where keys give variable names
+        and values are either -1 for monotonic decreasing constraint and 1 for
+        monotonic increasing constraint.
 
-    if not isinstance(constraints, dict):
+    return_detailed_results : bool, defualt=False
+        Should detailed breakdown of every split be returned?
 
-        raise TypeError("constraints should be a dict")
+    """
+    check_type(tabular_trees, TabularTrees, "tabular_trees")
+    check_type(constraints, dict, "constraints")
+    check_type(return_detailed_results, bool, "return_detailed_results")
 
-    # dictionary to hold results of monotonic constraint checks
-    constraint_results = {}
+    constraints_to_check = {}
+    for variable, direction in constraints.items():
+        check_type(direction, int, f"constraints[{variable}]")
+        check_condition(
+            direction in [-1, 0, 1], f"constraints[{variable}] not in [-1, 0, 1]"
+        )
+        if direction != 0:
+            constraints_to_check[variable] = direction
 
-    for k, v in constraints.items():
+    return _validate_monotonic_constraints(
+        trees_df=tabular_trees.trees,
+        constraints=constraints_to_check,
+        return_detailed_results=return_detailed_results,
+    )
 
-        if not isinstance(v, int):
 
-            raise TypeError('constraints["' + str(k) + '"] is not an int')
+def _validate_monotonic_constraints(
+    trees_df: pd.DataFrame, constraints: dict[str, int], return_detailed_results: bool
+) -> pd.DataFrame:
+    """Loop through each tree and check monotonic constraints.
 
-        if v < -1 | v > 1:
+    Parameters
+    ----------
+    trees_df : pd.DataFrame
+        Trees to check. Should be the trees attribute of a TabularTrees object.
 
-            raise ValueError('constraints["' + str(k) + '"] is not one of; -1, 0, 1')
+    constraints : dict[str, int]
+        Monotonic constraints to check. Should be dict where keys give variable names
+        and values are either -1 for monotonic decreasing constraint and 1 for
+        monotonic increasing constraint.
 
-        # reduce constraints down to the ones with constraints
-        if v == 0:
+    return_detailed_results : bool, defualt=False
+        Should detailed breakdown of every split be returned?
 
-            del constraints[k]
-
-        constraint_results[k] = {}
-
-    if not isinstance(trees_df, pd.DataFrame):
-
-        raise TypeError("trees_df should be a pd.DataFrame")
-
-    n = trees_df["tree"].max()
-
+    """
     monotonicity_check_list = []
 
     # loop through each tree
-    for i in range(n):
+    for tree_no in range(trees_df["tree"].max()):
 
-        tree_df = trees_df.loc[trees_df["tree"] == i].copy()
+        tree_df = trees_df.loc[trees_df["tree"] == tree_no].copy()
         tree_df = _convert_node_columns_to_integer(tree_df)
 
         # loop throguh each constraint
-        for k, v in constraints.items():
+        for constraint_variable, constraint_direction in constraints.items():
 
             # if the constraint variable is used in the given tree
-            if (tree_df["feature"] == k).sum() > 0:
+            if (tree_df["feature"] == constraint_variable).sum() > 0:
 
                 # get all nodes that are split on the variable of interest
                 nodes_split_on_variable = tree_df.loc[
-                    tree_df["feature"] == k, "node"
+                    tree_df["feature"] == constraint_variable, "node"
                 ].tolist()
 
                 # check all nodes below each node which splits on the variable of interest
-                for n in nodes_split_on_variable:
+                # note, this could be made more efficient by
+                for node_to_check in nodes_split_on_variable:
 
-                    child_nodes_left = []
-                    child_values_left = []
+                    child_nodes_left: list = []
+                    child_values_left: list = []
 
-                    child_nodes_right = []
-                    child_values_right = []
+                    child_nodes_right: list = []
+                    child_values_right: list = []
 
-                    traverse_tree_down(
+                    _traverse_tree_down(
                         df=tree_df,
-                        node=tree_df.loc[tree_df["node"] == n, "left_child"].iloc[0],
-                        name=k,
+                        node=tree_df.loc[
+                            tree_df["node"] == node_to_check, "left_child"
+                        ].item(),
+                        name=constraint_variable,
                         nodes_list=child_nodes_left,
                         values_list=child_values_left,
                     )
 
-                    traverse_tree_down(
+                    _traverse_tree_down(
                         df=tree_df,
-                        node=tree_df.loc[tree_df["node"] == n, "right_child"].iloc[0],
-                        name=k,
+                        node=tree_df.loc[
+                            tree_df["node"] == node_to_check, "right_child"
+                        ].item(),
+                        name=constraint_variable,
                         nodes_list=child_nodes_right,
                         values_list=child_values_right,
                     )
 
-                    # constraint_results[k][i][n]
-                    # check that monotonic constraint v is applied on variable k for tree i at node n
-                    x = check_monotonicity_at_split(
+                    # check that monotonic constraint {constraint_direction} is applied
+                    # on variable {constraint_variable} for tree {tree_no} at node
+                    # {node_to_check}
+                    check_results = _check_monotonicity_at_split(
                         tree_df=tree_df,
-                        tree_no=i,
-                        trend=v,
-                        variable=k,
-                        node=n,
+                        tree_no=tree_no,
+                        trend=constraint_direction,
+                        variable=constraint_variable,
+                        node=node_to_check,
                         child_nodes_left=child_nodes_left,
                         child_nodes_right=child_nodes_right,
                     )
 
-                    monotonicity_check_list.append(x)
+                    monotonicity_check_list.append(check_results)
 
     constraint_results = (
         pd.concat(monotonicity_check_list, axis=0)
@@ -141,7 +150,7 @@ def validate_monotonic_constraints(
         return summarised_constraint_results
 
 
-def traverse_tree_down(
+def _traverse_tree_down(
     df,
     node,
     name,
@@ -157,42 +166,42 @@ def traverse_tree_down(
 
     Parameters
     ----------
-        df : pd.DataFrame
-            Single tree structure output from parser.read_dump_text() or
-            parser.read_dump_json().
-        node : int
-            Node number.
-        name : str
-            Name of variable of interest, function will determine values for this
-            variable that would allow a data point to visit each node.
-        value : int, float or None
-            Value that has been sent to current node, default value of None is only
-            used at the top of the tree.
-        lower : int, float or None:
-            Lower bound for value of variable (name) that would allow a data point to
-            visit current node, default value of None is used from the top of the tree
-            until an lower bound is found i.e. right (no) split is traversed.
-        upper : int, float or None:
-            Upper bound for value of variable (name) that would allow a data point to
-            visit current node, default value of None is used from the top of the tree
-            until an upper bound is found i.e. left (yes) split is traversed.
-        print_note : str
-            Note to print if verbose = True, only able to set for first call of
-            function.
-        verbose : bool
-            Should notes be printed as function runs.
-        nodes_list : list
-            List to record the node numbers that are visited.
-        values_list : list
-            List to record the values of variable (name) which allow each node to be
-            visited (same order as nodes_list).
+    df : pd.DataFrame
+        Single tree structure output from parser.read_dump_text() or
+        parser.read_dump_json().
+    node : int
+        Node number.
+    name : str
+        Name of variable of interest, function will determine values for this
+        variable that would allow a data point to visit each node.
+    value : int, float or None
+        Value that has been sent to current node, default value of None is only
+        used at the top of the tree.
+    lower : int, float or None:
+        Lower bound for value of variable (name) that would allow a data point to
+        visit current node, default value of None is used from the top of the tree
+        until an lower bound is found i.e. right (no) split is traversed.
+    upper : int, float or None:
+        Upper bound for value of variable (name) that would allow a data point to
+        visit current node, default value of None is used from the top of the tree
+        until an upper bound is found i.e. left (yes) split is traversed.
+    print_note : str
+        Note to print if verbose = True, only able to set for first call of
+        function.
+    verbose : bool
+        Should notes be printed as function runs.
+    nodes_list : list
+        List to record the node numbers that are visited.
+    values_list : list
+        List to record the values of variable (name) which allow each node to be
+        visited (same order as nodes_list).
 
     Returns
     -------
-        No returns from function. However nodes_list (list) and values_list (list)
-        which are lists of nodes and corresponding data values of variable of
-        interest (name) that would allow each node to be visited - are updated as
-        the function runs
+    No returns from function. However nodes_list (list) and values_list (list)
+    which are lists of nodes and corresponding data values of variable of
+    interest (name) that would allow each node to be visited - are updated as
+    the function runs
 
     """
     if not isinstance(nodes_list, list):
@@ -206,7 +215,7 @@ def traverse_tree_down(
     if verbose:
 
         print(
-            "traverse_tree_down call;\n"
+            "_traverse_tree_down call;\n"
             + "\tnode: "
             + str(node)
             + "\n"
@@ -267,7 +276,7 @@ def traverse_tree_down(
             # pick a value and update bounds that would send a data point down the left (yes) split
 
             # record the values for value, lower and upper when the function is called so they can be reset
-            # to these values before calling traverse_tree_down down the no route within this if block
+            # to these values before calling _traverse_tree_down down the no route within this if block
             fcn_call_value = value
             fcn_call_lower = lower
             fcn_call_upper = upper
@@ -312,7 +321,7 @@ def traverse_tree_down(
                 value = (lower + upper) / 2
 
             # recursively call function down the left child of the current node
-            traverse_tree_down(
+            _traverse_tree_down(
                 df,
                 df.loc[df["node"] == node, "left_child"].iloc[0],
                 name,
@@ -368,7 +377,7 @@ def traverse_tree_down(
                 # set a value that falls between the bounds
                 value = (lower + upper) / 2
 
-            traverse_tree_down(
+            _traverse_tree_down(
                 df,
                 df.loc[df["node"] == node, "right_child"].iloc[0],
                 name,
@@ -385,7 +394,7 @@ def traverse_tree_down(
         # continue down the tree
         else:
 
-            traverse_tree_down(
+            _traverse_tree_down(
                 df,
                 df.loc[df["node"] == node, "left_child"].iloc[0],
                 name,
@@ -398,7 +407,7 @@ def traverse_tree_down(
                 verbose,
             )
 
-            traverse_tree_down(
+            _traverse_tree_down(
                 df,
                 df.loc[df["node"] == node, "right_child"].iloc[0],
                 name,
@@ -412,8 +421,8 @@ def traverse_tree_down(
             )
 
 
-def gather_traverse_tree_down_results(nodes, values, name):
-    """Gather results from traverse_tree_down into pd.DataFrame."""
+def gather__traverse_tree_down_results(nodes, values, name):
+    """Gather results from _traverse_tree_down into pd.DataFrame."""
     if not isinstance(nodes, list):
 
         raise TypeError("nodes must be a list")
@@ -439,7 +448,7 @@ def gather_traverse_tree_down_results(nodes, values, name):
     return df
 
 
-def check_monotonicity_at_split(
+def _check_monotonicity_at_split(
     tree_df, tree_no, trend, variable, node, child_nodes_left, child_nodes_right
 ):
     """Check monotonic trend is in place at a given split in a single tree."""
