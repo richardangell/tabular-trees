@@ -3,13 +3,52 @@
 import itertools
 import warnings
 from math import factorial
+from typing import Callable
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from .checks import check_condition, check_type
+from .trees import TabularTrees
 
-def decompose_prediction(trees_df, row, calculate_root_node):
+
+def decompose_prediction(
+    tabular_trees: TabularTrees, row: pd.DataFrame, calculate_root_node: Callable
+):
+    """Decompose prediction from tree based model with Saabas method[1].
+
+    Parameters
+    ----------
+    tabular_trees : TabularTrees
+        Subset of output from pygbm.expl.xgb.extract_model_predictions
+        for a single tree.
+
+    row : pd.DataFrame
+        Single row DataFrame to explain prediction.
+
+    calculate_root_node : callable
+        Function that can return the root node id when passed tree index.
+
+    Notes
+    -----
+    [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19
+        October. Available at http://blog.datadive.net/interpreting-random-forests/
+        (Accessed 26 February 2023).
+
+    """
+    check_type(tabular_trees, TabularTrees, "tabular_trees")
+    check_type(row, pd.DataFrame, "row")
+    check_type(calculate_root_node, Callable, "calculate_root_node")
+
+    check_condition(row.shape[0] == 1, "row is not 1 row")
+
+    return _decompose_prediction(
+        trees_df=tabular_trees.trees, row=row, calculate_root_node=calculate_root_node
+    )
+
+
+def _decompose_prediction(trees_df, row, calculate_root_node):
     """Decompose prediction from tree based model with Saabas method[1].
 
     Parameters

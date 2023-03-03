@@ -1,14 +1,14 @@
 """Module containing checks to be used elsewhere in the package."""
 
 import abc
-from typing import Any, Tuple, Type, Union
+from typing import Any, Callable
 
 import pandas as pd
 
 
 def check_type(
     obj: Any,
-    expected_types: Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]], ...]],
+    expected_types,  # type: ignore
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:
@@ -24,11 +24,13 @@ def check_type(
         Is None an allowed value for obj?
 
     """
+    expected_types_types = [type, abc.ABCMeta, type(Callable)]
+
     if type(expected_types) is tuple:
 
         if not all(
             [
-                type(expected_type) in [type, abc.ABCMeta]
+                type(expected_type) in expected_types_types
                 for expected_type in expected_types
             ]
         ):
@@ -37,7 +39,7 @@ def check_type(
 
     else:
 
-        if not type(expected_types) in [type, abc.ABCMeta]:
+        if not type(expected_types) in expected_types_types:
 
             raise TypeError("expected_types must be a type when passing a single type")
 

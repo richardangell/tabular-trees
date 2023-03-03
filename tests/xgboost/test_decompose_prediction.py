@@ -36,7 +36,7 @@ def test_prediction_decomposition_eli5_equality(
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
     tabular_trees_decomposition = decompose_prediction(
-        trees_df=tabular_trees.trees,
+        tabular_trees=tabular_trees,
         row=row_data,
         calculate_root_node=tabular_trees.get_root_node_given_tree,
     )
