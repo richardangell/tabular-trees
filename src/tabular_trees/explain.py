@@ -194,12 +194,12 @@ def _calculate_change_in_node_predictions(path: pd.DataFrame):
     """
     # shift features down by 1 to get the variable which is contributing to the change
     # in prediction
-    path["contributing_var"] = path["feature"].shift(1)
+    path["contributing_feature"] = path["feature"].shift(1)
 
     # calculate the change in prediction
     path["contribution"] = path["prediction"] - path["prediction"].shift(1).fillna(0)
 
-    path.loc[path["contributing_var"].isnull(), "contributing_var"] = "base"
+    path.loc[path["contributing_feature"].isnull(), "contributing_feature"] = "base"
 
     return path
 
@@ -215,14 +215,14 @@ def _format_prediction_decomposition_results(
     """
     prediction_decompositions_df = pd.concat(list_decomposition_results, axis=0)
 
-    keep_columns = ["tree", "node", "contributing_var", "contribution"]
+    keep_columns = ["tree", "node", "contributing_feature", "contribution"]
     prediction_decompositions_df_subset = prediction_decompositions_df[
         keep_columns
     ].rename({"node": "node_path"})
 
     decomposition_summary = pd.DataFrame(
         prediction_decompositions_df_subset.groupby(
-            "contributing_var"
+            "contributing_feature"
         ).contribution.sum()
     ).reset_index()
 

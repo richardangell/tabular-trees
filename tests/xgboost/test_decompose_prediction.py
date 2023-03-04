@@ -44,7 +44,7 @@ def test_prediction_decomposition_eli5_equality(
     decomposition_compare_df = tabular_trees_decomposition.summary.merge(
         eli5_decomposition[["feature_mapped", "weight"]],
         how="left",
-        left_on="contributing_var",
+        left_on="contributing_feature",
         right_on="feature_mapped",
         indicator=True,
     )
