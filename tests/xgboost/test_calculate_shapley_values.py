@@ -103,9 +103,7 @@ def test_shapley_values_treeshap_equality(
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_subset_cols)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
-    shapley_values_tabular_trees = calculate_shapley_values(
-        tabular_trees.trees, row_data
-    )
+    shapley_values_tabular_trees = calculate_shapley_values(tabular_trees, row_data)
 
     shapley_values_tabular_trees = shapley_values_tabular_trees.summary[
         shapley_values_xgboost_df.columns.values
@@ -126,7 +124,7 @@ def test_expected_shapley_values(handcrafted_shap_model):
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 
     shapley_values_tabular_trees = calculate_shapley_values(
-        tabular_trees.trees, row_to_explain
+        tabular_trees, row_to_explain
     )
 
     expected_values = {"bias": 23.0, "x": -5.0, "y": 2.0, "z": 0.0}

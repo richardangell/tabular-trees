@@ -252,20 +252,12 @@ class ShapleyValues:
     permutations: pd.DataFrame = field(repr=False)
 
 
-def calculate_shapley_values(tree_df, row) -> ShapleyValues:
-    """Calculate shapley values for an xgboost model.
+def calculate_shapley_values(
+    tabular_trees: TabularTrees, row: pd.Series
+) -> ShapleyValues:
+    """Calculate shapley values from TabularTrees model for row of data.
 
     This is Algorithm 1 as presented in https://arxiv.org/pdf/1802.03888.pdf.
-
-    Note, the algorithm has O(TL2^M) complexity (where M is the number of features)
-    and this implementation is not intended to be efficient - rather it is intended
-    to illustrate the algorithm - so will likely run very slow for models of any
-    significant size.
-
-    Note, it is the users responsibility to pass the relevant columns in row (i.e. the
-    columns that were present in the training data available to the model). If extra
-    columns are added this will exponentially increase the number of runs - even if
-    they are not relevant to the model.
 
     Parameters
     ----------
@@ -274,7 +266,17 @@ def calculate_shapley_values(tree_df, row) -> ShapleyValues:
         pygbm.expl.xgb.extract_model_predictions.
 
     row : pd.Series
-        Single row of data to explain prediction.
+        Single row of data to explain prediction for. It is the users responsibility to
+        pass the relevant columns in row (i.e. the columns used by the model). If extra
+        columns are added this will exponentially increase the number of runs - even if
+        they are not relevant to the model.
+
+    Notes
+    -----
+    This algorithm has O(TL2^M) complexity (where M is the number of features) and this
+    implementation is not intended to be efficient - rather it is intended to
+    illustrate the algorithm. Beware of using this on models or datasets (specifically
+    columns) of any significant size.
 
     """
     warnings.warn(
@@ -282,6 +284,25 @@ def calculate_shapley_values(tree_df, row) -> ShapleyValues:
         "treeSHAP but will take much longer to run."
     )
 
+    check_type(tabular_trees, TabularTrees, "tabular_trees")
+    check_type(row, pd.Series, "row")
+
+    return _calculate_shapley_values(tree_df=tabular_trees.trees, row=row)
+
+
+def _calculate_shapley_values(tree_df: pd.DataFrame, row: pd.Series) -> ShapleyValues:
+    """Calculate shapley values for each tree and combine.
+
+    Parameters
+    ----------
+    tree_df : pd.DataFrame
+        Tree data.
+
+    row : pd.Series
+        Row of data to explain prediction for.
+
+    """
+    # TODO: do not modify TabularTrees data
     tree_df.reset_index(drop=True, inplace=True)
 
     n_trees = tree_df["tree"].max()
