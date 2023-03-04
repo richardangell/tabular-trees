@@ -12,7 +12,26 @@ from .trees import TabularTrees
 
 @dataclass
 class MonotonicConstraintResults:
-    """Results of checking monotonic constraints."""
+    """Results of checking monotonic constraints.
+
+    Attributes
+    ----------
+    summary : dict[str, bool]
+        Summary of whether monotonic constraints are met. Keys give variable names and
+        values indicate if the constraint is met.
+
+    constraints : dict[str, int]
+        Monotonic constraints. Keys give variable names and values define the
+        constraints. A value of 1 is a monotonically increasing constraint and a value
+        of -1 is a monotonically decreasing constraint.
+
+    results : pd.DataFrame
+        Detailed breakdown of whether constraints are met at split level in trees.
+
+    all_constraints_met : bool
+        Are all of the monotonic constraints met.
+
+    """
 
     summary: dict[str, bool]
     constraints: dict[str, int]

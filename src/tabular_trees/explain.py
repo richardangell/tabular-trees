@@ -16,10 +16,20 @@ from .trees import TabularTrees
 
 @dataclass
 class PredictionDecomposition:
-    """Prediction decomposition results."""
+    """Prediction decomposition results.
+
+    Attributes
+    ----------
+    summary : pd.DataFrame
+        Prediction contribution for each feature.
+
+    nodes : pd.DataFrame
+        Node level prediction contributions for all trees.
+
+    """
 
     summary: pd.DataFrame
-    results: pd.DataFrame = field(repr=False)
+    nodes: pd.DataFrame = field(repr=False)
 
 
 def decompose_prediction(
@@ -229,7 +239,7 @@ def _format_prediction_decomposition_results(
     ).reset_index()
 
     return PredictionDecomposition(
-        summary=decomposition_summary, results=prediction_decompositions_df_subset
+        summary=decomposition_summary, nodes=prediction_decompositions_df_subset
     )
 
 
