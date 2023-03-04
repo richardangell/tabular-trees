@@ -22,7 +22,9 @@ class PredictionDecomposition:
     results: pd.DataFrame = field(repr=False)
 
 
-def decompose_prediction(tabular_trees: TabularTrees, row: pd.DataFrame):
+def decompose_prediction(
+    tabular_trees: TabularTrees, row: pd.DataFrame
+) -> PredictionDecomposition:
     """Decompose prediction from tree based model with Saabas method[1].
 
     This method attributes the change in prediction from moving to a lower node to the
@@ -231,7 +233,26 @@ def _format_prediction_decomposition_results(
     )
 
 
-def calculate_shapley_values(tree_df, row, return_permutations=False):
+@dataclass
+class ShapleyValues:
+    """Shapley values results.
+
+    Attributes
+    ----------
+    summary : pd.DataFrame
+        Shapley value at feature level.
+
+    permutations : pd.DataFrame
+        Shapley values for each feature permutation and tree. Summary attribute is the
+        average of these values over features.
+
+    """
+
+    summary: pd.DataFrame
+    permutations: pd.DataFrame = field(repr=False)
+
+
+def calculate_shapley_values(tree_df, row) -> ShapleyValues:
     """Calculate shapley values for an xgboost model.
 
     This is Algorithm 1 as presented in https://arxiv.org/pdf/1802.03888.pdf.
@@ -255,14 +276,10 @@ def calculate_shapley_values(tree_df, row, return_permutations=False):
     row : pd.Series
         Single row of data to explain prediction.
 
-    return_permutations : bool, default = False
-        Should contributions for each feature permutation for each tree (i.e. most
-        granular level) be returned? If not overall shapley values are returned.
-
     """
     warnings.warn(
-        "This algorithm is likely to run very slow, it gives the same results but is "
-        "not the more efficient treeSHAP algorithm."
+        "This algorithm has very long runtime. It will produce the same results as "
+        "treeSHAP but will take much longer to run."
     )
 
     tree_df.reset_index(drop=True, inplace=True)
@@ -273,29 +290,13 @@ def calculate_shapley_values(tree_df, row, return_permutations=False):
 
     for tree_no in range(n_trees + 1):
 
-        tree_rows = tree_df.loc[tree_df["tree"] == tree_no].copy()
+        tree_rows = tree_df.loc[tree_df["tree"] == tree_no]
 
-        if not tree_rows.shape[0] > 0:
+        tree_shapley_values = _shapley_values_tree(tree_rows, row)
 
-            raise ValueError(f"tree number {tree_no} has no rows")
+        results_list.append(tree_shapley_values)
 
-        tree_values = _shapley_values_tree(tree_rows, row, return_permutations)
-
-        tree_values.insert(0, "tree", tree_no)
-
-        results_list.append(tree_values)
-
-    results_df = pd.concat(results_list, axis=0, sort=True)
-
-    if return_permutations:
-
-        return results_df
-
-    else:
-
-        results_df = pd.DataFrame(results_df.sum(axis=0)).T.drop(columns="tree")
-
-        return results_df
+    return _combine_shapley_values_across_trees(results_list)
 
 
 def _convert_node_columns_to_integer(tree_df: pd.DataFrame) -> pd.DataFrame:
@@ -309,7 +310,7 @@ def _convert_node_columns_to_integer(tree_df: pd.DataFrame) -> pd.DataFrame:
     return tree_df
 
 
-def _shapley_values_tree(tree_df, row, return_permutations=False):
+def _shapley_values_tree(tree_df, row) -> ShapleyValues:
     """Calculate shapley values for single tree.
 
     Parameters
@@ -321,11 +322,9 @@ def _shapley_values_tree(tree_df, row, return_permutations=False):
     row : pd.Series
         Single row of data to explain prediction.
 
-    return_permutations : bool, default = False
-        Should contributions for each feature permutation be returned? If not overall
-        shapley values (i.e. average over all permutations) are returned.
-
     """
+    tree_number = tree_df["tree"].values[0]
+
     internal_nodes = tree_df["leaf"] == 0
 
     mean_prediction = (
@@ -333,9 +332,8 @@ def _shapley_values_tree(tree_df, row, return_permutations=False):
         * tree_df.loc[~internal_nodes, "prediction"]
     ).sum() / tree_df.loc[~internal_nodes, "count"].sum()
 
-    tree_df = _convert_node_columns_to_integer(tree_df)
-
     keep_cols = [
+        "node",
         "left_child",
         "right_child",
         "split_condition",
@@ -346,6 +344,8 @@ def _shapley_values_tree(tree_df, row, return_permutations=False):
     ]
 
     tree_df_cols_subset = tree_df[keep_cols].copy()
+
+    tree_df_cols_subset = _convert_node_columns_to_integer(tree_df_cols_subset)
 
     tree_df_cols_subset.loc[internal_nodes, "prediction"] = "internal"
 
@@ -360,7 +360,7 @@ def _shapley_values_tree(tree_df, row, return_permutations=False):
 
     tree_df_cols_subset.rename(columns=cols_rename, inplace=True)
 
-    tree_df_cols_subset.drop(columns="leaf", inplace=True)
+    tree_df_cols_subset.drop(columns=["leaf", "node"], inplace=True)
 
     # convert child node index column to pandas int type with nulls
     # this is to prevent error in G when trying to select items from list by index (with float)
@@ -400,25 +400,13 @@ def _shapley_values_tree(tree_df, row, return_permutations=False):
 
             current_prediction = expected_value_given_features
 
-        contributions = pd.DataFrame(contributions, index=[i])
+        contributions_df = pd.DataFrame(contributions, index=[i])
 
-        results_list.append(contributions)
+        results_list.append(contributions_df)
 
         i += 1
 
-    results_df = pd.concat(results_list, axis=0, sort=True)
-
-    if return_permutations:
-
-        return results_df
-
-    else:
-
-        results_feature_level = pd.DataFrame(
-            results_df.drop(columns="permutation").mean(axis=0)
-        ).T
-
-        return results_feature_level
+    return _format_shapley_value_for_tree(results_list, tree_number)
 
 
 def _expvalue(x, s, tree):
@@ -506,3 +494,70 @@ def _g(j, w, x, s, tree):
             return _g(a[j], w * r[a[j]] / r[j], x, s, tree) + _g(
                 b[j], w * r[b[j]] / r[j], x, s, tree
             )
+
+
+def _format_shapley_value_for_tree(
+    results_list: list[pd.DataFrame], tree_no: int
+) -> ShapleyValues:
+    """Format shapley values for a single tree.
+
+    The summary results give the average contribution across all permutations.
+
+    Parameters
+    ----------
+    results_list : list[pd.DataFrame]
+        List of contributions for different feature permutations.
+
+    tree_no: int
+        Tree number.
+
+    """
+    permutations_df = pd.concat(results_list, axis=0, sort=True)
+
+    permutations_df.insert(0, "tree", tree_no)
+
+    results_feature_level = pd.DataFrame(
+        permutations_df.drop(columns="permutation").mean(axis=0)
+    ).T
+
+    return ShapleyValues(summary=results_feature_level, permutations=permutations_df)
+
+
+def _combine_shapley_values_across_trees(
+    tree_shapley_values: list[ShapleyValues],
+) -> ShapleyValues:
+    """Combine shapley values across all trees in the model.
+
+    Permutation results from each ShapleyValues object are simply appended. For the
+    summary results, these are appended and then summed over trees.
+
+    Parameters
+    ----------
+    tree_shapley_values : list[ShapleyValues]
+        Shapley values for each tree.
+
+    Notes
+    -----
+    The summary attribute on the returned ShapleyValues object does not have the 'tree'
+    column - as results are summed over all trees.
+
+    """
+    summary_appended = pd.concat(
+        [shapley_values.summary for shapley_values in tree_shapley_values],
+        axis=0,
+        sort=True,
+    )
+
+    summary_summed_over_trees = pd.DataFrame(summary_appended.sum(axis=0)).T.drop(
+        columns="tree"
+    )
+
+    permutations_appended = pd.concat(
+        [shapley_values.permutations for shapley_values in tree_shapley_values],
+        axis=0,
+        sort=True,
+    )
+
+    return ShapleyValues(
+        summary=summary_summed_over_trees, permutations=permutations_appended
+    )
