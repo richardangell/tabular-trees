@@ -1,9 +1,16 @@
-"""tabular_trees"""
+"""tabular_trees module."""
 
-from ._version import __version__
+from importlib import metadata
 
-from . import checks
-from . import trees
+from . import checks, explain, trees, validate
+
+# single source for version number is in the pyproject.toml
+# note, for an editable install, the package version number will not be
+# updated until the package is reinstalled with `poetry install`
+__version__ = metadata.version(__package__)
+
+# avoids polluting the results of dir(__package__)
+del metadata
 
 try:
     from . import lightgbm

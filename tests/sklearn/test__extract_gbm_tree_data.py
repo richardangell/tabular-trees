@@ -1,20 +1,20 @@
 import pytest
 
-from tabular_trees.sklearn import trees
+from tabular_trees import sklearn
 
 
-def test_successful_call(sklearn_diabetes_gbr):
+def test_successful_call(sklearn_diabetes_gbm_regressor):
     """Test a successful call to _extract_gbm_tree_data."""
 
-    trees._extract_gbm_tree_data(sklearn_diabetes_gbr)
+    sklearn._extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
 
 
-def test_required_columns(sklearn_diabetes_gbr):
+def test_required_columns(sklearn_diabetes_gbm_regressor):
     """Test the required columns are in the output."""
 
-    tree_data = trees._extract_gbm_tree_data(sklearn_diabetes_gbr)
+    tree_data = sklearn._extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
 
-    assert sorted(trees.ScikitLearnTabularTrees.REQUIRED_COLUMNS) == sorted(
+    assert sorted(sklearn.ScikitLearnTabularTrees.REQUIRED_COLUMNS) == sorted(
         tree_data.columns.values
     ), "columns in output from _extract_gbm_tree_data not correct"
 

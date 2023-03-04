@@ -1,10 +1,11 @@
-import pandas as pd
-import xgboost as xgb
-import pytest
 import re
 
-from tabular_trees.trees import BaseModelTabularTrees
-from tabular_trees.xgboost.trees import XGBoostTabularTrees, ParsedXGBoostTabularTrees
+import pandas as pd
+import pytest
+import xgboost as xgb
+
+from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
+from tabular_trees.xgboost import ParsedXGBoostTabularTrees, XGBoostTabularTrees
 
 
 class TestXGBoostTabularTreesInit:
@@ -40,6 +41,9 @@ class TestXGBoostTabularTreesInit:
                     "Gain",
                     "Cover",
                     "Category",
+                    "G",
+                    "H",
+                    "weight",
                 ],
             ),
         ],
@@ -76,42 +80,98 @@ class TestXGBoostTabularTreesInit:
         ), "trees attribute is the same object as passed into initialisation"
 
 
-class TestXGBoostTabularTreesPostPostInit:
-    """Tests for the XGBoostTabularTrees.__post_post_init__ method."""
+class TestXGBoostTabularTreesPostInit:
+    """Tests for the XGBoostTabularTrees.__post_init__ method."""
 
     def test_lambda_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if lambda_ is not a float."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.lambda_ = "1"
 
         with pytest.raises(
             TypeError,
             match="lambda_ is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe, lambda_="1")
+            tabular_trees.__post_init__()
 
     def test_alpha_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if alpha is not a float."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.alpha = "1"
 
         with pytest.raises(
             TypeError,
             match="alpha is not in expected types <class 'float'>, got <class 'str'>",
         ):
 
-            XGBoostTabularTrees(
-                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha="1"
-            )
+            tabular_trees.__post_init__()
 
     def test_alpha_not_zero_exception(self, xgb_diabetes_model_trees_dataframe):
         """Test an exception is raised if trees is not a pd.DataFrame."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        tabular_trees.alpha = 1.0
 
         with pytest.raises(
             ValueError,
             match=re.escape("condition: [alpha = 0] not met"),
         ):
 
-            XGBoostTabularTrees(
-                xgb_diabetes_model_trees_dataframe, lambda_=1.0, alpha=1.0
-            )
+            tabular_trees.__post_init__()
+
+    def test_super_post_init_called(self, mocker, xgb_diabetes_model_trees_dataframe):
+        """Test that BaseModelTabularTrees.__post_init__ method is called."""
+
+        # initialise object then overwrite trees attribute with data that does
+        # not contain the stats columns
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        mocked = mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        tabular_trees.__post_init__()
+
+        assert (
+            mocked.call_count == 1
+        ), "BaseModelTabularTrees.__post_init__ not called when XGBoostTabularTrees.__post_init__ runs"
+
+        assert (
+            mocked.call_args_list[0][0] == ()
+        ), "positional args in BaseModelTabularTrees.__post_init__ call not correct"
+
+        assert (
+            mocked.call_args_list[0][1] == {}
+        ), "keyword args in BaseModelTabularTrees.__post_init__ call not correct"
+
+    def test_trees_attribute_updated(self, mocker, xgb_diabetes_model_trees_dataframe):
+        """Test the trees attribute is updated with the output from derive_predictions."""
+
+        tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        derive_predictions_output = 0
+
+        # mock derive_predictions to set return value
+        mocker.patch.object(
+            XGBoostTabularTrees,
+            "derive_predictions",
+            return_value=derive_predictions_output,
+        )
+
+        # mock __post_init__ so it does nothing when called
+        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        assert type(tabular_trees.trees) != type(derive_predictions_output)
+
+        tabular_trees.__post_init__()
+
+        assert (
+            tabular_trees.trees == derive_predictions_output
+        ), "trees attribute not updated with the output from derive_predictions"
 
 
 class TestXGBoostTabularTreesDerivePredictions:
@@ -128,6 +188,31 @@ class TestXGBoostTabularTreesDerivePredictions:
     def test_predictions_calculated_correctly(self, lambda_, xgb_diabetes_dmatrix):
         """Test that the derived node prediction values are correct."""
 
+        def derive_depths(df) -> pd.DataFrame:
+            """Derive node depth for all nodes.
+            Returns
+            -------
+            pd.DataFrame
+                Tree data (trees attribute) with 'Depth' column added.
+            """
+
+            if not (df.groupby("Tree")["Node"].first() == 0).all():
+                raise ValueError("first node by tree must be the root node (0)")
+
+            df["Depth"] = 0
+
+            for row_number in range(df.shape[0]):
+
+                row = df.iloc[row_number]
+
+                # for non-leaf nodes, increase child node depths by 1
+                if row["Feature"] != "Leaf":
+
+                    df.loc[df["ID"] == row["Yes"], "Depth"] = row["Depth"] + 1
+                    df.loc[df["ID"] == row["No"], "Depth"] = row["Depth"] + 1
+
+            return df
+
         model_for_predictions = xgb.train(
             params={"verbosity": 0, "max_depth": 3, "lambda": lambda_},
             dtrain=xgb_diabetes_dmatrix,
@@ -140,7 +225,7 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         predictions = xgboost_tabular_trees.derive_predictions()
 
-        depths = xgboost_tabular_trees.derive_depths()
+        depths = derive_depths(xgboost_tabular_trees.trees.copy())
 
         predictions["Depth"] = depths["Depth"]
 
@@ -206,183 +291,19 @@ class TestXGBoostTabularTreesDerivePredictions:
                 ), f"""derived internal node prediction for node {row["ID"]} incorrect (rounding to 3dp)"""
 
 
-class TestXGBoostTabularTreesDeriveDepths:
-    """Tests for the XGBoostTabularTrees.derive_depths method."""
+class TestXGBoostTabularTreesConvert:
+    """Tests for the XGBoostTabularTrees.convert_to_tabular_trees method."""
 
-    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test successfull call of the derive_depths method."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        xgboost_tabular_trees.derive_depths()
-
-    def test_first_node_by_tree_not_root_exception(
-        self, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test that a ValueError is raised if the first node by tree is not
-        a root node."""
+    def test_successful_call(self, xgb_diabetes_model_trees_dataframe):
+        """Test a successful call to convert_to_tabular_trees."""
 
         xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
-        tree_structure = pd.DataFrame(
-            {
-                "Tree": [0, 0, 0, 1, 1, 1],
-                "Node": [0, 1, 2, 1, 0, 2],
-                "Yes": ["0-1", "0-", "0-", "1-", "1-1", "1-"],
-                "No": ["0-2", "0-", "0-", "1-", "1-2", "1-"],
-                "Feature": ["", "Leaf", "Leaf", "Leaf", "", "Leaf"],
-                "Depth": [0, 1, 1, 1, 0, 1],
-            }
-        )
+        output = xgboost_tabular_trees.convert_to_tabular_trees()
 
-        tree_structure["ID"] = (
-            tree_structure["Tree"].astype(str)
-            + "-"
-            + tree_structure["Node"].astype(str)
-        )
-
-        xgboost_tabular_trees.trees = tree_structure
-
-        with pytest.raises(
-            ValueError, match=re.escape("first node by tree must be the root node (0)")
-        ):
-
-            xgboost_tabular_trees.derive_depths()
-
-    def test_depth_calculated_correctly(self, xgb_diabetes_model_trees_dataframe):
-        """Test that depth values are calculated correctly for a single tree."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        tree_structure = pd.DataFrame(
-            {
-                "Tree": [0, 0, 0, 0, 0, 0, 0],
-                "Node": [0, 1, 2, 3, 4, 5, 6],
-                "Yes": ["0-1", "0-", "0-3", "0-5", "0-", "0-", "0-"],
-                "No": ["0-2", "0-", "0-4", "0-6", "0-", "0-", "0-"],
-                "Feature": ["", "Leaf", "", "", "Leaf", "Leaf", "Leaf"],
-                "Depth": [0, 1, 1, 2, 2, 3, 3],
-            }
-        )
-
-        tree_structure["ID"] = (
-            tree_structure["Tree"].astype(str)
-            + "-"
-            + tree_structure["Node"].astype(str)
-        )
-
-        # overwrite tree data
-        xgboost_tabular_trees.trees = tree_structure
-
-        derived_depths = xgboost_tabular_trees.derive_depths()
-
-        pd.testing.assert_frame_equal(derived_depths, tree_structure)
-
-    def test_depth_calculated_correctly_multi_tree(
-        self, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test that depth values are calculated correctly for a multiple
-        trees."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        tree_structure = pd.DataFrame(
-            {
-                "Tree": [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-                "Node": [0, 1, 2, 3, 4, 5, 6, 0, 2, 1],
-                "Yes": ["0-1", "0-", "0-3", "0-5", "0-", "0-", "0-", "1-2", "1-", "1-"],
-                "No": ["0-2", "0-", "0-4", "0-6", "0-", "0-", "0-", "1-1", "1-", "1-"],
-                "Feature": [
-                    "",
-                    "Leaf",
-                    "",
-                    "",
-                    "Leaf",
-                    "Leaf",
-                    "Leaf",
-                    "",
-                    "Leaf",
-                    "Leaf",
-                ],
-                "Depth": [0, 1, 1, 2, 2, 3, 3, 0, 1, 1],
-            }
-        )
-
-        tree_structure["ID"] = (
-            tree_structure["Tree"].astype(str)
-            + "-"
-            + tree_structure["Node"].astype(str)
-        )
-
-        # overwrite tree data
-        xgboost_tabular_trees.trees = tree_structure
-
-        derived_depths = xgboost_tabular_trees.derive_depths()
-
-        pd.testing.assert_frame_equal(derived_depths, tree_structure)
-
-
-class TestXGBoostTabularTreesGetTrees:
-    """Tests for the XGBoostTabularTrees.get_trees method."""
-
-    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test successfull initialisation of the XGBoostTabularTrees class."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        xgboost_tabular_trees.get_trees([0, 1, 2, 5, 9])
-
-    @pytest.mark.parametrize(
-        "tree_indexes,exception,text",
-        [
-            (
-                [0, 1, "abc", 9],
-                TypeError,
-                re.escape(
-                    "tree_indexes[2] is not in expected types <class 'int'>, got <class 'str'>"
-                ),
-            ),
-            (
-                [-1, 0, 1],
-                ValueError,
-                re.escape("condition: [tree_indexes[0] >= 0] not met"),
-            ),
-            (
-                [0, 1, 5, 10],
-                ValueError,
-                re.escape(
-                    "condition: [tree_indexes[3] in range for number of trees (9)] not met"
-                ),
-            ),
-        ],
-    )
-    def test_trees_non_integer_exception(
-        self, tree_indexes, exception, text, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test the correct exception is raised if tree_indexes arg is not in
-        the correct format."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        with pytest.raises(exception, match=text):
-
-            xgboost_tabular_trees.get_trees(tree_indexes)
-
-    @pytest.mark.parametrize("tree_indexes", [([0]), ([0, 1]), ([2, 3, 9])])
-    def test_correct_trees_returned(
-        self, tree_indexes, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test that the correct rows are returned when get_trees is called."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        expected = xgb_diabetes_model_trees_dataframe.loc[
-            xgb_diabetes_model_trees_dataframe["Tree"].isin(tree_indexes)
-        ]
-
-        result = xgboost_tabular_trees.get_trees(tree_indexes)
-
-        pd.testing.assert_frame_equal(result, expected)
+        assert (
+            type(output) is TabularTrees
+        ), "output from XGBoostTabularTrees.convert_to_tabular_trees is not TabularTrees type"
 
 
 class TestParsedXGBoostTabularTreesInit:
@@ -547,4 +468,7 @@ class TestParsedXGBoostTabularTreesConvert:
 
         xgboost_tabular_trees = parsed_tabular_trees.convert_to_xgboost_tabular_trees()
 
-        pd.testing.assert_frame_equal(xgboost_tabular_trees.trees, expected_output)
+        pd.testing.assert_frame_equal(
+            xgboost_tabular_trees.trees.drop(columns=["weight", "G", "H"]),
+            expected_output,
+        )

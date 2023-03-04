@@ -1,84 +1,58 @@
+"""Fixtures for providing Scikit-Learn and other toy datasets."""
+
 import pandas as pd
 import pytest
-from sklearn.datasets import load_diabetes, load_iris, load_breast_cancer
-from sklearn.ensemble import (
-    HistGradientBoostingRegressor,
-    HistGradientBoostingClassifier,
-    GradientBoostingRegressor,
-    GradientBoostingClassifier,
-)
+from sklearn.datasets import load_breast_cancer, load_diabetes, load_iris
+from sklearn.utils import Bunch
 
 
 @pytest.fixture(scope="session")
-def diabetes_data() -> pd.DataFrame:
+def diabetes_data() -> Bunch:
     """Load the sklearn diabetes dataset."""
-
     data = load_diabetes()
-
     return data
 
 
 @pytest.fixture(scope="session")
-def iris_data() -> pd.DataFrame:
+def diabetes_data_subset_cols(diabetes_data) -> Bunch:
+    """First 4 column from the sklearn diabetes dataset."""
+    subset_cols = 4
+
+    subset_cols_bunch = Bunch()
+    subset_cols_bunch.update(diabetes_data)
+
+    reduced_data = {
+        "data": diabetes_data["data"][:, :subset_cols],
+        "feature_names": diabetes_data["feature_names"][:subset_cols],
+    }
+
+    subset_cols_bunch.update(reduced_data)
+
+    return subset_cols_bunch
+
+
+@pytest.fixture(scope="session")
+def iris_data() -> Bunch:
     """Load the sklearn iris dataset."""
-
     data = load_iris()
-
     return data
 
 
 @pytest.fixture(scope="session")
-def breast_cancer_data() -> pd.DataFrame:
+def breast_cancer_data() -> Bunch:
     """Load the sklearn breast cancer dataset."""
-
     data = load_breast_cancer()
-
     return data
 
 
 @pytest.fixture(scope="session")
-def sklearn_diabetes_hist_gbr(diabetes_data):
-    """Build an sklearn HistGradientBoostingRegressor with 10 trees and depth
-    3 on the diabetes dataset."""
-
-    model = HistGradientBoostingRegressor(max_iter=10, max_depth=3)
-
-    model.fit(diabetes_data["data"], diabetes_data["target"])
-
-    return model
-
-
-@pytest.fixture(scope="session")
-def sklearn_diabetes_gbr(diabetes_data):
-    """Build an sklearn GradientBoostingRegressor with 10 trees and depth
-    3 on the diabetes dataset."""
-
-    model = GradientBoostingRegressor(n_estimators=10, max_depth=3)
-
-    model.fit(diabetes_data["data"], diabetes_data["target"])
-
-    return model
-
-
-@pytest.fixture(scope="session")
-def sklearn_breast_cancer_hist_gbc(breast_cancer_data):
-    """Build an sklearn HistGradientBoostingClassifier with 10 trees and depth
-    3 on the breast cancer dataset."""
-
-    model = HistGradientBoostingClassifier(max_iter=10, max_depth=3)
-
-    model.fit(breast_cancer_data["data"], breast_cancer_data["target"])
-
-    return model
-
-
-@pytest.fixture(scope="session")
-def sklearn_breast_cancer_gbc(breast_cancer_data):
-    """Build an sklearn GradientBoostingClassifier with 10 trees and depth
-    3 on the breast cancer dataset."""
-
-    model = GradientBoostingClassifier(n_estimators=10, max_depth=3)
-
-    model.fit(breast_cancer_data["data"], breast_cancer_data["target"])
-
-    return model
+def dummy_model_tree_data() -> pd.DataFrame:
+    """Small dummy DataFrame with 3 columns and 4 rows."""
+    dummy_model_tree_data = pd.DataFrame(
+        {
+            "column1": [4, 3, 2, 1],
+            "column2": [5, 6, 7, 8],
+            "column3": ["a", "b", "c", "d"],
+        }
+    )
+    return dummy_model_tree_data
