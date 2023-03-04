@@ -2,6 +2,7 @@
 
 import itertools
 import warnings
+from dataclasses import dataclass, field
 from math import factorial
 from typing import Callable
 
@@ -13,22 +14,28 @@ from .checks import check_condition, check_type
 from .trees import TabularTrees
 
 
-def decompose_prediction(
-    tabular_trees: TabularTrees, row: pd.DataFrame, calculate_root_node: Callable
-):
+@dataclass
+class PredictionDecomposition:
+    """Prediction decomposition results."""
+
+    summary: pd.DataFrame
+    results: pd.DataFrame = field(repr=False)
+
+
+def decompose_prediction(tabular_trees: TabularTrees, row: pd.DataFrame):
     """Decompose prediction from tree based model with Saabas method[1].
+
+    This method attributes the change in prediction from moving to a lower node to the
+    variable that was split on. This can then be summed over all splits in a tree and
+    all trees in a model.
 
     Parameters
     ----------
     tabular_trees : TabularTrees
-        Subset of output from pygbm.expl.xgb.extract_model_predictions
-        for a single tree.
+        Tree based model to explain prediction for.
 
     row : pd.DataFrame
-        Single row DataFrame to explain prediction.
-
-    calculate_root_node : callable
-        Function that can return the root node id when passed tree index.
+        Single row of data to explain prediction from tabular_trees object.
 
     Notes
     -----
@@ -39,67 +46,65 @@ def decompose_prediction(
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
     check_type(row, pd.DataFrame, "row")
-    check_type(calculate_root_node, Callable, "calculate_root_node")
-
     check_condition(row.shape[0] == 1, "row is not 1 row")
 
     return _decompose_prediction(
-        trees_df=tabular_trees.trees, row=row, calculate_root_node=calculate_root_node
+        trees_df=tabular_trees.trees,
+        row=row,
+        calculate_root_node=tabular_trees.get_root_node_given_tree,
     )
 
 
-def _decompose_prediction(trees_df, row, calculate_root_node):
-    """Decompose prediction from tree based model with Saabas method[1].
+def _decompose_prediction(
+    trees_df: pd.DataFrame, row: pd.DataFrame, calculate_root_node: Callable
+):
+    """Decompose prediction from tree based model with Saabas method.
 
     Parameters
     ----------
     tree_df : pd.DataFrame
-        Subset of output from pygbm.expl.xgb.extract_model_predictions
-        for a single tree.
+        Tree data from TabularTrees object.
 
     row : pd.DataFrame
-        Single row DataFrame to explain prediction.
+        Single row of data to explain prediction.
 
     calculate_root_node : callable
         Function that can return the root node id when passed tree index.
 
-    Notes
-    -----
-    [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19
-        October. Available at http://blog.datadive.net/interpreting-random-forests/
-        (Accessed 26 February 2023).
-
     """
     n_trees = trees_df.tree.max()
 
-    # get path from root to leaf node for each tree
-    # note, root_node logic is only appropriate for xgboost
-    terminal_node_paths = [
-        _terminal_node_path(
+    prediction_decompositions = []
+
+    for n in range(n_trees + 1):
+
+        leaf_node_path = _find_path_to_leaf_node(
             tree_df=trees_df.loc[trees_df.tree == n],
             row=row,
             calculate_root_node=calculate_root_node,
         )
-        for n in range(n_trees + 1)
-    ]
 
-    # append the paths for each tree
-    terminal_node_paths = pd.concat(terminal_node_paths, axis=0)
+        tree_prediction_decomposition = _calculate_change_in_node_predictions(
+            path=leaf_node_path
+        )
 
-    return terminal_node_paths
+        prediction_decompositions.append(tree_prediction_decomposition)
+
+    return _format_prediction_decomposition_results(prediction_decompositions)
 
 
-def _terminal_node_path(tree_df, row, calculate_root_node):
-    """Traverse tree according to the values in the given row of data.
+def _find_path_to_leaf_node(
+    tree_df: pd.DataFrame, row: pd.DataFrame, calculate_root_node: Callable
+) -> pd.DataFrame:
+    """Traverse tree down to leaf for given row of data.
 
     Parameters
     ----------
     tree_df : pd.DataFrame
-        Subset of output from pygbm.expl.xgb.extract_model_predictions
-        for a single tree.
+        Subset of tree data for a single tree.
 
     row : pd.DataFrame
-        Single row DataFrame to explain prediction.
+        Single row of data (observation) to send through tree to leaf node.
 
     calculate_root_node : callable
         Function that can return the root node id when passed tree index.
@@ -174,15 +179,56 @@ def _terminal_node_path(tree_df, row, calculate_root_node):
 
                 break
 
-    # shift the split_vars down by 1 to get the variable which is contributing to the change in prediction
+    return path
+
+
+def _calculate_change_in_node_predictions(path: pd.DataFrame):
+    """Calcualte change in node prediction through a particular path through the tree.
+
+    Parameters
+    ----------
+    path : pd.DataFrame
+        DataFrame where each successive row shows the next node visited though a tree.
+        Must have feautre and prediction columns.
+
+    """
+    # shift features down by 1 to get the variable which is contributing to the change
+    # in prediction
     path["contributing_var"] = path["feature"].shift(1)
 
-    # get change in predicted value due to split i.e. contribution for that variable
+    # calculate the change in prediction
     path["contribution"] = path["prediction"] - path["prediction"].shift(1).fillna(0)
 
-    path.loc[path.contributing_var.isnull(), "contributing_var"] = "base"
+    path.loc[path["contributing_var"].isnull(), "contributing_var"] = "base"
 
     return path
+
+
+def _format_prediction_decomposition_results(
+    list_decomposition_results: list[pd.DataFrame],
+) -> PredictionDecomposition:
+    """Combine results for each tree into PredictionDecomposition object.
+
+    The list of individual prediction deomposition results is combined into a single
+    DataFrame and contirbutions are summed over trees.
+
+    """
+    prediction_decompositions_df = pd.concat(list_decomposition_results, axis=0)
+
+    keep_columns = ["tree", "node", "contributing_var", "contribution"]
+    prediction_decompositions_df_subset = prediction_decompositions_df[
+        keep_columns
+    ].rename({"node": "node_path"})
+
+    decomposition_summary = pd.DataFrame(
+        prediction_decompositions_df_subset.groupby(
+            "contributing_var"
+        ).contribution.sum()
+    ).reset_index()
+
+    return PredictionDecomposition(
+        summary=decomposition_summary, results=prediction_decompositions_df_subset
+    )
 
 
 def calculate_shapley_values(tree_df, row, return_permutations=False):

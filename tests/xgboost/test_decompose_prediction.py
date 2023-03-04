@@ -38,16 +38,10 @@ def test_prediction_decomposition_eli5_equality(
     tabular_trees_decomposition = decompose_prediction(
         tabular_trees=tabular_trees,
         row=row_data,
-        calculate_root_node=tabular_trees.get_root_node_given_tree,
     )
 
-    # aggregate tabular_trees output to variable level, by default it is at tree x node level
-    tabular_trees_decomposition_agg = pd.DataFrame(
-        tabular_trees_decomposition.groupby("contributing_var").contribution.sum()
-    ).reset_index()
-
     # merge eli5 and tabular_trees values
-    decomposition_compare_df = tabular_trees_decomposition_agg.merge(
+    decomposition_compare_df = tabular_trees_decomposition.summary.merge(
         eli5_decomposition[["feature_mapped", "weight"]],
         how="left",
         left_on="contributing_var",
