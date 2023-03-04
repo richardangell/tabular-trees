@@ -32,4 +32,4 @@ Once installed run
 poetry install --with dev
 ```
 
-to install the development dependencies. Other dependency groups are; `docs`, `lightgbm`, `scikit-learn` and `xgboost`.
+to install the development dependencies. Other dependency groups are; `docs`, `lightgbm`, `sklearn` and `xgboost`.
