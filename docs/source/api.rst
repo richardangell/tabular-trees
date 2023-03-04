@@ -3,6 +3,34 @@ api documentation
 
 .. currentmodule:: tabular_trees
 
+explain module
+------------------
+
+.. autosummary::
+    :toctree: api/
+
+    explain.decompose_prediction
+    explain.PredictionDecomposition
+    explain.calculate_shapley_values
+    explain.ShapleyValues
+    
+lightgbm module
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    lightgbm.LightGBMTabularTrees
+
+sklearn module
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    sklearn.ScikitLearnTabularTrees
+    sklearn.ScikitLearnHistTabularTrees
+
 trees module
 ------------------
 
@@ -10,61 +38,26 @@ trees module
     :toctree: api/
 
     trees.BaseModelTabularTrees
-    trees.export_tree_data
     trees.TabularTrees
-          
-sklearn.trees module
---------------------------
-
-.. autosummary::
-    :toctree: api/
-
-    sklearn.trees.ScikitLearnTabularTrees
-    sklearn.trees.ScikitLearnHistTabularTrees
-    sklearn.trees.export_tree_data__gradient_boosting_model
-    sklearn.trees.export_tree_data__hist_gradient_boosting_model
-
-lightgbm.trees module
---------------------------
-
-.. autosummary::
-    :toctree: api/
-
-    lightgbm.trees.LightGBMTabularTrees
-
-xgboost.explainer module
---------------------------
-
-.. autosummary::
-    :toctree: api/
-
-    xgboost.explainer.decompose_prediction
-    xgboost.explainer.terminal_node_path
-    xgboost.explainer.shapley_values
+    trees.export_tree_data
          
-xgboost.parser module
+validate module
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgboost.parser.DumpReader
-    xgboost.parser.JsonDumpReader
-    xgboost.parser.TextDumpReader
-         
-xgboost.trees module
+    validate.validate_monotonic_constraints
+    validate.MonotonicConstraintResults
+
+xgboost module
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgboost.trees.XGBoostTabularTrees
-    xgboost.trees.ParsedXGBoostTabularTrees
-
-xgboost.validate module
---------------------------
-
-.. autosummary::
-    :toctree: api/
-
-    xgboost.validate.validate_monotonic_constraints_df
+    xgboost.XGBoostTabularTrees
+    xgboost.ParsedXGBoostTabularTrees
+    xgboost.XGBoostParser
+    xgboost.JsonDumpReader
+    xgboost.TextDumpReader

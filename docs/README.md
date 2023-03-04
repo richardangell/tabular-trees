@@ -9,8 +9,7 @@ Build
 To build the documentation locally, first run the following from the root of the project to install the documentation packages
 
 ```
-pip install flit
-flit install --deps develop
+poetry install --with docs
 ```
 
 Then run the following to build the documentation
