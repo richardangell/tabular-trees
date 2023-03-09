@@ -1,6 +1,7 @@
 """LightGBM trees in tabular format."""
 
-from dataclasses import dataclass
+from collections import OrderedDict
+from dataclasses import dataclass, field
 
 import lightgbm as lgb
 import pandas as pd
@@ -97,3 +98,171 @@ def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     tree_data = model.trees_to_dataframe()
 
     return LightGBMTabularTrees(tree_data)
+
+
+@dataclass
+class FeatureRanges:
+    """Feature range information from feature_infos line in Booster text."""
+
+    min: float
+    max: float
+
+    def to_string(self) -> str:
+        """Export feature range to string."""
+        return f"[{self.min}:{self.max}]"
+
+
+@dataclass
+class BoosterHeader:
+    """Dataclass for the metadata in header section of a Booster."""
+
+    header: str
+    version: str
+    num_class: int
+    num_tree_per_iteration: int
+    label_index: int
+    max_feature_idx: int
+    objective: str
+    feature_names: list[str]
+    feature_infos: list[FeatureRanges]
+    tree_sizes: list[int]
+    delimiter: str = field(repr=False)
+
+    def to_string(self) -> str:
+        """Concatenate header information to a single string."""
+        return self.delimiter.join(self.to_list())
+
+    def to_list(self) -> list[str]:
+        """Append the booster header as a list of strings."""
+        return [
+            self.header,
+            self.version,
+            str(self.num_class),
+            str(self.num_tree_per_iteration),
+            str(self.label_index),
+            str(self.max_feature_idx),
+            self.objective,
+            " ".join(self.feature_names),
+            " ".join(
+                [feature_range.to_string() for feature_range in self.feature_infos]
+            ),
+            " ".join([str(tree_size) for tree_size in self.tree_sizes]),
+        ]
+
+
+class EditableBooster:
+    """LightGBM booster object that can be edited."""
+
+    def __init__(self):
+
+        pass
+
+
+class BoosterString:
+    """Editable lightgbm Booster."""
+
+    new_line = "\n"
+
+    def __init__(self, booster: lgb.Booster):
+
+        self.booster_data = self._booster_to_string(booster)
+        self.tree_rows, self.row_markers = self._gather_line_markers()
+
+    def _booster_to_string(self, booster: lgb.Booster) -> list[str]:
+        """Export Booster object to string and split by line breaks."""
+        booster_string = booster.model_to_string()
+        booster_string_split = booster_string.split(self.new_line)
+
+        return booster_string_split
+
+    def _get_number_trees_from_tree_sizes_line(self, tree_sizes_line: str) -> int:
+        """Get the number of trees in the booster from the tree sizes line."""
+        return len(tree_sizes_line.split("=")[1].split(" "))
+
+    def _get_tree_index_from_line(self, tree_line: str) -> int:
+        """Extract the tree index from the first line in a tree section."""
+        return int(tree_line.replace("Tree=", ""))
+
+    def _gather_line_markers(self) -> tuple[OrderedDict, OrderedDict]:
+        """Find specific lines in the booster string data."""
+        row_to_find = [
+            "tree_sizes=",
+            "end of trees",
+            "feature_importances:",
+            "parameters:",
+            "end of parameters",
+            "pandas_categorical:",
+        ]
+
+        row_to_find_description = [
+            "end_header",
+            "end_of_trees",
+            "feature_importances",
+            "parameters",
+            "end_of_parameters",
+            "pandas_categorical",
+        ]
+
+        row_found_indexes: list[int] = []
+
+        tree_rows = OrderedDict()
+
+        tree_sizes_line = self._find_text_in_booster_data(row_to_find[0])
+        row_found_indexes.append(tree_sizes_line)
+
+        n_trees = self._get_number_trees_from_tree_sizes_line(
+            self.booster_data[tree_sizes_line]
+        )
+
+        find_tree_from_row = tree_sizes_line
+
+        for _ in range(n_trees):
+
+            tree_line = self._find_text_in_booster_data("Tree=", find_tree_from_row)
+            tree_index = self._get_tree_index_from_line(self.booster_data[tree_line])
+            tree_rows[tree_index] = tree_line
+            find_tree_from_row = tree_line + 1
+
+        find_from_row = find_tree_from_row
+
+        for string_to_find in row_to_find[1:]:
+
+            string_found_row = self._find_text_in_booster_data(
+                string_to_find, find_from_row
+            )
+            row_found_indexes.append(string_found_row)
+            find_from_row = string_found_row + 1
+
+        row_markers = OrderedDict()
+        for name, row_index in zip(row_to_find_description, row_found_indexes):
+            row_markers[name] = row_index
+
+        return row_markers, tree_rows
+
+    def _find_text_in_booster_data(self, text: str, start: int = 0) -> int:
+
+        for subet_row_number, row in enumerate(self.booster_data[start:]):
+
+            if row.find(text, 0, len(text)) == 0:
+
+                row_number = subet_row_number + start
+
+                return row_number
+
+        raise ValueError(
+            f"""unable to find row starting with text '{text}' in booster_data starting from index {start}"""
+        )
+
+    def _get_number_of_rows(self) -> int:
+
+        return len(self.booster_data)
+
+    def to_booster(self) -> lgb.Booster:
+        """Convert the BoosterString back to a Booster."""
+        booster_string = self.new_line.join(self.booster_data)
+
+        return lgb.Booster(model_str=booster_string)
+
+    def to_editable_booster(self):
+        """Export the BoosterString an EditableBooster object."""
+        pass
