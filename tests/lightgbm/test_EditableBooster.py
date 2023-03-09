@@ -14,3 +14,10 @@ def test_booster_reproducible(diabetes_data, lgb_diabetes_model):
     predictions_reproduced = reproduced_booster.predict(diabetes_data["data"])
 
     np.testing.assert_array_equal(predictions, predictions_reproduced)
+
+
+def test_export_header(diabetes_data, lgb_diabetes_model):
+
+    booster_string = BoosterString(lgb_diabetes_model)
+
+    booster_string._export_header()

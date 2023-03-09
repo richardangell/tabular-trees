@@ -266,3 +266,60 @@ class BoosterString:
     def to_editable_booster(self):
         """Export the BoosterString an EditableBooster object."""
         pass
+
+    def _export_header(self) -> BoosterHeader:
+
+        header_rows = self._get_header_rows()
+        return self._rows_to_header(header_rows)
+
+    def _get_header_rows(self) -> list[str]:
+
+        end_row_index = self.tree_rows["end_header"] + 1
+        return self.booster_data[:end_row_index]
+
+    @staticmethod
+    def _split_at_equals(line: str) -> str:
+
+        return line.split("=")[1]
+
+    @staticmethod
+    def _extract_str_value(line: str) -> str:
+
+        return BoosterString._split_at_equals(line)
+
+    @staticmethod
+    def _extract_int_value(line: str) -> int:
+
+        return int(BoosterString._split_at_equals(line))
+
+    @staticmethod
+    def _extract_list_values(line: str, delimiter: str = " ") -> list[str]:
+
+        return BoosterString._split_at_equals(line).split(delimiter)
+
+    @staticmethod
+    def _feature_range_from_string(string: str) -> FeatureRanges:
+
+        string_without_brackets = string.replace("[", "").replace("]", "")
+        string_split = string_without_brackets.split(":")
+
+        return FeatureRanges(min=float(string_split[0]), max=float(string_split[1]))
+
+    def _rows_to_header(self, rows) -> BoosterHeader:
+
+        return BoosterHeader(
+            header=rows[0],
+            version=BoosterString._extract_str_value(rows[1]),
+            num_class=BoosterString._extract_int_value(rows[2]),
+            num_tree_per_iteration=BoosterString._extract_int_value(rows[3]),
+            label_index=BoosterString._extract_int_value(rows[4]),
+            max_feature_idx=BoosterString._extract_int_value(rows[5]),
+            objective=BoosterString._extract_str_value(rows[6]),
+            feature_names=BoosterString._extract_list_values(rows[7]),
+            feature_infos=[
+                BoosterString._feature_range_from_string(v)
+                for v in BoosterString._extract_list_values(rows[8])
+            ],
+            tree_sizes=[int(v) for v in BoosterString._extract_list_values(rows[9])],
+            delimiter=self.new_line,
+        )
