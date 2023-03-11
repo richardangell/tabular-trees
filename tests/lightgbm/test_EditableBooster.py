@@ -1,6 +1,9 @@
 import numpy as np
 
-from tabular_trees.lightgbm import BoosterString
+from tabular_trees.lightgbm import (
+    BoosterString,
+    convert_booster_string_to_editable_booster,
+)
 
 
 def test_booster_reproducible(diabetes_data, lgb_diabetes_model):
@@ -16,8 +19,10 @@ def test_booster_reproducible(diabetes_data, lgb_diabetes_model):
     np.testing.assert_array_equal(predictions, predictions_reproduced)
 
 
-def test_export_header(diabetes_data, lgb_diabetes_model):
+def test_convert_to_editable_booster(diabetes_data, lgb_diabetes_model):
 
     booster_string = BoosterString(lgb_diabetes_model)
 
-    booster_string._export_header()
+    editable_booster = convert_booster_string_to_editable_booster(booster_string)
+
+    assert len(editable_booster.trees) == 10
