@@ -483,6 +483,7 @@ class JsonDumpReader(DumpReader):
     """Class to read xgboost model (json) file dumps."""
 
     dump_type = "json"
+    """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Read an xgboost model dump json file and parse it into a tabular structure.
@@ -581,6 +582,7 @@ class TextDumpReader(DumpReader):
     """Class to read xgboost model (text) file dumps."""
 
     dump_type = "text"
+    """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Read an xgboost model dump text file dump and parse into tabular structure.
