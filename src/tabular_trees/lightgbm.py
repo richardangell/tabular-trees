@@ -101,11 +101,31 @@ def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     return LightGBMTabularTrees(tree_data)
 
 
-def try_convert_string_to_int_or_float(value: str) -> Union[str, int, float]:
-    """Convert a string value to int, float or return the original string value.
+class FloatFixedString(float):
+    """Float with a defined string representation."""
 
-    Try to convert to int or float first, if this results in a ValueError then return
-    the original string value.
+    def __new__(cls, value, string_representation: str):
+        """Create and return a new object."""
+        return float.__new__(cls, value)
+
+    def __init__(self, value, string_representation: str):
+        float.__init__(value)
+        self.string_representation = string_representation
+
+    def __str__(self):
+        """Return the fixed string representation for the float."""
+        return self.string_representation
+
+    def __repr__(self):
+        """Return the fixed string representation for the float."""
+        return self.string_representation
+
+
+def try_convert_string_to_int_or_float(value: str) -> Union[int, FloatFixedString, str]:
+    """Convert a string value to int, FloatFixedString or return the input string.
+
+    Try to convert to int or FloatFixedString first, if this results in a ValueError
+    then return the original string value.
 
     """
     try:
@@ -114,12 +134,12 @@ def try_convert_string_to_int_or_float(value: str) -> Union[str, int, float]:
         return value
 
 
-def convert_string_to_int_or_float(value: str) -> Union[int, float]:
-    """Try to convert a string to int or float if int conversion fails."""
+def convert_string_to_int_or_float(value: str) -> Union[int, FloatFixedString]:
+    """Try to convert a string to int or FloatFixedString if int conversion fails."""
     try:
         return int(value)
     except ValueError:
-        return float(value)
+        return FloatFixedString(value, value)
 
 
 def remove_surrounding_brackets(value: str) -> str:
@@ -305,10 +325,12 @@ class BoosterString:
 
             self.booster_data = rows[:]
 
-            # try:
-            #    self.to_booster()
-            # except Exception as err:
-            #    raise ValueError("supplied rows do not produce a valid booster") from err
+            try:
+                self.to_booster()
+            except Exception as err:
+                raise ValueError(
+                    "supplied rows do not produce a valid booster"
+                ) from err
 
         self.row_markers, self.tree_rows = self._gather_line_markers()
 
@@ -536,7 +558,10 @@ class BoosterStringToEditableBoosterConverter:
         string_without_brackets = remove_surrounding_brackets(string)
         string_split = string_without_brackets.split(":")
 
-        return FeatureRange(min=float(string_split[0]), max=float(string_split[1]))
+        return FeatureRange(
+            min=FloatFixedString(string_split[0], string_split[0]),
+            max=FloatFixedString(string_split[1], string_split[1]),
+        )
 
     def _rows_to_header(self, rows: list[str]) -> BoosterHeader:
         """Convert string booster rows to BoosterHeader object."""
