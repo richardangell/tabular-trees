@@ -3,7 +3,7 @@ api documentation
 
 .. currentmodule:: tabular_trees
 
-explain module
+Explain API
 ------------------
 
 .. autosummary::
@@ -14,7 +14,7 @@ explain module
     explain.calculate_shapley_values
     explain.ShapleyValues
     
-lightgbm module
+LightGBM API
 --------------------------
 
 .. autosummary::
@@ -22,7 +22,7 @@ lightgbm module
 
     lightgbm.LightGBMTabularTrees
 
-sklearn module
+Scikit-Learn API
 --------------------------
 
 .. autosummary::
@@ -31,7 +31,7 @@ sklearn module
     sklearn.ScikitLearnTabularTrees
     sklearn.ScikitLearnHistTabularTrees
 
-trees module
+Trees API
 ------------------
 
 .. autosummary::
@@ -41,7 +41,7 @@ trees module
     trees.TabularTrees
     trees.export_tree_data
          
-validate module
+Validate API
 --------------------------
 
 .. autosummary::
@@ -50,7 +50,7 @@ validate module
     validate.validate_monotonic_constraints
     validate.MonotonicConstraintResults
 
-xgboost module
+XGBoost API
 --------------------------
 
 .. autosummary::
