@@ -124,7 +124,7 @@ Added
 - Separate github action workflows to run test ``coverage``, ``pre-commit``, ``tox`` and check required files have changed
 - Docs
 - Pipfile for development environment
-- ``pre-commit`` with ``black``, ``bandit``, ``mypy`` and ``flake8`
+- ``pre-commit`` with ``black``, ``bandit``, ``mypy`` and ``flake8``
 
 Changed
 ^^^^^^^
