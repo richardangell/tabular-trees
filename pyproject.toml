@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tabular-trees"
-version = "0.2.0.dev6"
+version = "0.2.0.dev7"
 description = "Python package for holding tree based models in tabular format"
 authors = ["Richard Angell <richardangell37@gmail.com>"]
 license = "BSD 3-Clause License"
