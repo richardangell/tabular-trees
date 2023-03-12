@@ -53,7 +53,7 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
         ----------
         trees : pd.DataFrame
             GradientBoostingRegressor or Classifier tree data extracted from
-            estimators_ attribute.
+            the .estimators_ attribute.
 
         """
         self.trees = trees
