@@ -116,6 +116,11 @@ class TabularTrees(BaseModelTabularTrees):
         self.trees = trees
         self.get_root_node_given_tree = get_root_node_given_tree
 
+        checks.check_condition(
+            callable(self.get_root_node_given_tree),
+            "get_root_node_given_tree is not callable",
+        )
+
         self.__post_init__()
 
 
