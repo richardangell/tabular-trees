@@ -25,6 +25,7 @@ Changed
 - Improve .rst documentation files
 - Improve docstrings
 - Update project ``README``
+- Update readthedocs config to use new settings e.g. ``build.tools.python``
 
 0.2.0.dev6 (unreleased) `#16 <https://github.com/richardangell/tabular-trees/pull/16>`_
 ---------------------------------------------------------------------------------------
