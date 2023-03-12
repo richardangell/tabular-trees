@@ -402,8 +402,8 @@ class TestParsedXGBoostTabularTreesPostInit:
         called when the tree data does not have cover and gain columns."""
 
         expected_exception_message = (
-            "Cannot create ParsedXGBoostTabularTrees object unless statistics"
-            " are output. Rerun dump_model with with_stats = True."
+            "Cannot create ParsedXGBoostTabularTrees object unless statistics "
+            "are output. Rerun dump_model with with_stats = True."
         )
 
         with pytest.raises(ValueError, match=expected_exception_message):

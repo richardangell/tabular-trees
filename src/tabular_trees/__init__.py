@@ -2,7 +2,8 @@
 
 from importlib import metadata
 
-from . import checks, explain, trees, validate
+from . import checks, explain, validate
+from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 # single source for version number is in the pyproject.toml
 # note, for an editable install, the package version number will not be

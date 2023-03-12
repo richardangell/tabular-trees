@@ -11,16 +11,10 @@ from . import checks
 
 
 class BaseModelTabularTrees(ABC):
-    """Abstract base class for model specific TabularTrees classes.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        Model specific tree data in tabular structure.
-
-    """
+    """Abstract base class for model specific TabularTrees classes."""
 
     trees: pd.DataFrame
+    """Tree data."""
 
     @property
     @abstractmethod
@@ -33,6 +27,19 @@ class BaseModelTabularTrees(ABC):
     def SORT_BY_COLUMNS(self):  # noqa: N802
         """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the BaseModelTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            Model specific tree data in tabular structure.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
     def __post_init__(self) -> None:
         """Post init checks and processing.
@@ -72,17 +79,13 @@ class BaseModelTabularTrees(ABC):
 
 @dataclass
 class TabularTrees:
-    """Generic tree structure in tabular format.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Tree data in tabular structure.
-
-    """
+    """Generic tree structure in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
+
     get_root_node_given_tree: Callable
+    """Function that returns the name of the root node for a given tree index."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -96,11 +99,41 @@ class TabularTrees:
         "count",
         "prediction",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame, get_root_node_given_tree: Callable):
+        """Initialise the TabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            Tree data in tabular structure.
+
+        """
+        self.trees = trees
+        self.get_root_node_given_tree = get_root_node_given_tree
 
 
 @singledispatch
 def export_tree_data(model: Any) -> BaseModelTabularTrees:
-    """Export tree data from passed model."""
+    """Export tree data from model.
+
+    The model types that are supported depend on the packages that are installed in the
+    Python environment that tabular_trees is running. For example if xgboost is
+    installed then xgboost Booster objects can be exported.
+
+    Parameters
+    ----------
+    model : Any
+        Model to export tree data from.
+
+    Raises
+    ------
+    NotImplementedError
+        If the type of the passed model is not supported.
+
+    """
     raise NotImplementedError(f"model type not supported; {type(model)}")

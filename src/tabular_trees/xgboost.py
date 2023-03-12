@@ -23,25 +23,16 @@ def xgboost_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class XGBoostTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        XGBoost tree data output from Booster.trees_to_dataframe.
-
-    lambda_ : float = 1.0
-        Lambda value used in the xgboost model.
-
-    alpha : float = 0.0
-        Alpha value used in the xgboost model. An exception will be raised if
-        alpha is non-zero.
-
-    """
+    """Class to hold the xgboost trees in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
+
     lambda_: float = 1.0
+    """Lambda parameter value from XGBoost model."""
+
     alpha: float = 0.0
+    """Alpha parameter value from XGBoost model."""
 
     REQUIRED_COLUMNS = [
         "Tree",
@@ -59,8 +50,10 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "H",
         "weight",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["Tree", "Node"]
+    """List of columns to sort tree data by."""
 
     COLUMN_MAPPING = {
         "Tree": "tree",
@@ -74,6 +67,35 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "leaf": "leaf",
         "Cover": "count",
     }
+    """Column name mapping between XGBoostTabularTrees and TabularTrees tree data."""
+
+    def __init__(self, trees: pd.DataFrame, lambda_: float = 1.0, alpha: float = 0.0):
+        """Initialise the XGBoostTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            XGBoost tree data output from Booster.trees_to_dataframe.
+
+        lambda_ : float, default = 1.0
+            Lambda parameter value from XGBoost model.
+
+        alpha : float default = 0.0
+            Alpha parameter value from XGBoost model. Only alpha values of 0 are
+            supported. Specifically the internal node prediction logic is only
+            defined for alpha = 0.
+
+        Raises
+        ------
+        ValueError
+            If alpha is not 0.
+
+        """
+        self.trees = trees
+        self.lambda_ = lambda_
+        self.alpha = alpha
+
+        self.__post_init__()
 
     def __post_init__(self):
         """Post init checks on regularisation parameters.
@@ -246,23 +268,13 @@ def export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
 
 @dataclass
 class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
-    """Dataclass for xgboost models that have been parsed from model dump.
+    """Dataclass for XGBoost models that have been parsed from a model dump.
 
     Data maybe have been parsed from text or json file dump.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        XGBoost tree data parsed from the output of Booster.dump_model.
-
-    Attributes
-    ----------
-    has_stats : bool
-        Does the tree data contain 'gain' and 'cover' columns?
-
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -277,13 +289,16 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         "gain",
         "cover",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "nodeid"]
+    """List of columns to sort tree data by."""
 
     STATS_COLUMNS = [
         "gain",
         "cover",
     ]
+    """Data items included in XGBoost model dump if with_stats = True in dump_model."""
 
     # mapping between column names in this class and the column names in the
     # XGBoostTabularTrees class
@@ -298,17 +313,33 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         "gain": "Gain",
         "cover": "Cover",
     }
+    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the ParsedXGBoostTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            XGBoost tree data parsed from the output of Booster.dump_model.
+
+        Raises
+        ------
+        ValueError
+            If alpha is not 0.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
     def __post_init__(self):
         """Check that STATS_COLUMNS are present in the data."""
-        if not all(
-            [column in self.trees.columns.values for column in self.STATS_COLUMNS]
-        ):
-
-            raise ValueError(
-                "Cannot create ParsedXGBoostTabularTrees object unless statistics"
-                " are output. Rerun dump_model with with_stats = True."
-            )
+        checks.check_condition(
+            all([column in self.trees.columns.values for column in self.STATS_COLUMNS]),
+            "Cannot create ParsedXGBoostTabularTrees object unless statistics "
+            "are output. Rerun dump_model with with_stats = True.",
+        )
 
         super().__post_init__()
 
@@ -452,6 +483,7 @@ class JsonDumpReader(DumpReader):
     """Class to read xgboost model (json) file dumps."""
 
     dump_type = "json"
+    """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Read an xgboost model dump json file and parse it into a tabular structure.
@@ -550,6 +582,7 @@ class TextDumpReader(DumpReader):
     """Class to read xgboost model (text) file dumps."""
 
     dump_type = "text"
+    """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
         """Read an xgboost model dump text file dump and parse into tabular structure.
@@ -674,23 +707,23 @@ class TextDumpReader(DumpReader):
 
 
 class XGBoostParser:
-    """Class that dumps an xgboost Booster then parses the dumped file.
-
-    Parameters
-    ----------
-    model : xgb.core.Booster
-        Model to parse trees into tabular data.
-
-    reader : Optional[DumpReader], default = None
-        Object capable of reading dumped xgboost model. If no value is passed
-        then JsonDumpReader() is used.
-
-    """
+    """Class that dumps an xgboost Booster then parses the dumped file."""
 
     def __init__(
         self, model: xgb.core.Booster, reader: Optional[DumpReader] = None
     ) -> None:
+        """Initialise the XGBoostParser object.
 
+        Parameters
+        ----------
+        model : xgb.core.Booster
+            Model to parse trees into tabular data.
+
+        reader : Optional[DumpReader], default = None
+            Object capable of reading dumped xgboost model. If no value is passed
+            then JsonDumpReader() is used.
+
+        """
         checks.check_type(model, xgb.core.Booster, "model")
         checks.check_type(reader, DumpReader, "reader", True)
 

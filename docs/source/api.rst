@@ -3,18 +3,17 @@ api documentation
 
 .. currentmodule:: tabular_trees
 
-explain module
+Trees API
 ------------------
 
 .. autosummary::
     :toctree: api/
 
-    explain.decompose_prediction
-    explain.PredictionDecomposition
-    explain.calculate_shapley_values
-    explain.ShapleyValues
+    export_tree_data
+    TabularTrees
+    BaseModelTabularTrees
     
-lightgbm module
+LightGBM Trees API
 --------------------------
 
 .. autosummary::
@@ -22,7 +21,7 @@ lightgbm module
 
     lightgbm.LightGBMTabularTrees
 
-sklearn module
+Scikit-Learn Trees API
 --------------------------
 
 .. autosummary::
@@ -31,26 +30,7 @@ sklearn module
     sklearn.ScikitLearnTabularTrees
     sklearn.ScikitLearnHistTabularTrees
 
-trees module
-------------------
-
-.. autosummary::
-    :toctree: api/
-
-    trees.BaseModelTabularTrees
-    trees.TabularTrees
-    trees.export_tree_data
-         
-validate module
---------------------------
-
-.. autosummary::
-    :toctree: api/
-
-    validate.validate_monotonic_constraints
-    validate.MonotonicConstraintResults
-
-xgboost module
+XGBoost Trees API
 --------------------------
 
 .. autosummary::
@@ -61,3 +41,23 @@ xgboost module
     xgboost.XGBoostParser
     xgboost.JsonDumpReader
     xgboost.TextDumpReader
+
+Explain API
+------------------
+
+.. autosummary::
+    :toctree: api/
+
+    explain.decompose_prediction
+    explain.PredictionDecomposition
+    explain.calculate_shapley_values
+    explain.ShapleyValues
+
+Validate API
+--------------------------
+
+.. autosummary::
+    :toctree: api/
+
+    validate.validate_monotonic_constraints
+    validate.MonotonicConstraintResults
