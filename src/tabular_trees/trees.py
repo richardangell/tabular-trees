@@ -102,5 +102,21 @@ class TabularTrees:
 
 @singledispatch
 def export_tree_data(model: Any) -> BaseModelTabularTrees:
-    """Export tree data from passed model."""
+    """Export tree data from model.
+
+    The model types that are supported depend on the packages that are installed in the
+    Python environment that tabular_trees is running. For example if xgboost is
+    installed then xgboost Booster objects can be exported.
+
+    Parameters
+    ----------
+    model : Any
+        Model to export tree data from.
+
+    Raises
+    ------
+    NotImplementedError
+        If the type of the passed model is not supported.
+
+    """
     raise NotImplementedError(f"model type not supported; {type(model)}")
