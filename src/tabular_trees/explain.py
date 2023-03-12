@@ -52,8 +52,8 @@ def decompose_prediction(
     Notes
     -----
     [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19
-        October. Available at http://blog.datadive.net/interpreting-random-forests/
-        (Accessed 26 February 2023).
+    October. Available at http://blog.datadive.net/interpreting-random-forests/
+    (Accessed 26 February 2023).
 
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
