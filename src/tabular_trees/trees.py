@@ -21,6 +21,7 @@ class BaseModelTabularTrees(ABC):
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     @property
     @abstractmethod
@@ -82,7 +83,10 @@ class TabularTrees:
     """
 
     trees: pd.DataFrame
+    """Tree data."""
+
     get_root_node_given_tree: Callable
+    """Function that returns the name of the root node for a given tree index."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -96,8 +100,10 @@ class TabularTrees:
         "count",
         "prediction",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
 
 
 @singledispatch

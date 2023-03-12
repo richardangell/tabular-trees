@@ -35,6 +35,7 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -48,8 +49,10 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
         "value",
         "weighted_n_node_samples",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
 
 
 @dataclass
@@ -65,6 +68,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -83,8 +87,10 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         "is_categorical",
         "bitset_idx",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
 
 
 @export_tree_data.register(HistGradientBoostingClassifier)

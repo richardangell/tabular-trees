@@ -40,8 +40,13 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
     """
 
     trees: pd.DataFrame
+    """Tree data."""
+
     lambda_: float = 1.0
+    """Lambda parameter value from XGBoost model."""
+
     alpha: float = 0.0
+    """Alpha parameter value from XGBoost model."""
 
     REQUIRED_COLUMNS = [
         "Tree",
@@ -59,8 +64,10 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "H",
         "weight",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["Tree", "Node"]
+    """List of columns to sort tree data by."""
 
     COLUMN_MAPPING = {
         "Tree": "tree",
@@ -74,6 +81,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         "leaf": "leaf",
         "Cover": "count",
     }
+    """Column name mapping between XGBoostTabularTrees and TabularTrees tree data."""
 
     def __post_init__(self):
         """Post init checks on regularisation parameters.
@@ -255,14 +263,10 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     trees : pd.DataFrame
         XGBoost tree data parsed from the output of Booster.dump_model.
 
-    Attributes
-    ----------
-    has_stats : bool
-        Does the tree data contain 'gain' and 'cover' columns?
-
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -277,13 +281,16 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         "gain",
         "cover",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "nodeid"]
+    """List of columns to sort tree data by."""
 
     STATS_COLUMNS = [
         "gain",
         "cover",
     ]
+    """Data items included in XGBoost model dump if with_stats = True in dump_model."""
 
     # mapping between column names in this class and the column names in the
     # XGBoostTabularTrees class
@@ -298,6 +305,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         "gain": "Gain",
         "cover": "Cover",
     }
+    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
 
     def __post_init__(self):
         """Check that STATS_COLUMNS are present in the data."""

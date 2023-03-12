@@ -26,6 +26,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
     """
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree_index",
@@ -44,8 +45,10 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "weight",
         "count",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree_index", "node_depth", "node_index"]
+    """List of columns to sort tree data by."""
 
     COLUMN_MAPPING = {
         "tree_index": "tree",
@@ -59,6 +62,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "count": "count",
         "value": "prediction",
     }
+    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
 
     def convert_to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
