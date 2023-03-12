@@ -16,7 +16,7 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.2.0.dev6 (unreleased) `#15 <https://github.com/richardangell/tabular-trees/pull/16>`_
+0.2.0.dev6 (unreleased) `#16 <https://github.com/richardangell/tabular-trees/pull/16>`_
 ---------------------------------------------------------------------------------------
 
 Changed
