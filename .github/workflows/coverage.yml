@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, feature/update_github_actions]
 
 
 jobs:
@@ -47,4 +47,3 @@ jobs:
       with:
         name: coverage-html-pytest-results
         path: htmlcov
-        
