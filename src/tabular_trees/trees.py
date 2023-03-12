@@ -11,14 +11,7 @@ from . import checks
 
 
 class BaseModelTabularTrees(ABC):
-    """Abstract base class for model specific TabularTrees classes.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        Model specific tree data in tabular structure.
-
-    """
+    """Abstract base class for model specific TabularTrees classes."""
 
     trees: pd.DataFrame
     """Tree data."""
@@ -34,6 +27,19 @@ class BaseModelTabularTrees(ABC):
     def SORT_BY_COLUMNS(self):  # noqa: N802
         """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the BaseModelTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            Model specific tree data in tabular structure.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
     def __post_init__(self) -> None:
         """Post init checks and processing.
@@ -73,14 +79,7 @@ class BaseModelTabularTrees(ABC):
 
 @dataclass
 class TabularTrees:
-    """Generic tree structure in tabular format.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Tree data in tabular structure.
-
-    """
+    """Generic tree structure in tabular format."""
 
     trees: pd.DataFrame
     """Tree data."""
@@ -104,6 +103,18 @@ class TabularTrees:
 
     SORT_BY_COLUMNS = ["tree", "node"]
     """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame, get_root_node_given_tree: Callable):
+        """Initialise the TabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            Tree data in tabular structure.
+
+        """
+        self.trees = trees
+        self.get_root_node_given_tree = get_root_node_given_tree
 
 
 @singledispatch

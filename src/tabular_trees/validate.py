@@ -12,31 +12,48 @@ from .trees import TabularTrees
 
 @dataclass
 class MonotonicConstraintResults:
-    """Results of checking monotonic constraints.
-
-    Attributes
-    ----------
-    summary : dict[str, bool]
-        Summary of whether monotonic constraints are met. Keys give variable names and
-        values indicate if the constraint is met.
-
-    constraints : dict[str, int]
-        Monotonic constraints. Keys give variable names and values define the
-        constraints. A value of 1 is a monotonically increasing constraint and a value
-        of -1 is a monotonically decreasing constraint.
-
-    results : pd.DataFrame
-        Detailed breakdown of whether constraints are met at split level in trees.
-
-    all_constraints_met : bool
-        Are all of the monotonic constraints met.
-
-    """
+    """Results of checking monotonic constraints."""
 
     summary: dict[str, bool]
+    """Summary of whether monotonic constraints are met."""
+
     constraints: dict[str, int]
+    """Monotonic constraints."""
+
     results: pd.DataFrame = field(repr=False)
+    """Detailed breakdown of whether constraints are met at split level in trees."""
+
     all_constraints_met: bool = field(init=False)
+    """Are all of the monotonic constraints met."""
+
+    def __init__(
+        self,
+        summary: dict[str, bool],
+        constraints: dict[str, int],
+        results: pd.DataFrame,
+    ):
+        """Initialise the MonotonicConstraintResults object.
+
+        Parameters
+        ----------
+        summary : dict[str, bool]
+            Summary of whether monotonic constraints are met. Keys give variable names
+            and values indicate if the constraint is met.
+
+        constraints : dict[str, int]
+            Monotonic constraints. Keys give variable names and values define the
+            constraints. A value of 1 is a monotonically increasing constraint and a
+            value of -1 is a monotonically decreasing constraint.
+
+        results : pd.DataFrame
+            Detailed breakdown of whether constraints are met at split level in trees.
+
+        """
+        self.summary = summary
+        self.constraints = constraints
+        self.results = results
+
+        self.__post_init__()
 
     def __post_init__(self):
         """Set constraints_met attribute."""

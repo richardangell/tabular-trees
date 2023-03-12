@@ -16,14 +16,7 @@ def lightgbm_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class LightGBMTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        LightGBM tree data output from Booster.trees_to_dataframe.
-
-    """
+    """Class to hold the xgboost trees in tabular format."""
 
     trees: pd.DataFrame
     """Tree data."""
@@ -63,6 +56,19 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "value": "prediction",
     }
     """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the LightGBMTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            LightGBM tree data output from Booster.trees_to_dataframe.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
     def convert_to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""

@@ -24,15 +24,7 @@ from .trees import BaseModelTabularTrees, export_tree_data
 
 @dataclass
 class ScikitLearnTabularTrees(BaseModelTabularTrees):
-    """Scikit-learn GradientBoosting trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        GradientBoostingRegressor or Classifier tree data extracted from
-        .estimators_ attribute.
-
-    """
+    """Scikit-Learn GradientBoosting trees in tabular format."""
 
     trees: pd.DataFrame
     """Tree data."""
@@ -54,18 +46,24 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
     SORT_BY_COLUMNS = ["tree", "node"]
     """List of columns to sort tree data by."""
 
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the ScikitLearnTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            GradientBoostingRegressor or Classifier tree data extracted from
+            estimators_ attribute.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
+
 
 @dataclass
 class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
-    """Scikit-learn HistGradientBoosting trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        HistGradientBoostingRegressor or Classifier tree data extracted from
-        ._predictors attribute.
-
-    """
+    """Scikit-Learn HistGradientBoosting trees in tabular format."""
 
     trees: pd.DataFrame
     """Tree data."""
@@ -91,6 +89,20 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 
     SORT_BY_COLUMNS = ["tree", "node"]
     """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the ScikitLearnHistTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            HistGradientBoostingRegressor or Classifier tree data extracted from
+            _predictors attribute.
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
 
 @export_tree_data.register(HistGradientBoostingClassifier)

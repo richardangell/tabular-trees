@@ -16,20 +16,28 @@ from .trees import TabularTrees
 
 @dataclass
 class PredictionDecomposition:
-    """Prediction decomposition results.
-
-    Attributes
-    ----------
-    summary : pd.DataFrame
-        Prediction contribution for each feature.
-
-    nodes : pd.DataFrame
-        Node level prediction contributions for all trees.
-
-    """
+    """Prediction decomposition results."""
 
     summary: pd.DataFrame
+    """Prediction contribution for each feature."""
+
     nodes: pd.DataFrame = field(repr=False)
+    """Node level prediction contributions for all trees."""
+
+    def __init__(self, summary: pd.DataFrame, nodes: pd.DataFrame):
+        """Initialise the PredictionDecomposition object.
+
+        Parameters
+        ----------
+        summary : pd.DataFrame
+            Prediction contribution for each feature.
+
+        nodes : pd.DataFrame
+            Node level prediction contributions for all trees.
+
+        """
+        self.summary = summary
+        self.nodes = nodes
 
 
 def decompose_prediction(
@@ -245,21 +253,28 @@ def _format_prediction_decomposition_results(
 
 @dataclass
 class ShapleyValues:
-    """Shapley values results.
-
-    Attributes
-    ----------
-    summary : pd.DataFrame
-        Shapley value at feature level.
-
-    permutations : pd.DataFrame
-        Shapley values for each feature permutation and tree. Summary attribute is the
-        average of these values over features.
-
-    """
+    """Shapley values results."""
 
     summary: pd.DataFrame
+    """Shapley values at feature level. Average of permutations over features."""
+
     permutations: pd.DataFrame = field(repr=False)
+    """Shapley values for each feature permutation and tree."""
+
+    def __init__(self, summary: pd.DataFrame, permutations: pd.DataFrame):
+        """Initialise the ShapleyValues object.
+
+        Parameters
+        ----------
+        summary : pd.DataFrame
+            Shapley values at feature level. Average of permutations over features.
+
+        permutations : pd.DataFrame
+            Shapley values for each feature permutation and tree.
+
+        """
+        self.summary = summary
+        self.permutations = permutations
 
 
 def calculate_shapley_values(
