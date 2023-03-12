@@ -2,7 +2,7 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Optional, Union
 
 import lightgbm as lgb
 import pandas as pd
@@ -134,7 +134,11 @@ class FeatureRange:
     min: float
     max: float
 
-    def to_string(self) -> str:
+    def __str__(self) -> str:
+        """Export feature range to string."""
+        return f"[{self.min}:{self.max}]"
+
+    def __repr__(self) -> str:
         """Export feature range to string."""
         return f"[{self.min}:{self.max}]"
 
@@ -153,28 +157,48 @@ class BoosterHeader:
     feature_names: list[str]
     feature_infos: list[FeatureRange]
     tree_sizes: list[int]
-    delimiter: str = field(repr=False)
+
+    list_delimiter: str = field(init=False, repr=False, default=" ")
+    new_line: str = field(init=False, repr=False, default="\n")
+    header_attributes: list[str] = field(init=False, repr=False)
+
+    def __post_init__(self):
+        """Set the header_attributes value."""
+        self.header_attributes = [
+            "version",
+            "num_class",
+            "num_tree_per_iteration",
+            "label_index",
+            "max_feature_idx",
+            "objective",
+            "feature_names",
+            "feature_infos",
+            "tree_sizes",
+        ]
 
     def to_string(self) -> str:
         """Concatenate header information to a single string."""
-        return self.delimiter.join(self.to_list())
+        return self.new_line.join(self.get_booster_string_rows())
 
-    def to_list(self) -> list[str]:
+    def get_booster_string_rows(self) -> list[str]:
         """Append the booster header as a list of strings."""
-        return [
-            self.header,
-            self.version,
-            str(self.num_class),
-            str(self.num_tree_per_iteration),
-            str(self.label_index),
-            str(self.max_feature_idx),
-            self.objective,
-            " ".join(self.feature_names),
-            " ".join(
-                [feature_range.to_string() for feature_range in self.feature_infos]
-            ),
-            " ".join([str(tree_size) for tree_size in self.tree_sizes]),
+        header_attribute_values = [
+            self.__getattribute__(attribute_name)
+            for attribute_name in self.header_attributes
         ]
+
+        header_attributes_with_equals_signs = [
+            f"{name}={self._concatendate_list_to_string(value)}"
+            if type(value) is list
+            else f"{name}={value}"
+            for name, value in zip(self.header_attributes, header_attribute_values)
+        ]
+
+        return [self.header] + header_attributes_with_equals_signs + [""]
+
+    def _concatendate_list_to_string(self, value: list) -> str:
+        """Concatenate list using list_delimiter as the separator."""
+        return self.list_delimiter.join([str(list_item) for list_item in value])
 
 
 @dataclass
@@ -204,7 +228,7 @@ class BoosterTree:
     tree_attributes: list[str] = field(init=False, repr=False)
 
     def __post_init__(self):
-        """Set the tree_attributes attribute."""
+        """Set the tree_attributes value."""
         self.tree_attributes = [
             "tree",
             "num_leaves",
@@ -225,6 +249,8 @@ class BoosterTree:
             "shrinkage",
         ]
 
+        self.tree_attributes_for_booster_string = ["Tree"] + self.tree_attributes[1:]
+
     def get_booster_sting(self) -> str:
         """Concatenate tree information to a single string."""
         return self.new_line.join(self.get_booster_string_rows())
@@ -236,12 +262,20 @@ class BoosterTree:
             for attribute_name in self.tree_attributes
         ]
 
-        # TODO: use remove surrounding brackets function
-        # TODO: add the trailing newlines to list
-        return [
-            f"{name}={str(value)[1:-1]}" if type(value) is list else f"{name}={value}"
-            for name, value in zip(self.tree_attributes, tree_attribute_values)
+        tree_attributes_with_equals_signs = [
+            f"{name}={self._concatendate_list_to_string(value)}"
+            if type(value) is list
+            else f"{name}={value}"
+            for name, value in zip(
+                self.tree_attributes_for_booster_string, tree_attribute_values
+            )
         ]
+
+        return tree_attributes_with_equals_signs + ["", ""]
+
+    def _concatendate_list_to_string(self, value: list) -> str:
+        """Concatenate list using list_delimiter as the separator."""
+        return self.list_delimiter.join([str(list_item) for list_item in value])
 
 
 class BoosterString:
@@ -249,9 +283,33 @@ class BoosterString:
 
     new_line = "\n"
 
-    def __init__(self, booster: lgb.Booster):
+    def __init__(
+        self, booster: Optional[lgb.Booster] = None, rows: Optional[list[str]] = None
+    ):
 
-        self.booster_data = self._booster_to_string(booster)
+        checks.check_condition(
+            booster is not None or rows is not None,
+            "either booster or rows must be supplied",
+        )
+
+        checks.check_condition(
+            not (booster is not None and rows is not None),
+            "booster and rows cannot be both supplied",
+        )
+
+        if booster is not None:
+
+            self.booster_data = self._booster_to_string(booster)
+
+        elif rows is not None:
+
+            self.booster_data = rows[:]
+
+            # try:
+            #    self.to_booster()
+            # except Exception as err:
+            #    raise ValueError("supplied rows do not produce a valid booster") from err
+
         self.row_markers, self.tree_rows = self._gather_line_markers()
 
     def _booster_to_string(self, booster: lgb.Booster) -> list[str]:
@@ -373,6 +431,12 @@ class BoosterString:
 
         return self._extract_rows(start_row_index, start_row_index + 19)
 
+    def extract_bottom_rows(self) -> list[str]:
+        """Return all rows after the 'end of trees' line to the end."""
+        return self._extract_rows(
+            self.row_markers["end_of_trees"], self._get_number_of_rows()
+        )
+
 
 @dataclass
 class EditableBooster:
@@ -380,6 +444,24 @@ class EditableBooster:
 
     header: BoosterHeader
     trees: list[BoosterTree] = field(repr=False)
+    bottom_rows: list[str]
+
+    def to_booster(self) -> lgb.Booster:
+        """Convert EditableBooster to Lightgbm Booster."""
+        booster_string = self._to_booster_string()
+        return booster_string.to_booster()
+
+    def _to_booster_string(self) -> BoosterString:
+        """Convert EditableBooster to BoosterString."""
+        booster_string_rows = self.header.get_booster_string_rows()
+
+        for tree in self.trees:
+
+            booster_string_rows += tree.get_booster_string_rows()
+
+        booster_string_rows += self.bottom_rows
+
+        return BoosterString(rows=booster_string_rows)
 
 
 def convert_booster_string_to_editable_booster(
@@ -398,13 +480,14 @@ class BoosterStringToEditableBoosterConverter:
         """Extract the components from a string representation of lgb.Booster object."""
         header = self._export_header(booster_string)
         trees = self._export_trees(booster_string)
+        bottom_rows = booster_string.extract_bottom_rows()
 
-        return EditableBooster(header=header, trees=trees)
+        return EditableBooster(header=header, trees=trees, bottom_rows=bottom_rows)
 
     def _export_header(self, booster_string: BoosterString) -> BoosterHeader:
         """Export the header information from BoosterString as BoosterHeader object."""
         header_rows = booster_string.extract_header_rows()
-        return self._rows_to_header(header_rows, booster_string.new_line)
+        return self._rows_to_header(header_rows)
 
     def _split_at_equals(self, line: str) -> str:
         """Extract the part of the input line after the equals line."""
@@ -455,7 +538,7 @@ class BoosterStringToEditableBoosterConverter:
 
         return FeatureRange(min=float(string_split[0]), max=float(string_split[1]))
 
-    def _rows_to_header(self, rows: list[str], delimiter: str) -> BoosterHeader:
+    def _rows_to_header(self, rows: list[str]) -> BoosterHeader:
         """Convert string booster rows to BoosterHeader object."""
         return BoosterHeader(
             header=rows[0],
@@ -468,7 +551,6 @@ class BoosterStringToEditableBoosterConverter:
             feature_names=self._extract_list_of_strings(rows[7]),
             feature_infos=self._extract_list_of_feature_ranges(rows[8]),
             tree_sizes=self._extract_list_of_ints(rows[9]),
-            delimiter=delimiter,
         )
 
     def _export_trees(self, booster_string: BoosterString) -> list[BoosterTree]:
