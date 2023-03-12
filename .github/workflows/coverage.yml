@@ -34,7 +34,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m poetry install
+        python -m poetry install --with dev,xgboost,lightgbm,sklearn
           
     - name: Test with pytest
       if: always()
