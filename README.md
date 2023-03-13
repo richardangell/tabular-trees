@@ -18,13 +18,19 @@ See the [documentation](http://tabular-trees.readthedocs.io/) for more informati
 
 ## Install
 
-The easiest way to get `tabular-trees` is directly from [pypi](https://pypi.org/project/tabular-trees/);
+The easiest way to get `tabular-trees` is to install directly from [pypi](https://pypi.org/project/tabular-trees/):
 
 ```
 pip install tabular_trees
 ```
 
-`tabular-trees` works with GBMs from `xgboost`, `lightgbm` or `scikit-learn`. These packages must be installed to use the relevant functionality from `tabular-trees`, they are not installed as dependencies of `tabular-trees`.
+`tabular-trees` works with GBMs from `xgboost`, `lightgbm` or `scikit-learn`. These packages must be installed to use the relevant functionality from `tabular-trees`.
+
+`[lightgbm, sklearn, xgboost]` are optional depedencies that can be specified for `tabular-trees`. They can be installed along with `tabular-trees` as follows:
+
+```
+pip install tabular_trees[lightgbm, sklearn]
+```
 
 ## Build
 
