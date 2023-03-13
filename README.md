@@ -18,7 +18,7 @@ See the [documentation](http://tabular-trees.readthedocs.io/) for more informati
 
 ## Install
 
-The easiest way to get `tabular-trees` is directly from [pypi](https://pypi.org/project/tabular-trees/);
+The easiest way to get `tabular-trees` is to install directly from [pypi](https://pypi.org/project/tabular-trees/);
 
 ```
 pip install tabular_trees
