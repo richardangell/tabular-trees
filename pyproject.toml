@@ -3,9 +3,12 @@ name = "tabular-trees"
 version = "0.2.0"
 description = "Package for making analysis on tree-based models easier"
 authors = ["Richard Angell <richardangell37@gmail.com>"]
-license = "BSD 3-Clause License"
+license = "BSD-3-Clause"
 readme = "README.md"
 packages = [{include = "tabular_trees", from = "src"}]
+homepage = "https://github.com/richardangell/tabular-trees"
+repository = "https://github.com/richardangell/tabular-trees"
+documentation = "https://tabular-trees.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
 python = "^3.9"
