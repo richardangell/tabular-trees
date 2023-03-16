@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import pytest
 
@@ -46,7 +48,10 @@ class TestInit:
         """Test an exception is raised if get_root_node_given_tree is not callable."""
 
         with pytest.raises(
-            ValueError, match="get_root_node_given_tree is not callable"
+            ValueError,
+            match=re.escape(
+                "condition: [get_root_node_given_tree is callable] not met"
+            ),
         ):
 
             TabularTrees(trees=dummy_trees_data, get_root_node_given_tree=123)
