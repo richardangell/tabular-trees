@@ -28,34 +28,33 @@ class BaseModelTabularTrees(ABC):
         """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
 
-    def __init__(self, trees: pd.DataFrame):
-        """Initialise the BaseModelTabularTrees object.
-
-        Parameters
-        ----------
-        trees : pd.DataFrame
-            Model specific tree data in tabular structure.
-
-        """
-        self.trees = trees
-
-        self.__post_init__()
-
     def __post_init__(self) -> None:
         """Post init checks and processing.
 
         Processing on the trees attribute is as follows;
         - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by tree and node columns
+        - Rows are sorted by SORT_BY_COLUMNS columns
         - The index is reset and original index dropped.
 
         Raises
         ------
+        AttributeError
+            If object does not have trees attribute.
+
         TypeError
-            If self.trees is not a pd.DataFrame.
+            If trees attribute is not a pd.DataFrame.
+
+        TypeError
+            If REQUIRED_COLUMNS attribute is not a list.
+
+        TypeError
+            If SORT_BY_COLUMNS attribute is not a list.
 
         ValueError
-            If REQUIRED_COLUMNS are not in self.trees.
+            If REQUIRED_COLUMNS are not in trees attribute.
+
+        ValueError
+            If SORT_BY_COLUMNS is not a subset of REQUIRED_COLUMNS.
 
         """
         if not hasattr(self, "trees"):
