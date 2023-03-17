@@ -18,8 +18,10 @@ def check_type(
     ----------
     obj : Any
         Any object to check the type of.
+
     expected_types : Union[Type, Tuple[Union[Type, Type[abc.ABCMeta]], ...]]
         Expected type or tuple of expected types of obj.
+
     none_allowed : bool = False
         Is None an allowed value for obj?
 
@@ -59,14 +61,19 @@ def check_type(
 def check_condition(condition: bool, error_message_text: str):
     """Check that condition, which evaluates to a bool, is True.
 
-    If condition is not True then a ValueError is raised.
-
     Parameters
     ----------
     condition : bool
         Condition that evaluates to bool, to check.
+
     error_message_text : str
-        Message to print in ValueError if condition does not evalute to True.
+        Message describing condition. Will be included in the exception message if
+        condition does not evaluate to True.
+
+    Raises
+    ------
+    ValueError
+        If condition does not evalute to True.
 
     """
     check_type(condition, bool, "condition")
