@@ -52,11 +52,6 @@ class MonotonicConstraintResults:
         self.summary = summary
         self.constraints = constraints
         self.results = results
-
-        self.__post_init__()
-
-    def __post_init__(self):
-        """Set constraints_met attribute."""
         self.all_constraints_met = self._all_constraints_met()
 
     def _all_constraints_met(self) -> bool:
