@@ -93,7 +93,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
 
 @export_tree_data.register(lgb.Booster)
-def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
+def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     """Export tree data from Booster object.
 
     Parameters
