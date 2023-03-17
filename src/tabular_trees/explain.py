@@ -66,7 +66,7 @@ def decompose_prediction(
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
     check_type(row, pd.DataFrame, "row")
-    check_condition(row.shape[0] == 1, "row is not 1 row")
+    check_condition(row.shape[0] == 1, "row is a single pd.DataFrame row")
 
     return _decompose_prediction(
         trees_df=tabular_trees.trees,
