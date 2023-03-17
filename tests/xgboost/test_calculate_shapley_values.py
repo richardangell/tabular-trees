@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.explain import calculate_shapley_values
+from tabular_trees.explain import ShapleyValues, calculate_shapley_values
 from tabular_trees.trees import export_tree_data
 
 
@@ -72,6 +72,48 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
     )
 
     return model
+
+
+def test_tabular_trees_not_tabular_trees_exception():
+    """Test an exception is raised if tabular_trees is not a TabularTrees object."""
+
+    row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
+
+    with pytest.raises(
+        TypeError,
+        match="tabular_trees is not in expected types <class 'tabular_trees.trees.TabularTrees'>",
+    ):
+
+        calculate_shapley_values(12345, row_to_explain)
+
+
+def test_row_not_series_exception(handcrafted_shap_model):
+    """Test an exception is raised if row is not a pd.Series object."""
+
+    xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
+    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+
+    with pytest.raises(
+        TypeError,
+        match="row is not in expected types <class 'pandas.core.series.Series'>",
+    ):
+
+        calculate_shapley_values(tabular_trees, 12345)
+
+
+def test_output_type(handcrafted_shap_model):
+    """Test the output from calculate_shapley_values is a ShapleyValues object."""
+
+    xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
+    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+
+    row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
+
+    results = calculate_shapley_values(tabular_trees, row_to_explain)
+
+    assert (
+        type(results) is ShapleyValues
+    ), "output from calculate_shapley_values is not correct type"
 
 
 @pytest.mark.parametrize("row_number_to_score", [(0), (1), (11), (22), (199), (201)])
