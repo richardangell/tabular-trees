@@ -1,4 +1,4 @@
-import pytest
+import pandas as pd
 
 from tabular_trees.lightgbm import LightGBMTabularTrees
 from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
@@ -19,69 +19,65 @@ class TestLightGBMTabularTreesInit:
             LightGBMTabularTrees.__mro__[1] is BaseModelTabularTrees
         ), "ScikitLearnHistTabularTrees does not inherit from BaseModelTabularTrees"
 
-    @pytest.mark.parametrize(
-        "attribute_name,expected_value",
-        [
-            ("SORT_BY_COLUMNS", ["tree_index", "node_depth", "node_index"]),
-            (
-                "REQUIRED_COLUMNS",
-                [
-                    "tree_index",
-                    "node_depth",
-                    "node_index",
-                    "left_child",
-                    "right_child",
-                    "parent_index",
-                    "split_feature",
-                    "split_gain",
-                    "threshold",
-                    "decision_type",
-                    "missing_direction",
-                    "missing_type",
-                    "value",
-                    "weight",
-                    "count",
-                ],
-            ),
-        ],
-    )
-    def test_column_attributes(
-        self, attribute_name, expected_value, lgb_diabetes_model_trees_dataframe
-    ):
-        """Test column related attributes are set as expected."""
-
-        assert (
-            getattr(LightGBMTabularTrees, attribute_name) == expected_value
-        ), f"{attribute_name} not expected on LightGBMTabularTrees class"
+    def test_trees_attribute_set(self, lgb_diabetes_model_trees_dataframe):
+        """Test the trees attribute is set as the value passed in init."""
 
         tabular_trees = LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe)
 
-        assert (
-            getattr(
-                tabular_trees,
-                attribute_name,
-            )
-            == expected_value
-        ), f"{attribute_name} not expected on LightGBMTabularTrees object after initialisation"
+        pd.testing.assert_frame_equal(
+            tabular_trees.trees,
+            lgb_diabetes_model_trees_dataframe.sort_values(
+                LightGBMTabularTrees.SORT_BY_COLUMNS
+            ).reset_index(drop=True),
+        )
 
     def test_trees_not_same_object(self, lgb_diabetes_model_trees_dataframe):
         """Test the trees attribute is not the same object as that passed into
         the init method."""
 
-        input_df = lgb_diabetes_model_trees_dataframe.copy()
-
-        tabular_trees = LightGBMTabularTrees(input_df)
+        tabular_trees = LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe)
 
         assert id(tabular_trees.trees) != id(
-            input_df
+            lgb_diabetes_model_trees_dataframe
         ), "trees attribute is the same object as passed into initialisation"
+
+    def test_post_init_called(self, mocker, lgb_diabetes_model_trees_dataframe):
+        """Test that BaseModelTabularTrees.__post_init__ is called."""
+
+        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe)
+
+        assert (
+            BaseModelTabularTrees.__post_init__.call_count == 1
+        ), "BaseModelTabularTrees.__post_init__ not called once during __init__"
+
+    def test_sort_by_columns_subset_required_columns(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in LightGBMTabularTrees.REQUIRED_COLUMNS
+                for column in LightGBMTabularTrees.SORT_BY_COLUMNS
+            ]
+        ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
+
+    def test_tabular_trees_required_columns_in_column_mapping(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in TabularTrees.REQUIRED_COLUMNS
+                for column in LightGBMTabularTrees.COLUMN_MAPPING.values()
+            ]
+        ), "not all TabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
 class TestLightGBMTabularTreesConvert:
     """Tests for the LightGBMTabularTrees.convert_to_tabular_trees method."""
 
-    def test_successful_call(self, lgb_diabetes_model_trees_dataframe):
-        """Test a successful call to convert_to_tabular_trees."""
+    def test_output_type(self, lgb_diabetes_model_trees_dataframe):
+        """Test the output from convert_to_tabular_trees is a TabularTrees object."""
 
         lightgbm_tabular_trees = LightGBMTabularTrees(
             lgb_diabetes_model_trees_dataframe
