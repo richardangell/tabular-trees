@@ -107,7 +107,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 
 @export_tree_data.register(HistGradientBoostingClassifier)
 @export_tree_data.register(HistGradientBoostingRegressor)
-def export_tree_data__hist_gradient_boosting_model(
+def _export_tree_data__hist_gradient_boosting_model(
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
 ) -> ScikitLearnHistTabularTrees:
     """Export tree data from HistGradientBoostingRegressor or Classifier object.
@@ -166,7 +166,7 @@ def _extract_hist_gbm_tree_data(
 
 @export_tree_data.register(GradientBoostingClassifier)
 @export_tree_data.register(GradientBoostingRegressor)
-def export_tree_data__gradient_boosting_model(
+def _export_tree_data__gradient_boosting_model(
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
 ) -> ScikitLearnTabularTrees:
     """Export tree data from GradientBoostingRegressor or Classifier object.
