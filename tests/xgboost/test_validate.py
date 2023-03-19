@@ -1,11 +1,71 @@
 import pandas as pd
 import pytest
+import xgboost as xgb
 
 from tabular_trees.trees import export_tree_data
 from tabular_trees.validate import (
     MonotonicConstraintResults,
     validate_monotonic_constraints,
 )
+
+
+def build_depth_2_single_tree_xgb(data: xgb.DMatrix) -> xgb.Booster:
+    """Single tree, max depth 2.
+
+    Learnign rate is 1, lambda is 0.
+
+    """
+    model = xgb.train(
+        params={"verbosity": 0, "max_depth": 2, "eta": 1, "lambda": 0},
+        dtrain=data,
+        num_boost_round=1,
+    )
+
+    return model
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_increase_x2_xgb_model(
+    two_way_monotonic_increase_x2_dmatrix,
+) -> xgb.Booster:
+    """Model with single 2 way interaction both features monotonically increasing."""
+
+    return build_depth_2_single_tree_xgb(two_way_monotonic_increase_x2_dmatrix)
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_increase_decrease_xgb_model(
+    two_way_monotonic_increase_decrease_dmatrix,
+) -> xgb.Booster:
+    """Model with single 2 way interaction.
+
+    First feature is monotonically increasing, second feature is monotonically
+    decreasing with the response.
+
+    """
+    return build_depth_2_single_tree_xgb(two_way_monotonic_increase_decrease_dmatrix)
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_decrease_increase_xgb_model(
+    two_way_monotonic_decrease_increase_dmatrix,
+) -> xgb.Booster:
+    """Model with single 2 way interaction.
+
+    First feature is monotonically decreasing, second feature is monotonically
+    increasing with the response.
+
+    """
+    return build_depth_2_single_tree_xgb(two_way_monotonic_decrease_increase_dmatrix)
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_decrease_x2_xgb_model(
+    two_way_monotonic_decrease_x2_dmatrix,
+) -> xgb.Booster:
+    """Model with single 2 way interaction both features monotonically decreasing."""
+
+    return build_depth_2_single_tree_xgb(two_way_monotonic_decrease_x2_dmatrix)
 
 
 class TestMonotonicConstraintResults:
@@ -66,15 +126,120 @@ class TestMonotonicConstraintResults:
         ), "all_constraints_met not calcualted as expected"
 
 
-def test_successful_run(xgb_diabetes_model_monotonic):
-    """Test successful run of validate_monotonic_constraints function."""
-    model, constraints = xgb_diabetes_model_monotonic
+class TestValidateMonotonicConstraints:
+    """Tests for the validate_monotonic_constraints function."""
 
-    xgboost_tabular_trees = export_tree_data(model)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    def test_successful_run(self, xgb_diabetes_model_monotonic):
+        """Test successful run of validate_monotonic_constraints function."""
+        model, constraints = xgb_diabetes_model_monotonic
 
-    results = validate_monotonic_constraints(
-        tabular_trees=tabular_trees, constraints=constraints
+        xgboost_tabular_trees = export_tree_data(model)
+        tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+
+        results = validate_monotonic_constraints(
+            tabular_trees=tabular_trees, constraints=constraints
+        )
+
+        assert (
+            results.all_constraints_met
+        ), "unexpected violation of monotonic constraints"
+
+    @pytest.mark.parametrize(
+        "model_fixture_name,constraints,expected_summary_results",
+        [
+            (
+                "two_way_monotonic_increase_x2_xgb_model",
+                {"a": 1, "b": 1},
+                {"a": True, "b": True},
+            ),
+            (
+                "two_way_monotonic_increase_x2_xgb_model",
+                {"a": 1, "b": -1},
+                {"a": True, "b": False},
+            ),
+            (
+                "two_way_monotonic_increase_x2_xgb_model",
+                {"a": -1, "b": 1},
+                {"a": False, "b": True},
+            ),
+            (
+                "two_way_monotonic_increase_x2_xgb_model",
+                {"a": -1, "b": -1},
+                {"a": False, "b": False},
+            ),
+            (
+                "two_way_monotonic_increase_decrease_xgb_model",
+                {"a": 1, "b": 1},
+                {"a": True, "b": False},
+            ),
+            (
+                "two_way_monotonic_increase_decrease_xgb_model",
+                {"a": 1, "b": -1},
+                {"a": True, "b": True},
+            ),
+            (
+                "two_way_monotonic_increase_decrease_xgb_model",
+                {"a": -1, "b": 1},
+                {"a": False, "b": False},
+            ),
+            (
+                "two_way_monotonic_increase_decrease_xgb_model",
+                {"a": -1, "b": -1},
+                {"a": False, "b": True},
+            ),
+            (
+                "two_way_monotonic_decrease_increase_xgb_model",
+                {"a": 1, "b": 1},
+                {"a": False, "b": True},
+            ),
+            (
+                "two_way_monotonic_decrease_increase_xgb_model",
+                {"a": 1, "b": -1},
+                {"a": False, "b": False},
+            ),
+            (
+                "two_way_monotonic_decrease_increase_xgb_model",
+                {"a": -1, "b": 1},
+                {"a": True, "b": True},
+            ),
+            (
+                "two_way_monotonic_decrease_increase_xgb_model",
+                {"a": -1, "b": -1},
+                {"a": True, "b": False},
+            ),
+            (
+                "two_way_monotonic_decrease_x2_xgb_model",
+                {"a": 1, "b": 1},
+                {"a": False, "b": False},
+            ),
+            (
+                "two_way_monotonic_decrease_x2_xgb_model",
+                {"a": 1, "b": -1},
+                {"a": False, "b": True},
+            ),
+            (
+                "two_way_monotonic_decrease_x2_xgb_model",
+                {"a": -1, "b": 1},
+                {"a": True, "b": False},
+            ),
+            (
+                "two_way_monotonic_decrease_x2_xgb_model",
+                {"a": -1, "b": -1},
+                {"a": True, "b": True},
+            ),
+        ],
     )
+    def test_expected_output(
+        self, request, model_fixture_name, constraints, expected_summary_results
+    ):
 
-    assert results.all_constraints_met, "unexpected violation of monotonic constraints"
+        model = request.getfixturevalue(model_fixture_name)
+
+        xgboost_tabular_trees = export_tree_data(model)
+        tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+
+        results = validate_monotonic_constraints(
+            tabular_trees=tabular_trees, constraints=constraints
+        )
+
+        assert results.summary == expected_summary_results

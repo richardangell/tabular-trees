@@ -122,7 +122,7 @@ def _validate_monotonic_constraints(
     monotonicity_check_list: list[pd.DataFrame] = []
 
     # loop through each tree
-    for tree_no in range(trees_df["tree"].max()):
+    for tree_no in trees_df["tree"].unique():
 
         tree_df = trees_df.loc[trees_df["tree"] == tree_no].copy()
         tree_df = _convert_node_columns_to_integer(tree_df)
