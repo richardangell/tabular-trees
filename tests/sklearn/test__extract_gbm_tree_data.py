@@ -1,35 +1,7 @@
 import pandas as pd
-import pytest
 from sklearn.ensemble import GradientBoostingRegressor
 
 from tabular_trees import sklearn
-
-
-@pytest.fixture
-def handcrafted_data():
-    """Handcraft dataset that can be expressed with a simple depth 2 tree.
-
-    Data is as follows;
-    a	b	response
-    1	1	100
-    1	1	100
-    1	-1	150
-    1	-1	150
-    -1	1	200
-    -1	1	200
-    -1	-1	250
-    -1	-1	250
-
-    """
-    data = pd.DataFrame(
-        {
-            "a": [1, 1, 1, 1, -1, -1, -1, -1],
-            "b": [1, 1, -1, -1, 1, 1, -1, -1],
-            "response": [100, 100, 150, 150, 200, 200, 250, 250],
-        }
-    )
-
-    return data
 
 
 def test_successful_call(sklearn_diabetes_gbm_regressor):
