@@ -152,7 +152,7 @@ def _find_path_to_leaf_node(
 
         current_node["value"] = np.NaN
 
-    path = path.append(current_node)
+    path = pd.concat([path, current_node], axis=0)
 
     # as long as we are not at a leaf node already
     if current_node["leaf"].item() != 1:
@@ -179,7 +179,7 @@ def _find_path_to_leaf_node(
 
                 current_node["value"] = row[current_node["feature"]].values[0]
 
-            path = path.append(current_node)
+            path = pd.concat([path, current_node], axis=0)
 
             if current_node["leaf"].item() != 1:
 
