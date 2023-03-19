@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
@@ -42,6 +43,11 @@ def test_output_values(handcrafted_data):
             "weighted_n_node_samples": [8.0, 4.0, 2.0, 2.0, 4.0, 2.0, 2.0],
             "tree": [0, 0, 0, 0, 0, 0, 0],
         }
+    )
+
+    # note, the starting value for the tree is the mean of the response
+    expected_tree_data["value"] = expected_tree_data["value"] - np.mean(
+        handcrafted_data["response"]
     )
 
     pd.testing.assert_frame_equal(extracted_tree_data, expected_tree_data)

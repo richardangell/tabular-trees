@@ -65,7 +65,7 @@ def sklearn_breast_cancer_gbm_classifier(
     Model has 10 trees and depth 3.
 
     """
-    model = GradientBoostingClassifier(n_estimators=10, max_depth=3)
+    model = GradientBoostingClassifier(n_estimators=1, max_depth=1, learning_rate=0.1)
 
     model.fit(breast_cancer_data["data"], breast_cancer_data["target"])
 
