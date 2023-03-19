@@ -23,49 +23,17 @@ class TestXGBoostTabularTreesInit:
             XGBoostTabularTrees.__mro__[1] is BaseModelTabularTrees
         ), "XGBoostTabularTrees does not inherit from BaseModelTabularTrees"
 
-    @pytest.mark.parametrize(
-        "attribute_name,expected_value",
-        [
-            ("SORT_BY_COLUMNS", ["Tree", "Node"]),
-            (
-                "REQUIRED_COLUMNS",
-                [
-                    "Tree",
-                    "Node",
-                    "ID",
-                    "Feature",
-                    "Split",
-                    "Yes",
-                    "No",
-                    "Missing",
-                    "Gain",
-                    "Cover",
-                    "Category",
-                    "G",
-                    "H",
-                    "weight",
-                ],
-            ),
-        ],
-    )
-    def test_column_attributes(
-        self, attribute_name, expected_value, xgb_diabetes_model_trees_dataframe
-    ):
-        """Test column related attributes are set as expected."""
-
-        assert (
-            getattr(XGBoostTabularTrees, attribute_name) == expected_value
-        ), f"{attribute_name} not expected on XGBoostTabularTrees class"
+    def test_trees_attribute_set(self, xgb_diabetes_model_trees_dataframe):
+        """Test the trees attribute is set as the value passed in init."""
 
         tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
-        assert (
-            getattr(
-                tabular_trees,
-                attribute_name,
-            )
-            == expected_value
-        ), f"{attribute_name} not expected on XGBoostTabularTrees object after initialisation"
+        pd.testing.assert_frame_equal(
+            tabular_trees.trees.drop(columns=["G", "H", "weight"]),
+            xgb_diabetes_model_trees_dataframe.sort_values(
+                XGBoostTabularTrees.SORT_BY_COLUMNS
+            ).reset_index(drop=True),
+        )
 
     def test_trees_not_same_object(self, xgb_diabetes_model_trees_dataframe):
         """Test the trees attribute is not the same object as that passed into
@@ -78,6 +46,37 @@ class TestXGBoostTabularTreesInit:
         assert id(tabular_trees.trees) != id(
             input_df
         ), "trees attribute is the same object as passed into initialisation"
+
+    def test_post_init_called(self, mocker, xgb_diabetes_model_trees_dataframe):
+        """Test that XGBoostTabularTrees.__post_init__ is called."""
+
+        mocker.patch.object(XGBoostTabularTrees, "__post_init__")
+
+        XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
+
+        assert (
+            XGBoostTabularTrees.__post_init__.call_count == 1
+        ), "XGBoostTabularTrees.__post_init__ not called once during __init__"
+
+    def test_sort_by_columns_subset_required_columns(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in XGBoostTabularTrees.REQUIRED_COLUMNS
+                for column in XGBoostTabularTrees.SORT_BY_COLUMNS
+            ]
+        ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
+
+    def test_tabular_trees_required_columns_in_column_mapping(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in TabularTrees.REQUIRED_COLUMNS
+                for column in XGBoostTabularTrees.COLUMN_MAPPING.values()
+            ]
+        ), "not all TabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
 class TestXGBoostTabularTreesPostInit:
@@ -321,75 +320,64 @@ class TestParsedXGBoostTabularTreesInit:
             ParsedXGBoostTabularTrees.__mro__[1] is BaseModelTabularTrees
         ), "ParsedXGBoostTabularTrees does not inherit from BaseModelTabularTrees"
 
-    @pytest.mark.parametrize(
-        "attribute_name,expected_value",
-        [
-            ("SORT_BY_COLUMNS", ["tree", "nodeid"]),
-            (
-                "REQUIRED_COLUMNS",
-                [
-                    "tree",
-                    "nodeid",
-                    "depth",
-                    "yes",
-                    "no",
-                    "missing",
-                    "split",
-                    "split_condition",
-                    "leaf",
-                    "gain",
-                    "cover",
-                ],
-            ),
-            ("STATS_COLUMNS", ["gain", "cover"]),
-            (
-                "COLUMNS_MAPPING",
-                {
-                    "tree": "Tree",
-                    "nodeid": "Node",
-                    "yes": "Yes",
-                    "no": "No",
-                    "missing": "Missing",
-                    "split": "Feature",
-                    "split_condition": "Split",
-                    "gain": "Gain",
-                    "cover": "Cover",
-                },
-            ),
-        ],
-    )
-    def test_column_attributes(
-        self, attribute_name, expected_value, xgb_diabetes_model_parsed_trees_dataframe
-    ):
-        """Test column related attributes are set as expected."""
+    def test_trees_attribute_set(self, xgb_diabetes_model_parsed_trees_dataframe):
+        """Test the trees attribute is set as the value passed in init."""
 
-        assert (
-            getattr(ParsedXGBoostTabularTrees, attribute_name) == expected_value
-        ), f"{attribute_name} not expected on ParsedXGBoostTabularTrees class"
-
-        tabular_trees = ParsedXGBoostTabularTrees(
+        prased_xgboost_tabular_trees = ParsedXGBoostTabularTrees(
             xgb_diabetes_model_parsed_trees_dataframe
         )
 
-        assert (
-            getattr(
-                tabular_trees,
-                attribute_name,
-            )
-            == expected_value
-        ), f"{attribute_name} not expected on XGBoostTabularTrees object after initialisation"
+        pd.testing.assert_frame_equal(
+            prased_xgboost_tabular_trees.trees,
+            xgb_diabetes_model_parsed_trees_dataframe[
+                ParsedXGBoostTabularTrees.REQUIRED_COLUMNS
+            ]
+            .sort_values(ParsedXGBoostTabularTrees.SORT_BY_COLUMNS)
+            .reset_index(drop=True),
+        )
 
     def test_trees_not_same_object(self, xgb_diabetes_model_parsed_trees_dataframe):
         """Test the trees attribute is not the same object as that passed into
         the init method."""
 
-        input_df = xgb_diabetes_model_parsed_trees_dataframe.copy()
+        prased_xgboost_tabular_trees = ParsedXGBoostTabularTrees(
+            xgb_diabetes_model_parsed_trees_dataframe
+        )
 
-        tabular_trees = ParsedXGBoostTabularTrees(input_df)
-
-        assert id(tabular_trees.trees) != id(
-            input_df
+        assert id(prased_xgboost_tabular_trees.trees) != id(
+            xgb_diabetes_model_parsed_trees_dataframe
         ), "trees attribute is the same object as passed into initialisation"
+
+    def test_post_init_called(self, mocker, xgb_diabetes_model_parsed_trees_dataframe):
+        """Test that BaseModelTabularTrees.__post_init__ is called."""
+
+        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
+
+        ParsedXGBoostTabularTrees(xgb_diabetes_model_parsed_trees_dataframe)
+
+        assert (
+            BaseModelTabularTrees.__post_init__.call_count == 1
+        ), "BaseModelTabularTrees.__post_init__ not called once during __init__"
+
+    def test_sort_by_columns_subset_required_columns(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in ParsedXGBoostTabularTrees.REQUIRED_COLUMNS
+                for column in ParsedXGBoostTabularTrees.SORT_BY_COLUMNS
+            ]
+        ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
+
+    def test_xgboost_tabular_trees_required_columns_in_column_mapping(self):
+        """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
+
+        assert all(
+            [
+                column in XGBoostTabularTrees.REQUIRED_COLUMNS
+                for column in ParsedXGBoostTabularTrees.COLUMN_MAPPING.values()
+            ]
+        ), "not all XGBoostTabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
 class TestParsedXGBoostTabularTreesPostInit:
@@ -450,7 +438,11 @@ class TestParsedXGBoostTabularTreesConvert:
             xgb_diabetes_model_parsed_trees_dataframe
         )
 
-        parsed_tabular_trees.convert_to_xgboost_tabular_trees()
+        output = parsed_tabular_trees.convert_to_xgboost_tabular_trees()
+
+        assert (
+            type(output) is XGBoostTabularTrees
+        ), "output from ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees is not XGBoostTabularTrees type"
 
     def test_output_same_format_as_xgboost(
         self,

@@ -241,7 +241,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
 
 @export_tree_data.register(xgb.Booster)
-def export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
+def _export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
     """Export tree data from Booster object.
 
     Parameters
@@ -302,7 +302,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
     # mapping between column names in this class and the column names in the
     # XGBoostTabularTrees class
-    COLUMNS_MAPPING = {
+    COLUMN_MAPPING = {
         "tree": "Tree",
         "nodeid": "Node",
         "yes": "Yes",
@@ -392,8 +392,8 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         return df
 
     def _rename_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Rename columns according to the mapping defined in COLUMNS_MAPPING."""
-        return df.rename(columns=self.COLUMNS_MAPPING)
+        """Rename columns according to the mapping defined in COLUMN_MAPPING."""
+        return df.rename(columns=self.COLUMN_MAPPING)
 
     def _drop_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Drop depth, leaf columns not needed in XGBoostTabularTrees structure."""
