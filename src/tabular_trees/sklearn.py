@@ -218,7 +218,19 @@ def _extract_gbm_tree_data(
 
     tree_data = pd.concat(tree_data_list, axis=0)
 
+    starting_value = _get_starting_value_gradient_booster(model)
+    tree_data.loc[tree_data["tree"] == 0, "value"] = (
+        tree_data.loc[tree_data["tree"] == 0, "value"] + starting_value
+    )
+
     return tree_data
+
+
+def _get_starting_value_gradient_booster(
+    model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
+) -> Union[int, float]:
+    """Extract the initial prediction for the ensemble."""
+    return model.init_.constant_[0][0]
 
 
 def _extract_tree_data(tree: Tree) -> pd.DataFrame:
