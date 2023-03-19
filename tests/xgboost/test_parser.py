@@ -56,23 +56,16 @@ class TestDumpReaderReadDump:
 class TestDumpReaderImplementations:
     """Tests for the DumpReader subclasses."""
 
-    def test_text_dump_reader_dump_type(self):
-        """Test TextDumpReader object has correct dump_type attribute value."""
-
-        text_dump_reader = TextDumpReader()
-
-        assert (
-            text_dump_reader.dump_type == "text"
-        ), "dump_type attribute incorrect on TextDumpReader"
-
-    def test_json_dump_reader_dump_type(self):
-        """Test JsonDumpReader object has correct dump_type attribute value."""
-
-        text_dump_reader = JsonDumpReader()
+    @pytest.mark.parametrize(
+        "reader_class,expected_value",
+        [(TextDumpReader, "text"), (JsonDumpReader, "json")],
+    )
+    def test_dump_reader_dump_type(self, reader_class, expected_value):
+        """Test DumpReader classes have correct dump_type attribute value."""
 
         assert (
-            text_dump_reader.dump_type == "json"
-        ), "dump_type attribute incorrect on JsonDumpReader"
+            reader_class.dump_type == expected_value
+        ), f"dump_type attribute of {reader_class} class not expected"
 
     @pytest.mark.parametrize("with_stats", [(False), (True)])
     def test_text_json_parsing_equal(self, with_stats, tmp_path, xgb_diabetes_model):
