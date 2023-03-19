@@ -5,6 +5,27 @@ import pytest
 from sklearn.datasets import load_breast_cancer, load_diabetes, load_iris
 from sklearn.utils import Bunch
 
+try:
+    import lightgbm  # noqa
+
+    lightgbm_installed = True
+except ImportError:
+    lightgbm_installed = False
+
+try:
+    import xgboost  # noqa
+
+    xgboost_installed = True
+except ImportError:
+    xgboost_installed = False
+
+# do not collect lightgbm or xgboost tests if the packages are not installed
+collect_ignore = []
+if not lightgbm_installed:
+    collect_ignore.append("lightgbm")
+if not xgboost_installed:
+    collect_ignore.append("xgboost")
+
 
 @pytest.fixture(scope="session")
 def diabetes_data() -> Bunch:
