@@ -1,4 +1,4 @@
-import pytest
+import xgboost as xgb
 
 from tabular_trees.trees import export_tree_data
 from tabular_trees.xgboost import XGBoostTabularTrees
@@ -14,8 +14,21 @@ def test_model_specific_function_dispatch(xgb_diabetes_model):
     ), f"incorrect type returned when export_tree_data called with {type(xgb_diabetes_model)}"
 
 
-@pytest.mark.skip(reason="not implemented yet")
-def test_paramters_passed_to_xgboost_tabular_trees():
+def test_parameters_passed_to_xgboost_tabular_trees(xgb_diabetes_dmatrix):
     """Test that alpha and lambda parameters are passed to XGBoostTabularTrees output."""
 
-    pass
+    model = xgb.train(
+        params={"verbosity": 0, "max_depth": 3, "alpha": 0.0, "lambda": 1.0},
+        dtrain=xgb_diabetes_dmatrix,
+        num_boost_round=10,
+    )
+
+    tree_data = export_tree_data(model)
+
+    assert (
+        tree_data.alpha == 0.0
+    ), "alpha value not expected on XGBoostTabularTrees object"
+
+    assert (
+        tree_data.lambda_ == 1.0
+    ), "lambda value not expected on XGBoostTabularTrees object"

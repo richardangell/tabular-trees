@@ -23,8 +23,8 @@ class DummyModelTabularTrees(BaseModelTabularTrees):
     SORT_BY_COLUMNS = ["column2"]
 
 
-class TestBaseModelTabularTreesInit:
-    """Tests for the BaseModelTabularTrees.__init__ method."""
+class TestBaseModelTabularTreesInitialisation:
+    """Tests for initialising subclasses of BaseModelTabularTrees."""
 
     def test_abstract_base_class(self):
         """Test that BaseModelTabularTrees is an abstract base class."""
@@ -39,16 +39,14 @@ class TestBaseModelTabularTreesInit:
 
         DummyModelTabularTrees(trees=dummy_model_tree_data)
 
-    def test_trees_attribute_set(self, dummy_model_tree_data, mocker):
+    def test_trees_attribute_set(self, dummy_model_tree_data):
         """Test the trees attribute is set to the value passed in init."""
-
-        # mock the post init method so no other processing happens to trees arg
-        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
 
         dummy_model_tabular_trees = DummyModelTabularTrees(trees=dummy_model_tree_data)
 
         pd.testing.assert_frame_equal(
-            dummy_model_tabular_trees.trees, dummy_model_tree_data
+            dummy_model_tabular_trees.trees,
+            dummy_model_tree_data.reset_index(drop=True),
         )
 
     def test_exception_required_columns_not_defined(self, dummy_model_tree_data):

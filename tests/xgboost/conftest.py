@@ -150,3 +150,47 @@ def xgb_diabetes_model_parsed_trees_dataframe_no_stats(
     trees_df = JsonDumpReader().read_dump(json_file)
 
     return trees_df
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_increase_x2_dmatrix(two_way_monotonic_increase_x2) -> xgb.DMatrix:
+    """two_way_monotonic_increase_x2 data in DMatrix form."""
+    return xgb.DMatrix(
+        two_way_monotonic_increase_x2[["a", "b"]],
+        label=two_way_monotonic_increase_x2["response"],
+        base_margin=[0] * two_way_monotonic_increase_x2.shape[0],
+    )
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_increase_decrease_dmatrix(
+    two_way_monotonic_increase_decrease,
+) -> xgb.DMatrix:
+    """two_way_monotonic_increase_decrease data in DMatrix form."""
+    return xgb.DMatrix(
+        two_way_monotonic_increase_decrease[["a", "b"]],
+        label=two_way_monotonic_increase_decrease["response"],
+        base_margin=[0] * two_way_monotonic_increase_decrease.shape[0],
+    )
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_decrease_increase_dmatrix(
+    two_way_monotonic_decrease_increase,
+) -> xgb.DMatrix:
+    """two_way_monotonic_decrease_increase data in DMatrix form."""
+    return xgb.DMatrix(
+        two_way_monotonic_decrease_increase[["a", "b"]],
+        label=two_way_monotonic_decrease_increase["response"],
+        base_margin=[0] * two_way_monotonic_decrease_increase.shape[0],
+    )
+
+
+@pytest.fixture(scope="session")
+def two_way_monotonic_decrease_x2_dmatrix(two_way_monotonic_decrease_x2) -> xgb.DMatrix:
+    """two_way_monotonic_decrease_x2 data in DMatrix form."""
+    return xgb.DMatrix(
+        two_way_monotonic_decrease_x2[["a", "b"]],
+        label=two_way_monotonic_decrease_x2["response"],
+        base_margin=[0] * two_way_monotonic_decrease_x2.shape[0],
+    )

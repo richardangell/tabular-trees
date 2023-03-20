@@ -56,23 +56,16 @@ class TestDumpReaderReadDump:
 class TestDumpReaderImplementations:
     """Tests for the DumpReader subclasses."""
 
-    def test_text_dump_reader_dump_type(self):
-        """Test TextDumpReader object has correct dump_type attribute value."""
-
-        text_dump_reader = TextDumpReader()
-
-        assert (
-            text_dump_reader.dump_type == "text"
-        ), "dump_type attribute incorrect on TextDumpReader"
-
-    def test_json_dump_reader_dump_type(self):
-        """Test JsonDumpReader object has correct dump_type attribute value."""
-
-        text_dump_reader = JsonDumpReader()
+    @pytest.mark.parametrize(
+        "reader_class,expected_value",
+        [(TextDumpReader, "text"), (JsonDumpReader, "json")],
+    )
+    def test_dump_reader_dump_type(self, reader_class, expected_value):
+        """Test DumpReader classes have correct dump_type attribute value."""
 
         assert (
-            text_dump_reader.dump_type == "json"
-        ), "dump_type attribute incorrect on JsonDumpReader"
+            reader_class.dump_type == expected_value
+        ), f"dump_type attribute of {reader_class} class not expected"
 
     @pytest.mark.parametrize("with_stats", [(False), (True)])
     def test_text_json_parsing_equal(self, with_stats, tmp_path, xgb_diabetes_model):
@@ -107,11 +100,6 @@ class TestDumpReaderImplementations:
 
 class TestXGBoostParserInit:
     """Tests for the XGBoostParser.__init__ method."""
-
-    def test_successful_initialisation(self, xgb_diabetes_model):
-        """Test successful initialisation of the XGBoostParser class."""
-
-        XGBoostParser(xgb_diabetes_model)
 
     def test_model_not_booster_exception(self):
         """Test that a TypeError is raised if model is not a Booster."""
@@ -152,17 +140,6 @@ class TestXGBoostParserInit:
 
 class TestXGBoostParserParseModel:
     """Tests for the XGBoostParser.parse_model method."""
-
-    def test_successful_call(self, xgb_diabetes_model):
-        """Test successful call of the XGBoostParser.parse_model method."""
-
-        xgboost_parser = XGBoostParser(xgb_diabetes_model)
-
-        results = xgboost_parser.parse_model()
-
-        assert (
-            type(results) is ParsedXGBoostTabularTrees
-        ), "output from parse_model not ParsedXGBoostTabularTrees type"
 
     def test_model_dumped_then_read(self, mocker, xgb_diabetes_model):
         """Test the booster calls dump_model and the output is then read

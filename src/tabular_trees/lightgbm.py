@@ -65,6 +65,22 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         trees : pd.DataFrame
             LightGBM tree data output from Booster.trees_to_dataframe.
 
+        Examples
+        --------
+        >>> import lightgbm as lgb
+        >>> from sklearn.datasets import load_diabetes
+        >>> from tabular_trees import export_tree_data
+        >>> # get data in Dataset
+        >>> diabetes = load_diabetes()
+        >>> data = lgb.Dataset(diabetes["data"], label=diabetes["target"])
+        >>> # build model
+        >>> params = {"max_depth": 3, "verbosity": -1}
+        >>> model = lgb.train(params, train_set=data, num_boost_round=10)
+        >>> # export to LightGBMTabularTrees
+        >>> lightgbm_tabular_trees = export_tree_data(model)
+        >>> type(lightgbm_tabular_trees)
+        <class 'tabular_trees.lightgbm.LightGBMTabularTrees'>
+
         """
         self.trees = trees
 
@@ -93,7 +109,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
 
 @export_tree_data.register(lgb.Booster)
-def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
+def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     """Export tree data from Booster object.
 
     Parameters

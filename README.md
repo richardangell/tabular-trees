@@ -36,10 +36,16 @@ pip install tabular_trees[lightgbm, sklearn]
 
 `tabular-trees` uses [poetry](https://python-poetry.org/) as the environment management and package build tool. Follow the instructions [here](https://python-poetry.org/docs/#installation) to install.
 
-Once installed run 
+To install the package locally, for development purposes along with the development dependencies run:
 
 ```
 poetry install --with dev
 ```
 
-to install the development dependencies. Other dependency groups are; `docs`, `lightgbm`, `sklearn` and `xgboost`.
+`dev` is an optional dependency group, the other one is `docs` which is only required if building the documentation.
+
+To install all the optional, development dependencies as well as all the extras for the package run:
+
+```
+poetry install --extras "lightgbm xgboost" --with dev,docs
+```
