@@ -90,6 +90,22 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         ValueError
             If alpha is not 0.
 
+        Examples
+        --------
+        >>> import xgboost as xgb
+        >>> from sklearn.datasets import load_diabetes
+        >>> from tabular_trees import export_tree_data
+        >>> # get data in DMatrix
+        >>> diabetes = load_diabetes()
+        >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
+        >>> # build model
+        >>> params = {"max_depth": 3, "verbosity": 0}
+        >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+        >>> # export to XGBoostTabularTrees
+        >>> xgboost_tabular_trees = export_tree_data(model)
+        >>> type(xgboost_tabular_trees)
+        <class 'tabular_trees.xgboost.XGBoostTabularTrees'>
+
         """
         self.trees = trees
         self.lambda_ = lambda_
@@ -313,7 +329,8 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         "gain": "Gain",
         "cover": "Cover",
     }
-    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
+    """Column name mapping between ParsedXGBoostTabularTrees and XGBoostTabularTrees
+    tree data."""
 
     def __init__(self, trees: pd.DataFrame):
         """Initialise the ParsedXGBoostTabularTrees object.
@@ -327,6 +344,24 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         ------
         ValueError
             If alpha is not 0.
+
+        Examples
+        --------
+        >>> import xgboost as xgb
+        >>> from sklearn.datasets import load_diabetes
+        >>> from tabular_trees.xgboost import XGBoostParser
+        >>> # get data in DMatrix
+        >>> diabetes = load_diabetes()
+        >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
+        >>> # build model
+        >>> params = {"max_depth": 3, "verbosity": 0}
+        >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+        >>> # parse the model
+        >>> xgbooster_parser = XGBoostParser(model)
+        >>> # export to ParsedXGBoostTabularTrees
+        >>> parsed_xgboost_tabular_trees = xgbooster_parser.parse_model()
+        >>> type(parsed_xgboost_tabular_trees)
+        <class 'tabular_trees.xgboost.ParsedXGBoostTabularTrees'>
 
         """
         self.trees = trees

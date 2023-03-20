@@ -79,6 +79,32 @@ def validate_monotonic_constraints(
     return_detailed_results : bool, defualt=False
         Should detailed breakdown of every split be returned?
 
+    Examples
+    --------
+    >>> import xgboost as xgb
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from tabular_trees import export_tree_data
+    >>> from tabular_trees.validate import validate_monotonic_constraints
+    >>> # get data in DMatrix
+    >>> diabetes = load_diabetes()
+    >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"], feature_names=diabetes["feature_names"])
+    >>> # define monotonic constraints
+    >>> feature_names = diabetes["feature_names"]
+    >>> constraints = pd.Series([0] * len(feature_names), index=feature_names)
+    >>> constraints.loc[constraints.index.isin(["bmi", "s5"])] = -1
+    >>> constraints.loc[constraints.index.isin(["bp", "age"])] = 1
+    >>> constraints_dict = constraints.loc[constraints != 0].to_dict()
+    >>> # build model
+    >>> params = {"max_depth": 3, "verbosity": 0, "monotone_constraints": tuple(constraints)}
+    >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+    >>> # export to TabularTrees
+    >>> xgboost_tabular_trees = export_tree_data(model)
+    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> # check monotonic constraints
+    >>> validate_monotonic_constraints(tabular_trees, constraints=constraints_dict)
+    MonotonicConstraintResults(summary={'age': True, 'bp': True, 's5': True}, constraints={'age': 1, 'bmi': -1, 'bp': 1, 's5': -1}, all_constraints_met=True)
+
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
     check_type(constraints, dict, "constraints")

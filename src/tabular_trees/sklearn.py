@@ -55,6 +55,22 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
             GradientBoostingRegressor or Classifier tree data extracted from
             the .estimators_ attribute.
 
+        Examples
+        --------
+        >>> from sklearn.datasets import load_diabetes
+        >>> from sklearn.ensemble import GradientBoostingRegressor
+        >>> from tabular_trees import export_tree_data
+        >>> # load data
+        >>> diabetes = load_diabetes()
+        >>> # build model
+        >>> model = GradientBoostingRegressor(max_depth=3, n_estimators=10)
+        >>> model.fit(diabetes["data"], diabetes["target"])
+        GradientBoostingRegressor(n_estimators=10)
+        >>> # export to ScikitLearnTabularTrees
+        >>> sklearn_tabular_trees = export_tree_data(model)
+        >>> type(sklearn_tabular_trees)
+        <class 'tabular_trees.sklearn.ScikitLearnTabularTrees'>
+
         """
         self.trees = trees
 
@@ -98,6 +114,22 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         trees : pd.DataFrame
             HistGradientBoostingRegressor or Classifier tree data extracted from
             _predictors attribute.
+
+        Examples
+        --------
+        >>> from sklearn.datasets import load_diabetes
+        >>> from sklearn.ensemble import HistGradientBoostingRegressor
+        >>> from tabular_trees import export_tree_data
+        >>> # load data
+        >>> diabetes = load_diabetes()
+        >>> # build model
+        >>> model = HistGradientBoostingRegressor(max_depth=3, max_iter=10)
+        >>> model.fit(diabetes["data"], diabetes["target"])
+        HistGradientBoostingRegressor(max_depth=3, max_iter=10)
+        >>> # export to ScikitLearnHistTabularTrees
+        >>> sklearn_tabular_trees = export_tree_data(model)
+        >>> type(sklearn_tabular_trees)
+        <class 'tabular_trees.sklearn.ScikitLearnHistTabularTrees'>
 
         """
         self.trees = trees

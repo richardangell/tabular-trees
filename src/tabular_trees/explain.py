@@ -63,6 +63,30 @@ def decompose_prediction(
     October. Available at http://blog.datadive.net/interpreting-random-forests/
     (Accessed 26 February 2023).
 
+    Examples
+    --------
+    >>> import xgboost as xgb
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from tabular_trees import export_tree_data
+    >>> from tabular_trees.explain import decompose_prediction
+    >>> # get data in DMatrix
+    >>> diabetes = load_diabetes()
+    >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"], feature_names=diabetes["feature_names"])
+    >>> # build model
+    >>> params = {"max_depth": 3, "verbosity": 0}
+    >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+    >>> # export to TabularTrees
+    >>> xgboost_tabular_trees = export_tree_data(model)
+    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> # get data to score
+    >>> scoring_data = pd.DataFrame(diabetes["data"], columns=diabetes["feature_names"])
+    >>> row_to_score = scoring_data.iloc[[0]]
+    >>> # decompose prediction
+    >>> results = decompose_prediction(tabular_trees, row=row_to_score)
+    >>> type(results)
+    <class 'tabular_trees.explain.PredictionDecomposition'>
+
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
     check_type(row, pd.DataFrame, "row")
@@ -302,6 +326,30 @@ def calculate_shapley_values(
     implementation is not intended to be efficient - rather it is intended to
     illustrate the algorithm. Beware of using this on models or datasets (specifically
     columns) of any significant size.
+
+    Examples
+    --------
+    >>> import xgboost as xgb
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from tabular_trees import export_tree_data
+    >>> from tabular_trees.explain import calculate_shapley_values
+    >>> # get data in DMatrix
+    >>> diabetes = load_diabetes()
+    >>> data = xgb.DMatrix(diabetes["data"][:,:3], label=diabetes["target"], feature_names=diabetes["feature_names"][:3])
+    >>> # build model
+    >>> params = {"max_depth": 3, "verbosity": 0}
+    >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+    >>> # export to TabularTrees
+    >>> xgboost_tabular_trees = export_tree_data(model)
+    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> # get data to score
+    >>> scoring_data = pd.DataFrame(diabetes["data"][:,:3], columns=diabetes["feature_names"][:3])
+    >>> row_to_score = scoring_data.iloc[0]
+    >>> # calculate shapley values
+    >>> results = calculate_shapley_values(tabular_trees, row=row_to_score)
+    >>> type(results)
+    <class 'tabular_trees.explain.ShapleyValues'>
 
     """
     warnings.warn(
