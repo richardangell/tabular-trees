@@ -4,12 +4,6 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from tabular_trees import sklearn
 
 
-def test_successful_call(sklearn_diabetes_hist_gbm_regressor):
-    """Test a successful call to _extract_hist_gbm_tree_data."""
-
-    sklearn._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
-
-
 def test_output_values(handcrafted_data):
     """Test that the values output are expected for a simple, known tree."""
 

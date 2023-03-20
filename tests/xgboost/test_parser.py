@@ -101,11 +101,6 @@ class TestDumpReaderImplementations:
 class TestXGBoostParserInit:
     """Tests for the XGBoostParser.__init__ method."""
 
-    def test_successful_initialisation(self, xgb_diabetes_model):
-        """Test successful initialisation of the XGBoostParser class."""
-
-        XGBoostParser(xgb_diabetes_model)
-
     def test_model_not_booster_exception(self):
         """Test that a TypeError is raised if model is not a Booster."""
 
@@ -145,17 +140,6 @@ class TestXGBoostParserInit:
 
 class TestXGBoostParserParseModel:
     """Tests for the XGBoostParser.parse_model method."""
-
-    def test_successful_call(self, xgb_diabetes_model):
-        """Test successful call of the XGBoostParser.parse_model method."""
-
-        xgboost_parser = XGBoostParser(xgb_diabetes_model)
-
-        results = xgboost_parser.parse_model()
-
-        assert (
-            type(results) is ParsedXGBoostTabularTrees
-        ), "output from parse_model not ParsedXGBoostTabularTrees type"
 
     def test_model_dumped_then_read(self, mocker, xgb_diabetes_model):
         """Test the booster calls dump_model and the output is then read

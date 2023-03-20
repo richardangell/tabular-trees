@@ -6,12 +6,6 @@ import pytest
 from tabular_trees import sklearn
 
 
-def test_successful_call(sklearn_diabetes_gbm_regressor):
-    """Test a successful call to _export_tree_data__gradient_boosting_model."""
-
-    sklearn._export_tree_data__gradient_boosting_model(sklearn_diabetes_gbm_regressor)
-
-
 def test_model_not_correct_type_exception():
     """Test that a TypeError is raised if model is not"""
 

@@ -7,11 +7,6 @@ from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
 class TestLightGBMTabularTreesInit:
     """Tests for the LightGBMTabularTrees.__init__ method."""
 
-    def test_successfull_call(self, lgb_diabetes_model_trees_dataframe):
-        """Test successfull initialisation of the LightGBMTabularTrees class."""
-
-        LightGBMTabularTrees(lgb_diabetes_model_trees_dataframe)
-
     def test_inheritance(self):
         """Test that LightGBMTabularTrees inherits from BaseModelTabularTrees."""
 

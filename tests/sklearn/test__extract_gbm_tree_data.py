@@ -5,12 +5,6 @@ from sklearn.ensemble import GradientBoostingRegressor
 from tabular_trees import sklearn
 
 
-def test_successful_call(sklearn_diabetes_gbm_regressor):
-    """Test a successful call to _extract_gbm_tree_data."""
-
-    sklearn._extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
-
-
 def test_required_columns(sklearn_diabetes_gbm_regressor):
     """Test the required columns are in the output."""
 

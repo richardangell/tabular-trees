@@ -4,12 +4,6 @@ from tabular_trees import BaseModelTabularTrees
 from tabular_trees.sklearn import ScikitLearnTabularTrees
 
 
-def test_successfull_call(sklearn_gbm_trees_dataframe):
-    """Test successfull initialisation of the ScikitLearnTabularTrees class."""
-
-    ScikitLearnTabularTrees(sklearn_gbm_trees_dataframe)
-
-
 def test_inheritance():
     """Test that ScikitLearnTabularTrees inherits from BaseModelTabularTrees."""
 

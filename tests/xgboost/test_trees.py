@@ -11,11 +11,6 @@ from tabular_trees.xgboost import ParsedXGBoostTabularTrees, XGBoostTabularTrees
 class TestXGBoostTabularTreesInit:
     """Tests for the XGBoostTabularTrees.__init__ method."""
 
-    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test successfull initialisation of the XGBoostTabularTrees class."""
-
-        XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
     def test_inheritance(self):
         """Test that XGBoostTabularTrees inherits from BaseModelTabularTrees."""
 
@@ -176,13 +171,6 @@ class TestXGBoostTabularTreesPostInit:
 class TestXGBoostTabularTreesDerivePredictions:
     """Tests for the XGBoostTabularTrees.derive_predictions method."""
 
-    def test_successfull_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test successfull call of the derive_predictions method."""
-
-        xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
-
-        xgboost_tabular_trees.derive_predictions()
-
     @pytest.mark.parametrize("lambda_", [(0.0), (2.0)])
     def test_predictions_calculated_correctly(self, lambda_, xgb_diabetes_dmatrix):
         """Test that the derived node prediction values are correct."""
@@ -293,8 +281,8 @@ class TestXGBoostTabularTreesDerivePredictions:
 class TestXGBoostTabularTreesConvert:
     """Tests for the XGBoostTabularTrees.convert_to_tabular_trees method."""
 
-    def test_successful_call(self, xgb_diabetes_model_trees_dataframe):
-        """Test a successful call to convert_to_tabular_trees."""
+    def test_output_type(self, xgb_diabetes_model_trees_dataframe):
+        """Test the output from convert_to_tabular_trees is a TabularTrees object."""
 
         xgboost_tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
@@ -307,11 +295,6 @@ class TestXGBoostTabularTreesConvert:
 
 class TestParsedXGBoostTabularTreesInit:
     """Tests for the ParsedXGBoostTabularTrees.__init__ method."""
-
-    def test_successfull_call(self, xgb_diabetes_model_parsed_trees_dataframe):
-        """Test successfull initialisation of the ParsedXGBoostTabularTrees class."""
-
-        ParsedXGBoostTabularTrees(xgb_diabetes_model_parsed_trees_dataframe)
 
     def test_inheritance(self):
         """Test that ParsedXGBoostTabularTrees inherits from BaseModelTabularTrees."""
@@ -431,8 +414,8 @@ class TestParsedXGBoostTabularTreesPostInit:
 class TestParsedXGBoostTabularTreesConvert:
     """Tests for the ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees method."""
 
-    def test_successfull_call(self, xgb_diabetes_model_parsed_trees_dataframe):
-        """Test successfull call of the convert_to_xgboost_tabular_trees method."""
+    def test_output_type(self, xgb_diabetes_model_parsed_trees_dataframe):
+        """Test the output from convert_to_xgboost_tabular_trees is XGBoostTabularTrees type."""
 
         parsed_tabular_trees = ParsedXGBoostTabularTrees(
             xgb_diabetes_model_parsed_trees_dataframe
