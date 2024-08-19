@@ -17,7 +17,6 @@ def test_model_not_correct_type_exception():
     )
 
     with pytest.raises(TypeError, match=re.escape(msg)):
-
         sklearn._export_tree_data__gradient_boosting_model(["a", "b"])
 
 
@@ -28,7 +27,6 @@ def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
     with pytest.raises(
         NotImplementedError, match="model with multiple responses not supported"
     ):
-
         sklearn._export_tree_data__gradient_boosting_model(sklearn_iris_gbm_classifier)
 
 

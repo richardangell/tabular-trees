@@ -37,7 +37,6 @@ class TestDumpReaderReadDump:
             TypeError,
             match="file is not in expected types <class 'str'>, got <class 'list'>",
         ):
-
             dump_reader.read_dump([1, 2, 3])
 
     def test_file_does_not_exist_exception(self):
@@ -49,7 +48,6 @@ class TestDumpReaderReadDump:
             ValueError,
             match=re.escape("condition: [does_not_exist.txt exists] not met"),
         ):
-
             dump_reader.read_dump("does_not_exist.txt")
 
 
@@ -106,9 +104,11 @@ class TestXGBoostParserInit:
 
         with pytest.raises(
             TypeError,
-            match="model is not in expected types <class 'xgboost.core.Booster'>, got <class 'tuple'>",
+            match=(
+                "model is not in expected types <class 'xgboost.core.Booster'>, "
+                "got <class 'tuple'>"
+            ),
         ):
-
             XGBoostParser((1, 2, 3))
 
     @pytest.mark.parametrize("dump_reader", [(JsonDumpReader), (TextDumpReader)])
@@ -134,7 +134,6 @@ class TestXGBoostParserInit:
         )
 
         with pytest.warns(FutureWarning, match=expected_warning):
-
             XGBoostParser(xgb_diabetes_model)
 
 
@@ -212,7 +211,7 @@ class TestXGBoostParserParseModel:
 
         assert init_call_args[0] == (
             read_dump_return_value,
-        ), "ParsedXGBoostTabularTrees.__init__ not called with the output from read_dump"
+        ), "ParsedXGBoostTabularTrees.__init__ not called with output from read_dump"
 
         assert (
             init_call_args[1] == {}

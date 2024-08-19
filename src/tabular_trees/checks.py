@@ -29,33 +29,23 @@ def check_type(
     expected_types_types = [type, abc.ABCMeta, type(Callable)]
 
     if type(expected_types) is tuple:
-
         if not all(
-            [
-                type(expected_type) in expected_types_types
-                for expected_type in expected_types
-            ]
+            type(expected_type) in expected_types_types
+            for expected_type in expected_types
         ):
-
             raise TypeError("all elements in expected_types must be types")
 
     else:
-
-        if not type(expected_types) in expected_types_types:
-
+        if type(expected_types) not in expected_types_types:
             raise TypeError("expected_types must be a type when passing a single type")
 
     if obj is None and not none_allowed:
-
         raise TypeError(f"{obj_name} is None and not is not allowed")
 
-    elif obj is not None:
-
-        if not isinstance(obj, expected_types):
-
-            raise TypeError(
-                f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
-            )
+    elif obj is not None and not isinstance(obj, expected_types):
+        raise TypeError(
+            f"{obj_name} is not in expected types {expected_types}, got {type(obj)}"
+        )
 
 
 def check_condition(condition: bool, error_message_text: str):
@@ -80,7 +70,6 @@ def check_condition(condition: bool, error_message_text: str):
     check_type(error_message_text, str, "error_message_text")
 
     if not condition:
-
         raise ValueError(f"condition: [{error_message_text}] not met")
 
 
@@ -110,15 +99,13 @@ def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
     in_expected_not_df = sorted(set(expected_columns) - set(df_cols))
 
     if len(in_expected_not_df) > 0:
-
         raise ValueError(f"expected columns not in df; {in_expected_not_df}")
 
     if not allow_unspecified_columns:
-
         in_df_not_expected = sorted(set(df_cols) - set(expected_columns))
 
         if len(in_df_not_expected) > 0:
-
             raise ValueError(
-                f"extra columns in df when allow_unspecified_columns = False; {in_df_not_expected}"
+                "extra columns in df when allow_unspecified_columns = False; "
+                f"{in_df_not_expected}"
             )

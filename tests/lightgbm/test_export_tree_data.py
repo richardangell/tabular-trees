@@ -7,6 +7,7 @@ def test_model_specific_function_dispatch(lgb_diabetes_model):
 
     tree_data = export_tree_data(lgb_diabetes_model)
 
-    assert (
-        type(tree_data) is LightGBMTabularTrees
-    ), f"incorrect type returned when export_tree_data called with {type(lgb_diabetes_model)}"
+    assert type(tree_data) is LightGBMTabularTrees, (
+        "incorrect type returned when export_tree_data "
+        f"called with {type(lgb_diabetes_model)}"
+    )

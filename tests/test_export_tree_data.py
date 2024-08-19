@@ -10,5 +10,4 @@ def test_non_supported_type_exception():
     with pytest.raises(
         NotImplementedError, match="model type not supported; <class 'int'>"
     ):
-
         export_tree_data(1)

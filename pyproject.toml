@@ -74,4 +74,10 @@ select = [
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"tests/*.py" = ["S101"]
+"tests/*.py" = [
+    "S101", # Use of assert
+    "N999", # Invalid module name
+]
+"*/__init__.py" = [
+    "F401", # Unused import
+]

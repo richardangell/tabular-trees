@@ -140,7 +140,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 @export_tree_data.register(HistGradientBoostingClassifier)
 @export_tree_data.register(HistGradientBoostingRegressor)
 def _export_tree_data__hist_gradient_boosting_model(
-    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> ScikitLearnHistTabularTrees:
     """Export tree data from HistGradientBoostingRegressor or Classifier object.
 
@@ -166,7 +166,7 @@ def _export_tree_data__hist_gradient_boosting_model(
 
 
 def _extract_hist_gbm_tree_data(
-    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> pd.DataFrame:
     """Extract tree data from HistGradientBoosting model.
 
@@ -182,7 +182,6 @@ def _extract_hist_gbm_tree_data(
     tree_data_list = []
 
     for tree_no in range(model.n_iter_):
-
         tree_df = pd.DataFrame(model._predictors[tree_no][0].nodes)
 
         tree_df["tree"] = tree_no
@@ -202,7 +201,7 @@ def _extract_hist_gbm_tree_data(
 
 
 def _get_starting_value_hist_gradient_booster(
-    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
     return model._baseline_prediction[0][0]
@@ -211,7 +210,7 @@ def _get_starting_value_hist_gradient_booster(
 @export_tree_data.register(GradientBoostingClassifier)
 @export_tree_data.register(GradientBoostingRegressor)
 def _export_tree_data__gradient_boosting_model(
-    model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
+    model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> ScikitLearnTabularTrees:
     """Export tree data from GradientBoostingRegressor or Classifier object.
 
@@ -237,7 +236,7 @@ def _export_tree_data__gradient_boosting_model(
 
 
 def _extract_gbm_tree_data(
-    model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
+    model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> pd.DataFrame:
     """Extract tree data from GradientBoosting model.
 
@@ -253,7 +252,6 @@ def _extract_gbm_tree_data(
     tree_data_list = []
 
     for tree_no in range(model.n_estimators_):
-
         tree_df = _extract_tree_data(model.estimators_[tree_no][0].tree_)
 
         tree_df["tree"] = tree_no
@@ -266,7 +264,7 @@ def _extract_gbm_tree_data(
 
 
 def _get_starting_value_gradient_booster(
-    model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
+    model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
     return model.init_.constant_[0][0]

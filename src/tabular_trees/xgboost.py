@@ -1,5 +1,6 @@
 """XGBoost trees in tabular format."""
 
+import contextlib
 import json
 import tempfile
 import warnings
@@ -228,7 +229,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         # loop through each leaf node
         for i in leaf_df.index:
-
             leaf_row = leaf_df.loc[[i]]
 
             leaf_g = leaf_row["G"].item()
@@ -239,7 +239,6 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             # traverse the tree bottom from bottom to top and propagate the G
             # value upwards
             while current_node > 0:
-
                 # find parent node row
                 parent = (tree_df["Yes"] == current_tree_node) | (
                     tree_df["No"] == current_tree_node
@@ -371,7 +370,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     def __post_init__(self):
         """Check that STATS_COLUMNS are present in the data."""
         checks.check_condition(
-            all([column in self.trees.columns.values for column in self.STATS_COLUMNS]),
+            all(column in self.trees.columns.values for column in self.STATS_COLUMNS),
             "Cannot create ParsedXGBoostTabularTrees object unless statistics "
             "are output. Rerun dump_model with with_stats = True.",
         )
@@ -462,13 +461,13 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         df.loc[leaf_nodes, "gain"] = df.loc[leaf_nodes, "leaf"]
 
         if df["gain"].isnull().sum() > 0:
-
             null_gain_indexes = ",".join(
                 [str(x) for x in df.loc[df["gain"].isnull()].index.values.tolist()]
             )
 
             raise ValueError(
-                f"gain column has null values in these indexes after combining leaf predictions; {null_gain_indexes}"
+                "gain column has null values in these indexes after combining leaf "
+                f"predictions; {null_gain_indexes}"
             )
 
         return df
@@ -478,7 +477,6 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         columns = ["yes", "no", "missing"]
 
         for column in columns:
-
             df = self._convert_node_column_to_tree_node_format(df, column)
 
         return df
@@ -538,13 +536,11 @@ class JsonDumpReader(DumpReader):
         super().read_dump(file)
 
         with open(file) as f:
-
             j = json.load(f)
 
         tree_list = []
 
         for i in range(len(j)):
-
             results_list: list[pd.DataFrame] = []
 
             self._recursive_pop_children(_dict=j[i], _list=results_list)
@@ -574,8 +570,7 @@ class JsonDumpReader(DumpReader):
         children.
 
         """
-        if "children" in _dict.keys():
-
+        if "children" in _dict:
             children = _dict.pop("children")
 
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
@@ -585,7 +580,6 @@ class JsonDumpReader(DumpReader):
             self._recursive_pop_children(children[1], _list)
 
         else:
-
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
     def _fill_depth_for_terminal_nodes(self, df: pd.DataFrame):
@@ -595,16 +589,8 @@ class JsonDumpReader(DumpReader):
 
         """
         for i, row in df.iterrows():
-
             if np.isnan(row["depth"]):
-
-                if (df["yes"] == row["nodeid"]).sum() > 0:
-
-                    parent_col = "yes"
-
-                else:
-
-                    parent_col = "no"
+                parent_col = "yes" if (df["yes"] == row["nodeid"]).sum() > 0 else "no"
 
                 df.at[i, "depth"] = df.loc[df[parent_col] == row["nodeid"], "depth"] + 1
 
@@ -643,7 +629,6 @@ class TextDumpReader(DumpReader):
         super().read_dump(file)
 
         with open(file) as f:
-
             lines = f.readlines()
 
         tree_no = -1
@@ -651,15 +636,12 @@ class TextDumpReader(DumpReader):
         lines_list: list[dict[str, Union[int, float, str]]] = []
 
         for i in range(len(lines)):
-
             # if line is a new tree
             if lines[i][:7] == "booster":
-
                 tree_no += 1
 
             # else if node row
             else:
-
                 line_dict: dict[str, Union[int, float, str]] = {}
 
                 # remove \n from end and any \t from start
@@ -667,8 +649,9 @@ class TextDumpReader(DumpReader):
 
                 line_dict["tree"] = tree_no
 
-                # note this will get tree depth for all nodes, which is not consistent with the json dump output
-                # xgb json model dumps only contain depth for the non-terminal nodes
+                # note this will get tree depth for all nodes, which is not consistent
+                # with the json dump output xgb json model dumps only contain depth for
+                # the non-terminal nodes
                 line_dict["depth"] = lines[i].count("\t")
 
                 # split by :
@@ -679,24 +662,17 @@ class TextDumpReader(DumpReader):
 
                 # else if leaf node
                 if node_str_split1[1][:4] == "leaf":
-
                     node_str_split2 = node_str_split1[1].split(",")
 
                     line_dict["leaf"] = float(node_str_split2[0].split("=")[1])
 
-                    # if model is dumped with the arg with_stats = False then cover will not be included
-                    # in the dump for terminal nodes
-                    try:
-
+                    # if model is dumped with the arg with_stats = False then cover
+                    # will not be included in the dump for terminal nodes
+                    with contextlib.suppress(IndexError):
                         line_dict["cover"] = float(node_str_split2[1].split("=")[1])
-
-                    except IndexError:
-
-                        pass
 
                 # else non terminal node
                 else:
-
                     node_str_split2 = node_str_split1[1].split(" ")
 
                     node_str_split3 = (
@@ -716,16 +692,14 @@ class TextDumpReader(DumpReader):
                     line_dict["no"] = int(node_str_split4[1].split("=")[1])
                     line_dict["missing"] = int(node_str_split4[2].split("=")[1])
 
-                    # if model is dumped with the arg with_stats = False then gain and cover will not
-                    # be included in the dump for non-terminal nodes
+                    # if model is dumped with the arg with_stats = False then gain
+                    # and cover will not be included in the dump for non-terminal nodes
                     try:
-
                         # get the child nodes
                         line_dict["gain"] = float(node_str_split4[3].split("=")[1])
                         line_dict["cover"] = float(node_str_split4[4].split("=")[1])
 
                     except IndexError:
-
                         pass
 
                 lines_list.append(line_dict)
@@ -733,7 +707,6 @@ class TextDumpReader(DumpReader):
         lines_df = pd.DataFrame.from_dict(lines_list)
 
         if "cover" in lines_df.columns.values:
-
             lines_df["cover"] = lines_df["cover"].astype(int)
 
         lines_df.reset_index(inplace=True, drop=True)
@@ -774,6 +747,7 @@ class XGBoostParser:
             "XGBoostDumpParser class is depreceated, "
             "Booster.trees_to_dataframe is available instead",
             FutureWarning,
+            stacklevel=2,
         )
 
     def parse_model(self) -> ParsedXGBoostTabularTrees:
@@ -783,7 +757,6 @@ class XGBoostParser:
 
         """
         with tempfile.TemporaryDirectory() as tmp_dir:
-
             tmp_model_dump = str(
                 Path(tmp_dir).joinpath(f"temp_model_dump.{self.reader.dump_type}")
             )

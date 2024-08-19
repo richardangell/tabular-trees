@@ -52,8 +52,6 @@ def test_sort_by_columns_subset_required_columns():
     """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
     assert all(
-        [
-            column in ScikitLearnHistTabularTrees.REQUIRED_COLUMNS
-            for column in ScikitLearnHistTabularTrees.SORT_BY_COLUMNS
-        ]
+        column in ScikitLearnHistTabularTrees.REQUIRED_COLUMNS
+        for column in ScikitLearnHistTabularTrees.SORT_BY_COLUMNS
     ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"

@@ -11,13 +11,14 @@ def test_model_not_correct_type_exception():
 
     msg = (
         "model is not in expected types (<class "
-        "'sklearn.ensemble._hist_gradient_boosting.gradient_boosting.HistGradientBoostingClassifier'>, "
-        "<class 'sklearn.ensemble._hist_gradient_boosting.gradient_boosting.HistGradientBoostingRegressor'>), "
+        "'sklearn.ensemble._hist_gradient_boosting.gradient_boosting."
+        "HistGradientBoostingClassifier'>, "
+        "<class 'sklearn.ensemble._hist_gradient_boosting.gradient_boosting."
+        "HistGradientBoostingRegressor'>), "
         "got <class 'list'>"
     )
 
     with pytest.raises(TypeError, match=re.escape(msg)):
-
         sklearn._export_tree_data__hist_gradient_boosting_model(["a", "b"])
 
 
@@ -28,7 +29,6 @@ def test_multiple_responses_exception(sklearn_iris_hist_gbm_classifier):
     with pytest.raises(
         NotImplementedError, match="model with multiple responses not supported"
     ):
-
         sklearn._export_tree_data__hist_gradient_boosting_model(
             sklearn_iris_hist_gbm_classifier
         )

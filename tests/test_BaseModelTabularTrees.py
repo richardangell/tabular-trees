@@ -68,9 +68,12 @@ class TestBaseModelTabularTreesInitialisation:
 
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class DummyModelTabularTreesMissingAttribute with abstract method REQUIRED_COLUMNS",
+            match=(
+                "Can't instantiate abstract class "
+                "DummyModelTabularTreesMissingAttribute with abstract method "
+                "REQUIRED_COLUMNS"
+            ),
         ):
-
             DummyModelTabularTreesMissingAttribute(trees=dummy_model_tree_data)
 
     def test_exception_sort_by_columns_not_defined(self, dummy_model_tree_data):
@@ -92,9 +95,12 @@ class TestBaseModelTabularTreesInitialisation:
 
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class DummyModelTabularTreesMissingAttribute with abstract method SORT_BY_COLUMNS",
+            match=(
+                "Can't instantiate abstract class "
+                "DummyModelTabularTreesMissingAttribute with abstract method "
+                "SORT_BY_COLUMNS"
+            ),
         ):
-
             DummyModelTabularTreesMissingAttribute(trees=dummy_model_tree_data)
 
 
@@ -119,7 +125,6 @@ class TestBaseModelTabularTreesPostInit:
             SORT_BY_COLUMNS = ["column2"]
 
         with pytest.raises(AttributeError, match="trees attribute not set"):
-
             DummyModelTabularTrees()
 
     def test_trees_not_dataframe_exception(self):
@@ -127,9 +132,11 @@ class TestBaseModelTabularTreesPostInit:
 
         with pytest.raises(
             TypeError,
-            match="trees is not in expected types <class 'pandas.core.frame.DataFrame'>, got <class 'int'>",
+            match=(
+                "trees is not in expected types <class 'pandas.core.frame.DataFrame'>, "
+                "got <class 'int'>"
+            ),
         ):
-
             DummyModelTabularTrees(trees=12345)
 
     def test_required_columns_not_list_exception(self, dummy_model_tree_data):
@@ -151,9 +158,11 @@ class TestBaseModelTabularTreesPostInit:
 
         with pytest.raises(
             TypeError,
-            match="REQUIRED_COLUMNS is not in expected types <class 'list'>, got <class 'str'>",
+            match=(
+                "REQUIRED_COLUMNS is not in expected types <class 'list'>, "
+                "got <class 'str'>"
+            ),
         ):
-
             DummyModelTabularTrees(trees=dummy_model_tree_data)
 
     def test_sort_by_columns_not_list_exception(self, dummy_model_tree_data):
@@ -175,9 +184,11 @@ class TestBaseModelTabularTreesPostInit:
 
         with pytest.raises(
             TypeError,
-            match="SORT_BY_COLUMNS is not in expected types <class 'list'>, got <class 'str'>",
+            match=(
+                "SORT_BY_COLUMNS is not in expected types <class 'list'>, "
+                "got <class 'str'>"
+            ),
         ):
-
             DummyModelTabularTrees(trees=dummy_model_tree_data)
 
     @pytest.mark.parametrize(
@@ -205,7 +216,6 @@ class TestBaseModelTabularTreesPostInit:
             ValueError,
             match=re.escape(f"expected columns not in df; {sorted(drop_columns)}"),
         ):
-
             DummyModelTabularTrees(dropped_columns)
 
     def test_sort_by_not_subset_required_exception(self, dummy_model_tree_data):
@@ -233,7 +243,6 @@ class TestBaseModelTabularTreesPostInit:
                 "condition: [SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS] not met"
             ),
         ):
-
             DummyModelTabularTreesSortNotSubset(trees=dummy_model_tree_data)
 
     def test_trees_attribute_sorted(self, dummy_model_tree_data):

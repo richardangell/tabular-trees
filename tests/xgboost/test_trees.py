@@ -57,20 +57,16 @@ class TestXGBoostTabularTreesInit:
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in XGBoostTabularTrees.REQUIRED_COLUMNS
-                for column in XGBoostTabularTrees.SORT_BY_COLUMNS
-            ]
+            column in XGBoostTabularTrees.REQUIRED_COLUMNS
+            for column in XGBoostTabularTrees.SORT_BY_COLUMNS
         ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
 
     def test_tabular_trees_required_columns_in_column_mapping(self):
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in TabularTrees.REQUIRED_COLUMNS
-                for column in XGBoostTabularTrees.COLUMN_MAPPING.values()
-            ]
+            column in TabularTrees.REQUIRED_COLUMNS
+            for column in XGBoostTabularTrees.COLUMN_MAPPING.values()
         ), "not all TabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
@@ -88,7 +84,6 @@ class TestXGBoostTabularTreesPostInit:
             TypeError,
             match="lambda_ is not in expected types <class 'float'>, got <class 'str'>",
         ):
-
             tabular_trees.__post_init__()
 
     def test_alpha_not_float_exception(self, xgb_diabetes_model_trees_dataframe):
@@ -102,7 +97,6 @@ class TestXGBoostTabularTreesPostInit:
             TypeError,
             match="alpha is not in expected types <class 'float'>, got <class 'str'>",
         ):
-
             tabular_trees.__post_init__()
 
     def test_alpha_not_zero_exception(self, xgb_diabetes_model_trees_dataframe):
@@ -116,7 +110,6 @@ class TestXGBoostTabularTreesPostInit:
             ValueError,
             match=re.escape("condition: [alpha = 0] not met"),
         ):
-
             tabular_trees.__post_init__()
 
     def test_super_post_init_called(self, mocker, xgb_diabetes_model_trees_dataframe):
@@ -130,9 +123,10 @@ class TestXGBoostTabularTreesPostInit:
 
         tabular_trees.__post_init__()
 
-        assert (
-            mocked.call_count == 1
-        ), "BaseModelTabularTrees.__post_init__ not called when XGBoostTabularTrees.__post_init__ runs"
+        assert mocked.call_count == 1, (
+            "BaseModelTabularTrees.__post_init__ not called when "
+            "XGBoostTabularTrees.__post_init__ runs"
+        )
 
         assert (
             mocked.call_args_list[0][0] == ()
@@ -143,7 +137,7 @@ class TestXGBoostTabularTreesPostInit:
         ), "keyword args in BaseModelTabularTrees.__post_init__ call not correct"
 
     def test_trees_attribute_updated(self, mocker, xgb_diabetes_model_trees_dataframe):
-        """Test the trees attribute is updated with the output from derive_predictions."""
+        """Test trees attribute is updated with output from derive_predictions."""
 
         tabular_trees = XGBoostTabularTrees(xgb_diabetes_model_trees_dataframe)
 
@@ -159,7 +153,7 @@ class TestXGBoostTabularTreesPostInit:
         # mock __post_init__ so it does nothing when called
         mocker.patch.object(BaseModelTabularTrees, "__post_init__")
 
-        assert type(tabular_trees.trees) != type(derive_predictions_output)
+        assert type(tabular_trees.trees) is not type(derive_predictions_output)
 
         tabular_trees.__post_init__()
 
@@ -189,12 +183,10 @@ class TestXGBoostTabularTreesDerivePredictions:
             df["Depth"] = 0
 
             for row_number in range(df.shape[0]):
-
                 row = df.iloc[row_number]
 
                 # for non-leaf nodes, increase child node depths by 1
                 if row["Feature"] != "Leaf":
-
                     df.loc[df["ID"] == row["Yes"], "Depth"] = row["Depth"] + 1
                     df.loc[df["ID"] == row["No"], "Depth"] = row["Depth"] + 1
 
@@ -218,15 +210,12 @@ class TestXGBoostTabularTreesDerivePredictions:
 
         # loop through internal nodes, non-root nodes
         for row_number in range(predictions.shape[0]):
-
             row = predictions.iloc[row_number]
 
             if (row["Feature"] != "Leaf") and (row["Node"] > 0):
-
                 # build model with required number of trees and depth of the
                 # current node, so in this tree the node is a leaf node
                 if row["Tree"] == 0:
-
                     model = xgb.train(
                         params={
                             "verbosity": 0,
@@ -241,7 +230,6 @@ class TestXGBoostTabularTreesDerivePredictions:
                 # trees at the maximum depth, then build the last tree at the depth
                 # of the current node
                 else:
-
                     model_n = xgb.train(
                         params={
                             "verbosity": 0,
@@ -273,9 +261,10 @@ class TestXGBoostTabularTreesDerivePredictions:
                     round_to_digits,
                 )
 
-                assert (
-                    derived_prediction == prediction_from_leaf_node
-                ), f"""derived internal node prediction for node {row["ID"]} incorrect (rounding to 3dp)"""
+                assert derived_prediction == prediction_from_leaf_node, (
+                    f"""derived internal node prediction for node {row["ID"]} """
+                    "incorrect (rounding to 3dp)"
+                )
 
 
 class TestXGBoostTabularTreesConvert:
@@ -290,7 +279,7 @@ class TestXGBoostTabularTreesConvert:
 
         assert (
             type(output) is TabularTrees
-        ), "output from XGBoostTabularTrees.convert_to_tabular_trees is not TabularTrees type"
+        ), "output from convert_to_tabular_trees is not a TabularTrees object"
 
 
 class TestParsedXGBoostTabularTreesInit:
@@ -346,20 +335,16 @@ class TestParsedXGBoostTabularTreesInit:
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in ParsedXGBoostTabularTrees.REQUIRED_COLUMNS
-                for column in ParsedXGBoostTabularTrees.SORT_BY_COLUMNS
-            ]
+            column in ParsedXGBoostTabularTrees.REQUIRED_COLUMNS
+            for column in ParsedXGBoostTabularTrees.SORT_BY_COLUMNS
         ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
 
     def test_xgboost_tabular_trees_required_columns_in_column_mapping(self):
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in XGBoostTabularTrees.REQUIRED_COLUMNS
-                for column in ParsedXGBoostTabularTrees.COLUMN_MAPPING.values()
-            ]
+            column in XGBoostTabularTrees.REQUIRED_COLUMNS
+            for column in ParsedXGBoostTabularTrees.COLUMN_MAPPING.values()
         ), "not all XGBoostTabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
@@ -378,7 +363,6 @@ class TestParsedXGBoostTabularTreesPostInit:
         )
 
         with pytest.raises(ValueError, match=expected_exception_message):
-
             ParsedXGBoostTabularTrees(
                 xgb_diabetes_model_parsed_trees_dataframe_no_stats
             )
@@ -398,9 +382,10 @@ class TestParsedXGBoostTabularTreesPostInit:
 
         parsed_tabular_trees.__post_init__()
 
-        assert (
-            mocked.call_count == 1
-        ), "BaseModelTabularTrees.__post_init__ not called when ParsedXGBoostTabularTrees.__post_init__ runs"
+        assert mocked.call_count == 1, (
+            "BaseModelTabularTrees.__post_init__ not called when "
+            "ParsedXGBoostTabularTrees.__post_init__ runs"
+        )
 
         assert (
             mocked.call_args_list[0][0] == ()
@@ -412,10 +397,10 @@ class TestParsedXGBoostTabularTreesPostInit:
 
 
 class TestParsedXGBoostTabularTreesConvert:
-    """Tests for the ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees method."""
+    """Tests for ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees method."""
 
     def test_output_type(self, xgb_diabetes_model_parsed_trees_dataframe):
-        """Test the output from convert_to_xgboost_tabular_trees is XGBoostTabularTrees type."""
+        """Test convert_to_xgboost_tabular_trees output is XGBoostTabularTrees type."""
 
         parsed_tabular_trees = ParsedXGBoostTabularTrees(
             xgb_diabetes_model_parsed_trees_dataframe
@@ -423,9 +408,10 @@ class TestParsedXGBoostTabularTreesConvert:
 
         output = parsed_tabular_trees.convert_to_xgboost_tabular_trees()
 
-        assert (
-            type(output) is XGBoostTabularTrees
-        ), "output from ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees is not XGBoostTabularTrees type"
+        assert type(output) is XGBoostTabularTrees, (
+            "output from ParsedXGBoostTabularTrees.convert_to_xgboost_tabular_trees "
+            "is not XGBoostTabularTrees type"
+        )
 
     def test_output_same_format_as_xgboost(
         self,

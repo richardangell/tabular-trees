@@ -1,5 +1,6 @@
 """tabular_trees module."""
 
+import contextlib
 from importlib import metadata
 
 from . import checks, explain, validate
@@ -13,17 +14,11 @@ __version__ = metadata.version(__package__)
 # avoids polluting the results of dir(__package__)
 del metadata
 
-try:
+with contextlib.suppress(ImportError):
     from . import lightgbm
-except ImportError:
-    pass
 
-try:
+with contextlib.suppress(ImportError):
     from . import sklearn
-except ImportError:
-    pass
 
-try:
+with contextlib.suppress(ImportError):
     from . import xgboost
-except ImportError:
-    pass

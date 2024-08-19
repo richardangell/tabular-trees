@@ -81,9 +81,11 @@ def test_tabular_trees_not_tabular_trees_exception():
 
     with pytest.raises(
         TypeError,
-        match="tabular_trees is not in expected types <class 'tabular_trees.trees.TabularTrees'>",
+        match=(
+            "tabular_trees is not in expected types "
+            "<class 'tabular_trees.trees.TabularTrees'>"
+        ),
     ):
-
         calculate_shapley_values(12345, row_to_explain)
 
 
@@ -97,7 +99,6 @@ def test_row_not_series_exception(handcrafted_shap_model):
         TypeError,
         match="row is not in expected types <class 'pandas.core.series.Series'>",
     ):
-
         calculate_shapley_values(tabular_trees, 12345)
 
 

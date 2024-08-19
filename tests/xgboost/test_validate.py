@@ -130,7 +130,7 @@ class TestValidateMonotonicConstraints:
     """Tests for the validate_monotonic_constraints function."""
 
     def test_output_type(self, xgb_diabetes_model_monotonic):
-        """Test the output of validate_monotonic_constraints is MonotonicConstraintResults type."""
+        """Test validate_monotonic_constraints output is MonotonicConstraintResults."""
         model, constraints = xgb_diabetes_model_monotonic
 
         xgboost_tabular_trees = export_tree_data(model)
@@ -146,7 +146,7 @@ class TestValidateMonotonicConstraints:
 
         assert (
             type(results) is MonotonicConstraintResults
-        ), "output from validate_monotonic_constraints is not MonotonicConstraintResults"
+        ), "validate_monotonic_constraints output is MonotonicConstraintResults type"
 
     @pytest.mark.parametrize(
         "model_fixture_name,constraints,expected_summary_results",
@@ -236,7 +236,6 @@ class TestValidateMonotonicConstraints:
     def test_expected_output(
         self, request, model_fixture_name, constraints, expected_summary_results
     ):
-
         model = request.getfixturevalue(model_fixture_name)
 
         xgboost_tabular_trees = export_tree_data(model)

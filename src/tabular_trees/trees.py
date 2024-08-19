@@ -67,7 +67,7 @@ class BaseModelTabularTrees(ABC):
         checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
 
         checks.check_condition(
-            all([column in self.REQUIRED_COLUMNS for column in self.SORT_BY_COLUMNS]),
+            all(column in self.REQUIRED_COLUMNS for column in self.SORT_BY_COLUMNS),
             "SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS",
         )
 

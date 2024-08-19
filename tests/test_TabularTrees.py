@@ -53,7 +53,6 @@ class TestInit:
                 "condition: [get_root_node_given_tree is callable] not met"
             ),
         ):
-
             TabularTrees(trees=dummy_trees_data, get_root_node_given_tree=123)
 
     def test_tree_data_copied(self, dummy_trees_data):

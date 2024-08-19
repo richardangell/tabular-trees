@@ -51,20 +51,16 @@ class TestLightGBMTabularTreesInit:
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in LightGBMTabularTrees.REQUIRED_COLUMNS
-                for column in LightGBMTabularTrees.SORT_BY_COLUMNS
-            ]
+            column in LightGBMTabularTrees.REQUIRED_COLUMNS
+            for column in LightGBMTabularTrees.SORT_BY_COLUMNS
         ), "not all SORT_BY_COLUMNS values are in REQUIRED_COLUMNS"
 
     def test_tabular_trees_required_columns_in_column_mapping(self):
         """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
 
         assert all(
-            [
-                column in TabularTrees.REQUIRED_COLUMNS
-                for column in LightGBMTabularTrees.COLUMN_MAPPING.values()
-            ]
+            column in TabularTrees.REQUIRED_COLUMNS
+            for column in LightGBMTabularTrees.COLUMN_MAPPING.values()
         ), "not all TabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
@@ -80,6 +76,7 @@ class TestLightGBMTabularTreesConvert:
 
         output = lightgbm_tabular_trees.convert_to_tabular_trees()
 
-        assert (
-            type(output) is TabularTrees
-        ), "output from LightGBMTabularTrees.convert_to_tabular_trees is not TabularTrees type"
+        assert type(output) is TabularTrees, (
+            "output from LightGBMTabularTrees.convert_to_tabular_trees "
+            "is not TabularTrees type"
+        )

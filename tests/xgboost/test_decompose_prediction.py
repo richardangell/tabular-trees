@@ -10,7 +10,7 @@ from tabular_trees.trees import export_tree_data
 
 
 def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):
-    """Test the output from decompose_prediction is an PredictionDecomposition object."""
+    """Test the output from decompose_prediction is an PredictionDecomposition type."""
 
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
@@ -41,9 +41,11 @@ def test_tabular_trees_not_tabular_trees_exception(diabetes_data):
 
     with pytest.raises(
         TypeError,
-        match="tabular_trees is not in expected types <class 'tabular_trees.trees.TabularTrees'>",
+        match=(
+            "tabular_trees is not in expected types "
+            "<class 'tabular_trees.trees.TabularTrees'>"
+        ),
     ):
-
         decompose_prediction(
             tabular_trees="abcde",
             row=row_data,
@@ -60,7 +62,6 @@ def test_row_not_dataframe_exception(xgb_diabetes_model_lambda_0):
         TypeError,
         match="row is not in expected types <class 'pandas.core.frame.DataFrame'>",
     ):
-
         decompose_prediction(
             tabular_trees=tabular_trees,
             row=123,
@@ -83,7 +84,6 @@ def test_not_single_row_exception(nrows, diabetes_data, xgb_diabetes_model_lambd
         ValueError,
         match=re.escape("condition: [row is a single pd.DataFrame row] not met"),
     ):
-
         decompose_prediction(
             tabular_trees=tabular_trees,
             row=row_data,
@@ -136,9 +136,9 @@ def test_prediction_decomposition_eli5_equality(
     if (
         decomposition_compare_df["_merge"] == "both"
     ).sum() < decomposition_compare_df.shape[0]:
-
         pytest.fail(
-            f"different features in eli5 and tabular_trees (merge not 1:1)\n\n{decomposition_compare_df}"
+            "different features in eli5 and tabular_trees (merge not 1:1)\n\n"
+            f"{decomposition_compare_df}"
         )
 
     # check equality between prediction decomposition values
