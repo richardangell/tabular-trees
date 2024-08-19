@@ -72,3 +72,6 @@ select = [
     # flake8-comprehensions
     "C4"
 ]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*.py" = ["S101"]
