@@ -14,14 +14,12 @@ from tabular_trees.xgboost import (
 
 
 class DummyDumpReader(DumpReader):
-    """Dummy class inheriting from DumpReader, to test DumpReader
-    functionality."""
+    """Dummy class inheriting from DumpReader, to test DumpReader functionality."""
 
     dump_type = "dummy"
 
     def read_dump(self, file: str) -> None:
-        """Method that simply calls the DumpReader.read_dump method."""
-
+        """Simply call the DumpReader.read_dump method."""
         return super().read_dump(file)
 
 
@@ -30,7 +28,6 @@ class TestDumpReaderReadDump:
 
     def test_file_not_str_exception(self):
         """Test that a TypeError is raised if file is not a str."""
-
         dump_reader = DummyDumpReader()
 
         with pytest.raises(
@@ -41,7 +38,6 @@ class TestDumpReaderReadDump:
 
     def test_file_does_not_exist_exception(self):
         """Test that a ValueError is raised if file does not exist."""
-
         dump_reader = DummyDumpReader()
 
         with pytest.raises(
@@ -60,16 +56,13 @@ class TestDumpReaderImplementations:
     )
     def test_dump_reader_dump_type(self, reader_class, expected_value):
         """Test DumpReader classes have correct dump_type attribute value."""
-
         assert (
             reader_class.dump_type == expected_value
         ), f"dump_type attribute of {reader_class} class not expected"
 
     @pytest.mark.parametrize("with_stats", [(False), (True)])
     def test_text_json_parsing_equal(self, with_stats, tmp_path, xgb_diabetes_model):
-        """Test that parsing an xgboost model dumped to text file and json
-        file gives the same output."""
-
+        """Test that parsing text and json files give the same output."""
         text_dump = str(tmp_path.joinpath("dump_raw.txt"))
         json_dump = str(tmp_path.joinpath("dump_raw.json"))
 
@@ -101,7 +94,6 @@ class TestXGBoostParserInit:
 
     def test_model_not_booster_exception(self):
         """Test that a TypeError is raised if model is not a Booster."""
-
         with pytest.raises(
             TypeError,
             match=(
@@ -114,7 +106,6 @@ class TestXGBoostParserInit:
     @pytest.mark.parametrize("dump_reader", [(JsonDumpReader), (TextDumpReader)])
     def test_attributes_set(self, xgb_diabetes_model, dump_reader):
         """Test model, dump_type and reader attributes are correctly set."""
-
         xgboost_parser = XGBoostParser(xgb_diabetes_model, dump_reader())
 
         assert (
@@ -127,7 +118,6 @@ class TestXGBoostParserInit:
 
     def test_depreceation_warning(self, xgb_diabetes_model):
         """Test a FutureWarning is raised when initialising an XGBoostParser object."""
-
         expected_warning = (
             "XGBoostDumpParser class is depreceated, "
             "Booster.trees_to_dataframe is available instead"
@@ -141,9 +131,7 @@ class TestXGBoostParserParseModel:
     """Tests for the XGBoostParser.parse_model method."""
 
     def test_model_dumped_then_read(self, mocker, xgb_diabetes_model):
-        """Test the booster calls dump_model and the output is then read
-        with read_dump."""
-
+        """Test Booster.dump_model output is read with read_dump."""
         xgboost_parser = XGBoostParser(xgb_diabetes_model, JsonDumpReader())
 
         dump_model_spy = mocker.spy(xgb.core.Booster, "dump_model")
@@ -183,9 +171,7 @@ class TestXGBoostParserParseModel:
         ), "keyword args not corrext in read_dump call"
 
     def test_read_dump_output_returned(self, mocker, xgb_diabetes_model):
-        """Test that the output from parse_model is ParsedXGBoostTabularTrees
-        with the output of read_dump."""
-
+        """Test parse_model returns the output of read_dump."""
         xgboost_parser = XGBoostParser(xgb_diabetes_model, JsonDumpReader())
 
         read_dump_return_value = 12345

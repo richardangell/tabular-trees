@@ -7,8 +7,7 @@ from tabular_trees import sklearn
 
 
 def test_model_not_correct_type_exception():
-    """Test that a TypeError is raised if model is not"""
-
+    """Test that a TypeError is raised if model is not an allowed type."""
     msg = (
         "model is not in expected types (<class "
         "'sklearn.ensemble._gb.GradientBoostingClassifier'>, "
@@ -21,9 +20,7 @@ def test_model_not_correct_type_exception():
 
 
 def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
-    """Test a NotImplementedError is raised if the model passed has multiple
-    responses e.g. multiclass classification."""
-
+    """Test an eror is raised if the model passed has multiple responses."""
     with pytest.raises(
         NotImplementedError, match="model with multiple responses not supported"
     ):
@@ -31,9 +28,7 @@ def test_multiple_responses_exception(sklearn_iris_gbm_classifier):
 
 
 def test_output(mocker, sklearn_diabetes_gbm_regressor):
-    """Test that the output of the function is a ScikitLearnTabularTrees
-    object with the output from _extract_hist_gbm_tree_data."""
-
+    """Test output from _extract_hist_gbm_tree_data is returned."""
     dummy_tree_data = pd.DataFrame(
         {
             "tree": 0,

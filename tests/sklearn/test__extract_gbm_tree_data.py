@@ -7,7 +7,6 @@ from tabular_trees import sklearn
 
 def test_required_columns(sklearn_diabetes_gbm_regressor):
     """Test the required columns are in the output."""
-
     tree_data = sklearn._extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
 
     assert sorted(sklearn.ScikitLearnTabularTrees.REQUIRED_COLUMNS) == sorted(
@@ -17,7 +16,6 @@ def test_required_columns(sklearn_diabetes_gbm_regressor):
 
 def test_output_values(handcrafted_data):
     """Test that the values output are expected for a simple, known tree."""
-
     model = GradientBoostingRegressor(n_estimators=1, max_depth=2, learning_rate=1)
 
     model.fit(handcrafted_data[["a", "b"]], handcrafted_data["response"])

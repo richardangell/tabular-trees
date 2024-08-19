@@ -6,7 +6,6 @@ from tabular_trees.xgboost import XGBoostTabularTrees
 
 def test_model_specific_function_dispatch(xgb_diabetes_model):
     """Test export_tree_data returns XGBoostTabularTrees object."""
-
     tree_data = export_tree_data(xgb_diabetes_model)
 
     assert type(tree_data) is XGBoostTabularTrees, (
@@ -17,7 +16,6 @@ def test_model_specific_function_dispatch(xgb_diabetes_model):
 
 def test_parameters_passed_to_xgboost_tabular_trees(xgb_diabetes_dmatrix):
     """Test that alpha and lambda are passed to XGBoostTabularTrees output."""
-
     model = xgb.train(
         params={"verbosity": 0, "max_depth": 3, "alpha": 0.0, "lambda": 1.0},
         dtrain=xgb_diabetes_dmatrix,

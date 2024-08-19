@@ -21,10 +21,3 @@ repos:
     hooks:
     -   id: docformatter
         args: [--wrap-descriptions, "88", --wrap-summaries, "88", --blank]
-
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.2.2
-    hooks:
-    -   id: pydocstyle
-        args: [--convention, numpy]
-        exclude: ^docs/

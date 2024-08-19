@@ -10,8 +10,7 @@ from tabular_trees.trees import BaseModelTabularTrees
 
 @dataclass
 class DummyModelTabularTrees(BaseModelTabularTrees):
-    """Dummy class mimicking a model specific class inheriting from
-    BaseModelTabularTrees.
+    """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
     This implements eevrything required to use the class.
     """
@@ -28,20 +27,16 @@ class TestBaseModelTabularTreesInitialisation:
 
     def test_abstract_base_class(self):
         """Test that BaseModelTabularTrees is an abstract base class."""
-
         assert (
             BaseModelTabularTrees.__mro__[1] is abc.ABC
         ), "BaseModelTabularTrees is not an abstract base class"
 
     def test_successful_initialisation(self, dummy_model_tree_data):
-        """Test successful initialisation of an implementation of
-        BaseModelTabularTrees."""
-
+        """Test successful initialisation of BaseModelTabularTrees subclass."""
         DummyModelTabularTrees(trees=dummy_model_tree_data)
 
     def test_trees_attribute_set(self, dummy_model_tree_data):
         """Test the trees attribute is set to the value passed in init."""
-
         dummy_model_tabular_trees = DummyModelTabularTrees(trees=dummy_model_tree_data)
 
         pd.testing.assert_frame_equal(
@@ -50,14 +45,11 @@ class TestBaseModelTabularTreesInitialisation:
         )
 
     def test_exception_required_columns_not_defined(self, dummy_model_tree_data):
-        """Test an implementation of BaseModelTabularTrees cannot be
-        initialised if it does not set the REQUIRED_COLUMNS attribute.
-        """
+        """Test subclass cannot be initialised without setting REQUIRED_COLUMNS."""
 
         @dataclass
         class DummyModelTabularTreesMissingAttribute(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
             This impementation does not have the REQUIRED_COLUMNS attribute.
             """
@@ -77,14 +69,11 @@ class TestBaseModelTabularTreesInitialisation:
             DummyModelTabularTreesMissingAttribute(trees=dummy_model_tree_data)
 
     def test_exception_sort_by_columns_not_defined(self, dummy_model_tree_data):
-        """Test an implementation of BaseModelTabularTrees cannot be
-        initialised if it does not set the SORT_BY_COLUMNS attribute.
-        """
+        """Test subclass cannot be initialised without defining SORT_BY_COLUMNS."""
 
         @dataclass
         class DummyModelTabularTreesMissingAttribute(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
             This impementation does not have the SORT_BY_COLUMNS attribute.
             """
@@ -108,14 +97,11 @@ class TestBaseModelTabularTreesPostInit:
     """Tests for the BaseModelTabularTrees.__post_init__ method."""
 
     def test_attribute_error_no_trees_attribute(self):
-        """Test an exception is raised if the implementation of
-        BaseModelTabularTrees does not set the trees attribute.
-        """
+        """Test error trees attribute not set in BaseModelTabularTrees subclass."""
 
         @dataclass
         class DummyModelTabularTrees(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation does will not set a trees attribute.
             """
@@ -129,7 +115,6 @@ class TestBaseModelTabularTreesPostInit:
 
     def test_trees_not_dataframe_exception(self):
         """Test a TypeError is raised if trees is not a pd.DataFrame."""
-
         with pytest.raises(
             TypeError,
             match=(
@@ -144,8 +129,7 @@ class TestBaseModelTabularTreesPostInit:
 
         @dataclass
         class DummyModelTabularTrees(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation sets REQUIRED_COLUMNS as a str instead of list.
             """
@@ -170,8 +154,7 @@ class TestBaseModelTabularTreesPostInit:
 
         @dataclass
         class DummyModelTabularTrees(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation sets SORT_BY_COLUMNS as a str instead of list.
             """
@@ -207,9 +190,7 @@ class TestBaseModelTabularTreesPostInit:
         drop_columns,
         dummy_model_tree_data,
     ):
-        """Test an exception is raised if columns from REQUIRED_COLUMNS are
-        missing in trees."""
-
+        """Test error if columns from REQUIRED_COLUMNS are missing in trees data."""
         dropped_columns = dummy_model_tree_data.drop(columns=drop_columns)
 
         with pytest.raises(
@@ -219,13 +200,11 @@ class TestBaseModelTabularTreesPostInit:
             DummyModelTabularTrees(dropped_columns)
 
     def test_sort_by_not_subset_required_exception(self, dummy_model_tree_data):
-        """Test a ValueError is raised if SORT_BY_COLUMNS is not a subset of
-        REQUIRED_COLUMNS."""
+        """Test that SORT_BY_COLUMNS must a subset of REQUIRED_COLUMNS."""
 
         @dataclass
         class DummyModelTabularTreesSortNotSubset(BaseModelTabularTrees):
-            """Dummy class mimicking a model specific class inheriting from
-            BaseModelTabularTrees.
+            """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation has SORT_BY_COLUMNS set as NOT a subset of
             REQUIRED_COLUMNS.
@@ -247,7 +226,6 @@ class TestBaseModelTabularTreesPostInit:
 
     def test_trees_attribute_sorted(self, dummy_model_tree_data):
         """Test the rows of trees are sorted by SORT_BY_COLUMNS."""
-
         out_of_order_rows = dummy_model_tree_data.sort_values("column1")
 
         tabular_trees = DummyModelTabularTrees(out_of_order_rows)
@@ -259,7 +237,6 @@ class TestBaseModelTabularTreesPostInit:
 
     def test_trees_attribute_columns_ordered(self, dummy_model_tree_data):
         """Test the columns of trees are sorted into REQUIRED_COLUMNS order."""
-
         out_of_order_columns = dummy_model_tree_data[
             ["column2", "column3", "column1"]
         ].copy()
@@ -273,7 +250,6 @@ class TestBaseModelTabularTreesPostInit:
 
     def test_trees_attribute_index_reset(self, dummy_model_tree_data):
         """Test that the index is reset on the trees attribute."""
-
         new_index = dummy_model_tree_data.copy()
         new_index.index = [9, -1, 3, 2]
 

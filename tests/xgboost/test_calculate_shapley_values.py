@@ -76,7 +76,6 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
 
 def test_tabular_trees_not_tabular_trees_exception():
     """Test an exception is raised if tabular_trees is not a TabularTrees object."""
-
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 
     with pytest.raises(
@@ -91,7 +90,6 @@ def test_tabular_trees_not_tabular_trees_exception():
 
 def test_row_not_series_exception(handcrafted_shap_model):
     """Test an exception is raised if row is not a pd.Series object."""
-
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
@@ -104,7 +102,6 @@ def test_row_not_series_exception(handcrafted_shap_model):
 
 def test_output_type(handcrafted_shap_model):
     """Test the output from calculate_shapley_values is a ShapleyValues object."""
-
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
@@ -125,7 +122,6 @@ def test_shapley_values_treeshap_equality(
     xgb_diabetes_model_subset_cols,
 ):
     """Test equality between treeshap from xgboost and calculate_shapley_values."""
-
     # xgboost treeshap implementation
     shapley_values_xgboost = xgb_diabetes_model_subset_cols.predict(
         xgb_diabetes_dmatrix_subset_cols, pred_contribs=True

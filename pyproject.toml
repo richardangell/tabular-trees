@@ -70,13 +70,21 @@ select = [
     # pep8-naming
     "N",
     # flake8-comprehensions
-    "C4"
+    "C4",
+    # pydocstyle
+    "D",
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/*.py" = [
     "S101", # Use of assert
     "N999", # Invalid module name
+    "D100", # Missing docstring in public module
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
 ]
 "*/__init__.py" = [
     "F401", # Unused import

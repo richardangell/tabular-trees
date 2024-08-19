@@ -29,7 +29,6 @@ def two_way_monotonic_increase_x2_xgb_model(
     two_way_monotonic_increase_x2_dmatrix,
 ) -> xgb.Booster:
     """Model with single 2 way interaction both features monotonically increasing."""
-
     return build_depth_2_single_tree_xgb(two_way_monotonic_increase_x2_dmatrix)
 
 
@@ -64,7 +63,6 @@ def two_way_monotonic_decrease_x2_xgb_model(
     two_way_monotonic_decrease_x2_dmatrix,
 ) -> xgb.Booster:
     """Model with single 2 way interaction both features monotonically decreasing."""
-
     return build_depth_2_single_tree_xgb(two_way_monotonic_decrease_x2_dmatrix)
 
 
@@ -73,7 +71,6 @@ class TestMonotonicConstraintResults:
 
     def test_attributes_set(self):
         """Test attributes are set during init."""
-
         summary_value = {"a": True}
         constraints_value = {"a": 1}
         results_df = pd.DataFrame({"a": [1, 2]})
@@ -108,7 +105,6 @@ class TestMonotonicConstraintResults:
         self, columns_to_mark_true, expected_all_constraints_met
     ):
         """Test all_constraints_met attribute is calculated correctly."""
-
         summary_value = {"a": False, "b": False}
 
         for column in columns_to_mark_true:

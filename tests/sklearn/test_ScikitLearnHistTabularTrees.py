@@ -6,7 +6,6 @@ from tabular_trees.sklearn import ScikitLearnHistTabularTrees
 
 def test_inheritance():
     """Test that ScikitLearnHistTabularTrees inherits from BaseModelTabularTrees."""
-
     assert (
         ScikitLearnHistTabularTrees.__mro__[1] is BaseModelTabularTrees
     ), "ScikitLearnHistTabularTrees does not inherit from BaseModelTabularTrees"
@@ -14,7 +13,6 @@ def test_inheritance():
 
 def test_trees_attribute_set(sklearn_hist_gbm_trees_dataframe):
     """Test the trees attribute is set as the value passed in init."""
-
     tabular_trees = ScikitLearnHistTabularTrees(sklearn_hist_gbm_trees_dataframe)
 
     pd.testing.assert_frame_equal(
@@ -26,9 +24,7 @@ def test_trees_attribute_set(sklearn_hist_gbm_trees_dataframe):
 
 
 def test_trees_not_same_object(sklearn_hist_gbm_trees_dataframe):
-    """Test the trees attribute is not the same object as that passed into
-    the init method."""
-
+    """Test trees is copied from the input data."""
     tabular_trees = ScikitLearnHistTabularTrees(sklearn_hist_gbm_trees_dataframe)
 
     assert id(tabular_trees.trees) != id(
@@ -38,7 +34,6 @@ def test_trees_not_same_object(sklearn_hist_gbm_trees_dataframe):
 
 def test_post_init_called(mocker, sklearn_hist_gbm_trees_dataframe):
     """Test that BaseModelTabularTrees.__post_init__ is called."""
-
     mocker.patch.object(BaseModelTabularTrees, "__post_init__")
 
     ScikitLearnHistTabularTrees(sklearn_hist_gbm_trees_dataframe)
@@ -50,7 +45,6 @@ def test_post_init_called(mocker, sklearn_hist_gbm_trees_dataframe):
 
 def test_sort_by_columns_subset_required_columns():
     """Test that SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS."""
-
     assert all(
         column in ScikitLearnHistTabularTrees.REQUIRED_COLUMNS
         for column in ScikitLearnHistTabularTrees.SORT_BY_COLUMNS

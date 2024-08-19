@@ -11,7 +11,6 @@ from tabular_trees.trees import export_tree_data
 
 def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):
     """Test the output from decompose_prediction is an PredictionDecomposition type."""
-
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
     )
@@ -31,9 +30,7 @@ def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):
 
 
 def test_tabular_trees_not_tabular_trees_exception(diabetes_data):
-    """Test an exception is raised if tabular_trees argument is not a TabularTrees
-    object."""
-
+    """Test an error is raised if tabular_trees is not a TabularTrees object."""
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
     )
@@ -54,7 +51,6 @@ def test_tabular_trees_not_tabular_trees_exception(diabetes_data):
 
 def test_row_not_dataframe_exception(xgb_diabetes_model_lambda_0):
     """Test an exception is raised if row argument is not a pd.DataFrame."""
-
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
@@ -71,7 +67,6 @@ def test_row_not_dataframe_exception(xgb_diabetes_model_lambda_0):
 @pytest.mark.parametrize("nrows", [0, 2])
 def test_not_single_row_exception(nrows, diabetes_data, xgb_diabetes_model_lambda_0):
     """Test an exception is raised if row argument is not a single row."""
-
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
     )
@@ -94,9 +89,7 @@ def test_not_single_row_exception(nrows, diabetes_data, xgb_diabetes_model_lambd
 def test_prediction_decomposition_eli5_equality(
     row_number_to_score, diabetes_data, xgb_diabetes_model_lambda_0
 ):
-    """Test decompose_prediction and eli5.explain_prediction_df give the same
-    results."""
-
+    """Test decompose_prediction and eli5.explain_prediction_df give same results."""
     # get row of diabetes data to score
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
