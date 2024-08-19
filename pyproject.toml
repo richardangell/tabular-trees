@@ -49,8 +49,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-# Set the maximum line length to 79.
-line-length = 79
+line-length = 88
 
 [tool.ruff.lint]
 select = [
