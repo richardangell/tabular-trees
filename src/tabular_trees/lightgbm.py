@@ -18,16 +18,10 @@ def lightgbm_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class LightGBMTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        LightGBM tree data output from Booster.trees_to_dataframe.
-
-    """
+    """Class to hold the xgboost trees in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree_index",
@@ -46,8 +40,10 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "weight",
         "count",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree_index", "node_depth", "node_index"]
+    """List of columns to sort tree data by."""
 
     COLUMN_MAPPING = {
         "tree_index": "tree",
@@ -61,6 +57,36 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         "count": "count",
         "value": "prediction",
     }
+    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the LightGBMTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            LightGBM tree data output from Booster.trees_to_dataframe.
+
+        Examples
+        --------
+        >>> import lightgbm as lgb
+        >>> from sklearn.datasets import load_diabetes
+        >>> from tabular_trees import export_tree_data
+        >>> # get data in Dataset
+        >>> diabetes = load_diabetes()
+        >>> data = lgb.Dataset(diabetes["data"], label=diabetes["target"])
+        >>> # build model
+        >>> params = {"max_depth": 3, "verbosity": -1}
+        >>> model = lgb.train(params, train_set=data, num_boost_round=10)
+        >>> # export to LightGBMTabularTrees
+        >>> lightgbm_tabular_trees = export_tree_data(model)
+        >>> type(lightgbm_tabular_trees)
+        <class 'tabular_trees.lightgbm.LightGBMTabularTrees'>
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
     def convert_to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
@@ -85,7 +111,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
 
 
 @export_tree_data.register(lgb.Booster)
-def export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
+def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     """Export tree data from Booster object.
 
     Parameters

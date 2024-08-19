@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # -- Project information -----------------------------------------------------
 
 project = "tabular_trees"
-copyright = "2022, Richard Angell"
+copyright = "2023, Richard Angell"
 author = "Richard Angell"
 
 # The full version, including alpha/beta/rc tags

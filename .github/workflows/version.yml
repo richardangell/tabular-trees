@@ -7,9 +7,9 @@ on:
 jobs:
   version_check:
     runs-on: ubuntu-latest
-    name: Checks _version.py file has been updated
+    name: Checks pyproject.toml and CHANGELOG.rst files have been updated
     steps:
     - name: Version check action
       uses: richardangell/versioning-checker@v2.3
       with:
-        tracked_files: '_version.py,CHANGELOG.rst'
+        tracked_files: 'pyproject.toml,CHANGELOG.rst'

@@ -1,35 +1,51 @@
 # tabular-trees
 
+![PyPI](https://img.shields.io/pypi/v/tabular-trees?color=success&style=flat)
+![Read the Docs](https://img.shields.io/readthedocs/tabular-trees)
+![GitHub](https://img.shields.io/github/license/richardangell/tabular-trees)
+![GitHub last commit](https://img.shields.io/github/last-commit/richardangell/tabular-trees)
+![Build](https://github.com/richardangell/tabular-trees/actions/workflows/coverage.yml/badge.svg?branch=main)
+
 ## Introduction
 
-Tabular-trees is a package for making analysis on tree-based models easier. 
+`tabular-trees` is a package for making analysis on tree-based models easier. 
 
-Tree based models (specifically GBMs) from `xgboost`, `lightgbm` or `scikit-learn` to be exported to `TabularTrees` objects for further analysis.
+Tree based models (specifically GBMs) from `xgboost`, `lightgbm` or `scikit-learn` can be exported to `TabularTrees` objects for further analysis.
 
-The `explain` and `validate` modules contain functions that operate on `TabularTrees`.
+The `explain` and `validate` modules contain functions that operate on `TabularTrees` objects.
+
+See the [documentation](http://tabular-trees.readthedocs.io/) for more information.
 
 ## Install
 
-The easiest way to get `tabular-trees` is directly from [pypi](https://pypi.org/project/tabular-trees/);
+The easiest way to get `tabular-trees` is to install directly from [pypi](https://pypi.org/project/tabular-trees/):
 
 ```
 pip install tabular_trees
 ```
 
-`tabular-trees` works with GBMs from `xgboost`, `lightgbm` or `scikit-learn`. These packages must be installed to use the relevant functionality from `tabular-trees`, they are not installed as dependencies of `tabular-trees`.
+`tabular-trees` works with GBMs from `xgboost`, `lightgbm` or `scikit-learn`. These packages must be installed to use the relevant functionality from `tabular-trees`.
 
-## Documentation
+`[lightgbm, sklearn, xgboost]` are optional depedencies that can be specified for `tabular-trees`. They can be installed along with `tabular-trees` as follows:
 
-Currently documentation is not published for this package.
+```
+pip install tabular_trees[lightgbm, sklearn]
+```
 
 ## Build
 
 `tabular-trees` uses [poetry](https://python-poetry.org/) as the environment management and package build tool. Follow the instructions [here](https://python-poetry.org/docs/#installation) to install.
 
-Once installed run 
+To install the package locally, for development purposes along with the development dependencies run:
 
 ```
 poetry install --with dev
 ```
 
-to install the development dependencies. Other dependency groups are; `docs`, `lightgbm`, `sklearn` and `xgboost`.
+`dev` is an optional dependency group, the other one is `docs` which is only required if building the documentation.
+
+To install all the optional, development dependencies as well as all the extras for the package run:
+
+```
+poetry install --extras "lightgbm xgboost" --with dev,docs
+```

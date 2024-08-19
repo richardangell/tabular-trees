@@ -1,66 +1,40 @@
-from collections import namedtuple
-
-import numpy as np
 import pandas as pd
-import pytest
+from sklearn.ensemble import HistGradientBoostingRegressor
 
 from tabular_trees import sklearn
 
 
-def test_successful_call(sklearn_diabetes_hist_gbm_regressor):
-    """Test a successful call to _extract_hist_gbm_tree_data."""
+def test_output_values(handcrafted_data):
+    """Test that the values output are expected for a simple, known tree."""
 
-    sklearn._extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
-
-
-def test_output_approach():
-    """Test the output from _extract_hist_gbm_tree_data is correct."""
-
-    DummyNodes = namedtuple("DummyNodes", ["nodes"])
-
-    class DummyModel:
-        """Dummy class implementing the required attributes that will be
-        accessed by  _extract_hist_gbm_tree_data."""
-
-        def __init__(self, n_iter_, predictor_data):
-
-            if n_iter_ != len(predictor_data):
-                raise ValueError(
-                    "number of items in predictor_data not equal to n_iter_"
-                )
-
-            self.n_iter_ = n_iter_
-
-            self._predictors = [[DummyNodes(nodes=data)] for data in predictor_data]
-
-    predictor_1 = np.rec.fromarrays(
-        (np.array([1, 2, 3]), np.array([4, 5, 6])), names=("col", "col2")
+    model = HistGradientBoostingRegressor(
+        max_iter=1, max_depth=2, learning_rate=1, min_samples_leaf=1
     )
 
-    predictor_2 = np.rec.fromarrays(
-        (np.array([8, 3, 4]), np.array([2, 3, 9])), names=("col", "col2")
-    )
+    model.fit(handcrafted_data[["a", "b"]], handcrafted_data["response"])
 
-    # set the _predictors and n_iter_ attributes to known values
-    dummy_model = DummyModel(n_iter_=2, predictor_data=[predictor_1, predictor_2])
+    extracted_tree_data = sklearn._extract_hist_gbm_tree_data(model)
 
-    results = sklearn._extract_hist_gbm_tree_data(dummy_model)
-
-    expected_results = pd.DataFrame(
+    expected_tree_data = pd.DataFrame(
         {
-            "node": [0, 1, 2, 0, 1, 2],
-            "col": [1, 2, 3, 8, 3, 4],
-            "col2": [4, 5, 6, 2, 3, 9],
-            "tree": [0, 0, 0, 1, 1, 1],
-        },
-        index=[0, 1, 2, 0, 1, 2],
+            "node": [0, 1, 2, 3, 4, 5, 6],
+            "value": [175.0, 225.0, 250.0, 200.0, 125.0, 150.0, 100.0],
+            "count": [8, 4, 2, 2, 4, 2, 2],
+            "feature_idx": [0, 1, 0, 0, 1, 0, 0],
+            "num_threshold": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            "missing_go_to_left": [0, 0, 0, 0, 0, 0, 0],
+            "left": [1, 2, 0, 0, 5, 0, 0],
+            "right": [4, 3, 0, 0, 6, 0, 0],
+            "gain": [20000.0, 2500.0, -1.0, -1.0, 2500.0, -1.0, -1.0],
+            "depth": [0, 1, 2, 2, 1, 2, 2],
+            "is_leaf": [0, 0, 1, 1, 0, 1, 1],
+            "bin_threshold": [0, 0, 0, 0, 0, 0, 0],
+            "is_categorical": [0, 0, 0, 0, 0, 0, 0],
+            "bitset_idx": [0, 0, 0, 0, 0, 0, 0],
+            "tree": [0, 0, 0, 0, 0, 0, 0],
+        }
     )
 
-    pd.testing.assert_frame_equal(results, expected_results)
-
-
-@pytest.mark.skip(reason="not implemented")
-def test_output_values():
-    """Test that the values output are correct for a simple, known tree."""
-
-    pass
+    pd.testing.assert_frame_equal(
+        extracted_tree_data, expected_tree_data, check_dtype=False
+    )

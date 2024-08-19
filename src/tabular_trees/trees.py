@@ -11,16 +11,10 @@ from . import checks
 
 
 class BaseModelTabularTrees(ABC):
-    """Abstract base class for model specific TabularTrees classes.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        Model specific tree data in tabular structure.
-
-    """
+    """Abstract base class for model specific TabularTrees classes."""
 
     trees: pd.DataFrame
+    """Tree data."""
 
     @property
     @abstractmethod
@@ -39,16 +33,28 @@ class BaseModelTabularTrees(ABC):
 
         Processing on the trees attribute is as follows;
         - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by tree and node columns
+        - Rows are sorted by SORT_BY_COLUMNS columns
         - The index is reset and original index dropped.
 
         Raises
         ------
+        AttributeError
+            If object does not have trees attribute.
+
         TypeError
-            If self.trees is not a pd.DataFrame.
+            If trees attribute is not a pd.DataFrame.
+
+        TypeError
+            If REQUIRED_COLUMNS attribute is not a list.
+
+        TypeError
+            If SORT_BY_COLUMNS attribute is not a list.
 
         ValueError
-            If REQUIRED_COLUMNS are not in self.trees.
+            If REQUIRED_COLUMNS are not in trees attribute.
+
+        ValueError
+            If SORT_BY_COLUMNS is not a subset of REQUIRED_COLUMNS.
 
         """
         if not hasattr(self, "trees"):
@@ -71,18 +77,14 @@ class BaseModelTabularTrees(ABC):
 
 
 @dataclass
-class TabularTrees:
-    """Generic tree structure in tabular format.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Tree data in tabular structure.
-
-    """
+class TabularTrees(BaseModelTabularTrees):
+    """Generic tree structure in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
+
     get_root_node_given_tree: Callable
+    """Function that returns the name of the root node for a given tree index."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -96,11 +98,48 @@ class TabularTrees:
         "count",
         "prediction",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame, get_root_node_given_tree: Callable):
+        """Initialise the TabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            Tree data in tabular structure.
+
+        """
+        self.trees = trees
+        self.get_root_node_given_tree = get_root_node_given_tree
+
+        checks.check_condition(
+            callable(self.get_root_node_given_tree),
+            "get_root_node_given_tree is callable",
+        )
+
+        self.__post_init__()
 
 
 @singledispatch
 def export_tree_data(model: Any) -> BaseModelTabularTrees:
-    """Export tree data from passed model."""
+    """Export tree data from model.
+
+    The model types that are supported depend on the packages that are installed in the
+    Python environment that tabular_trees is running. For example if xgboost is
+    installed then xgboost Booster objects can be exported.
+
+    Parameters
+    ----------
+    model : Any
+        Model to export tree data from.
+
+    Raises
+    ------
+    NotImplementedError
+        If the type of the passed model is not supported.
+
+    """
     raise NotImplementedError(f"model type not supported; {type(model)}")

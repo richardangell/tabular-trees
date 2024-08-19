@@ -24,17 +24,10 @@ from .trees import BaseModelTabularTrees, export_tree_data
 
 @dataclass
 class ScikitLearnTabularTrees(BaseModelTabularTrees):
-    """Scikit-learn GradientBoosting trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        GradientBoostingRegressor or Classifier tree data extracted from
-        .estimators_ attribute.
-
-    """
+    """Scikit-Learn GradientBoosting trees in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -48,23 +41,48 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
         "value",
         "weighted_n_node_samples",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the ScikitLearnTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            GradientBoostingRegressor or Classifier tree data extracted from
+            the .estimators_ attribute.
+
+        Examples
+        --------
+        >>> from sklearn.datasets import load_diabetes
+        >>> from sklearn.ensemble import GradientBoostingRegressor
+        >>> from tabular_trees import export_tree_data
+        >>> # load data
+        >>> diabetes = load_diabetes()
+        >>> # build model
+        >>> model = GradientBoostingRegressor(max_depth=3, n_estimators=10)
+        >>> model.fit(diabetes["data"], diabetes["target"])
+        GradientBoostingRegressor(n_estimators=10)
+        >>> # export to ScikitLearnTabularTrees
+        >>> sklearn_tabular_trees = export_tree_data(model)
+        >>> type(sklearn_tabular_trees)
+        <class 'tabular_trees.sklearn.ScikitLearnTabularTrees'>
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
 
 @dataclass
 class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
-    """Scikit-learn HistGradientBoosting trees in tabular format.
-
-    Parameters
-    ----------
-    trees : pd.DataFrame
-        HistGradientBoostingRegressor or Classifier tree data extracted from
-        ._predictors attribute.
-
-    """
+    """Scikit-Learn HistGradientBoosting trees in tabular format."""
 
     trees: pd.DataFrame
+    """Tree data."""
 
     REQUIRED_COLUMNS = [
         "tree",
@@ -83,13 +101,45 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         "is_categorical",
         "bitset_idx",
     ]
+    """List of columns required in tree data."""
 
     SORT_BY_COLUMNS = ["tree", "node"]
+    """List of columns to sort tree data by."""
+
+    def __init__(self, trees: pd.DataFrame):
+        """Initialise the ScikitLearnHistTabularTrees object.
+
+        Parameters
+        ----------
+        trees : pd.DataFrame
+            HistGradientBoostingRegressor or Classifier tree data extracted from
+            _predictors attribute.
+
+        Examples
+        --------
+        >>> from sklearn.datasets import load_diabetes
+        >>> from sklearn.ensemble import HistGradientBoostingRegressor
+        >>> from tabular_trees import export_tree_data
+        >>> # load data
+        >>> diabetes = load_diabetes()
+        >>> # build model
+        >>> model = HistGradientBoostingRegressor(max_depth=3, max_iter=10)
+        >>> model.fit(diabetes["data"], diabetes["target"])
+        HistGradientBoostingRegressor(max_depth=3, max_iter=10)
+        >>> # export to ScikitLearnHistTabularTrees
+        >>> sklearn_tabular_trees = export_tree_data(model)
+        >>> type(sklearn_tabular_trees)
+        <class 'tabular_trees.sklearn.ScikitLearnHistTabularTrees'>
+
+        """
+        self.trees = trees
+
+        self.__post_init__()
 
 
 @export_tree_data.register(HistGradientBoostingClassifier)
 @export_tree_data.register(HistGradientBoostingRegressor)
-def export_tree_data__hist_gradient_boosting_model(
+def _export_tree_data__hist_gradient_boosting_model(
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
 ) -> ScikitLearnHistTabularTrees:
     """Export tree data from HistGradientBoostingRegressor or Classifier object.
@@ -143,12 +193,24 @@ def _extract_hist_gbm_tree_data(
 
     tree_data = pd.concat(tree_data_list, axis=0)
 
+    starting_value = _get_starting_value_hist_gradient_booster(model)
+    tree_data.loc[tree_data["tree"] == 0, "value"] = (
+        tree_data.loc[tree_data["tree"] == 0, "value"] + starting_value
+    )
+
     return tree_data
+
+
+def _get_starting_value_hist_gradient_booster(
+    model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
+) -> Union[int, float]:
+    """Extract the initial prediction for the ensemble."""
+    return model._baseline_prediction[0][0]
 
 
 @export_tree_data.register(GradientBoostingClassifier)
 @export_tree_data.register(GradientBoostingRegressor)
-def export_tree_data__gradient_boosting_model(
+def _export_tree_data__gradient_boosting_model(
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
 ) -> ScikitLearnTabularTrees:
     """Export tree data from GradientBoostingRegressor or Classifier object.
@@ -201,6 +263,13 @@ def _extract_gbm_tree_data(
     tree_data = pd.concat(tree_data_list, axis=0)
 
     return tree_data
+
+
+def _get_starting_value_gradient_booster(
+    model: Union[GradientBoostingClassifier, GradientBoostingRegressor]
+) -> Union[int, float]:
+    """Extract the initial prediction for the ensemble."""
+    return model.init_.constant_[0][0]
 
 
 def _extract_tree_data(tree: Tree) -> pd.DataFrame:

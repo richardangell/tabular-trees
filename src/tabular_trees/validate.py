@@ -12,34 +12,46 @@ from .trees import TabularTrees
 
 @dataclass
 class MonotonicConstraintResults:
-    """Results of checking monotonic constraints.
-
-    Attributes
-    ----------
-    summary : dict[str, bool]
-        Summary of whether monotonic constraints are met. Keys give variable names and
-        values indicate if the constraint is met.
-
-    constraints : dict[str, int]
-        Monotonic constraints. Keys give variable names and values define the
-        constraints. A value of 1 is a monotonically increasing constraint and a value
-        of -1 is a monotonically decreasing constraint.
-
-    results : pd.DataFrame
-        Detailed breakdown of whether constraints are met at split level in trees.
-
-    all_constraints_met : bool
-        Are all of the monotonic constraints met.
-
-    """
+    """Results of checking monotonic constraints."""
 
     summary: dict[str, bool]
-    constraints: dict[str, int]
-    results: pd.DataFrame = field(repr=False)
-    all_constraints_met: bool = field(init=False)
+    """Summary of whether monotonic constraints are met."""
 
-    def __post_init__(self):
-        """Set constraints_met attribute."""
+    constraints: dict[str, int]
+    """Monotonic constraints."""
+
+    results: pd.DataFrame = field(repr=False)
+    """Detailed breakdown of whether constraints are met at split level in trees."""
+
+    all_constraints_met: bool = field(init=False)
+    """Are all of the monotonic constraints met."""
+
+    def __init__(
+        self,
+        summary: dict[str, bool],
+        constraints: dict[str, int],
+        results: pd.DataFrame,
+    ):
+        """Initialise the MonotonicConstraintResults object.
+
+        Parameters
+        ----------
+        summary : dict[str, bool]
+            Summary of whether monotonic constraints are met. Keys give variable names
+            and values indicate if the constraint is met.
+
+        constraints : dict[str, int]
+            Monotonic constraints. Keys give variable names and values define the
+            constraints. A value of 1 is a monotonically increasing constraint and a
+            value of -1 is a monotonically decreasing constraint.
+
+        results : pd.DataFrame
+            Detailed breakdown of whether constraints are met at split level in trees.
+
+        """
+        self.summary = summary
+        self.constraints = constraints
+        self.results = results
         self.all_constraints_met = self._all_constraints_met()
 
     def _all_constraints_met(self) -> bool:
@@ -66,6 +78,32 @@ def validate_monotonic_constraints(
 
     return_detailed_results : bool, defualt=False
         Should detailed breakdown of every split be returned?
+
+    Examples
+    --------
+    >>> import xgboost as xgb
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from tabular_trees import export_tree_data
+    >>> from tabular_trees.validate import validate_monotonic_constraints
+    >>> # get data in DMatrix
+    >>> diabetes = load_diabetes()
+    >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"], feature_names=diabetes["feature_names"])
+    >>> # define monotonic constraints
+    >>> feature_names = diabetes["feature_names"]
+    >>> constraints = pd.Series([0] * len(feature_names), index=feature_names)
+    >>> constraints.loc[constraints.index.isin(["bmi", "s5"])] = -1
+    >>> constraints.loc[constraints.index.isin(["bp", "age"])] = 1
+    >>> constraints_dict = constraints.loc[constraints != 0].to_dict()
+    >>> # build model
+    >>> params = {"max_depth": 3, "verbosity": 0, "monotone_constraints": tuple(constraints)}
+    >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+    >>> # export to TabularTrees
+    >>> xgboost_tabular_trees = export_tree_data(model)
+    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> # check monotonic constraints
+    >>> validate_monotonic_constraints(tabular_trees, constraints=constraints_dict)
+    MonotonicConstraintResults(summary={'age': True, 'bp': True, 's5': True}, constraints={'age': 1, 'bmi': -1, 'bp': 1, 's5': -1}, all_constraints_met=True)
 
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
@@ -110,7 +148,7 @@ def _validate_monotonic_constraints(
     monotonicity_check_list: list[pd.DataFrame] = []
 
     # loop through each tree
-    for tree_no in range(trees_df["tree"].max()):
+    for tree_no in trees_df["tree"].unique():
 
         tree_df = trees_df.loc[trees_df["tree"] == tree_no].copy()
         tree_df = _convert_node_columns_to_integer(tree_df)
