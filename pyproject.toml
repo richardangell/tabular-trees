@@ -15,7 +15,7 @@ python = "^3.9"
 tqdm = "4.46.1"
 pandas = "^1.0.0"
 scikit-learn = {version = "^1.0.1", optional = true}
-lightgbm = {version = "^3.0.0", optional = true}
+lightgbm = "4.0.0"
 xgboost = {version = "^1.4.0", optional = true}
 
 [tool.poetry.extras]
