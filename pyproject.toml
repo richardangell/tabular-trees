@@ -100,3 +100,15 @@ filterwarnings = [
     "ignore:This algorithm has very long runtime. It will produce the same results as treeSHAP but will take much longer to run.",
     "ignore:XGBoostDumpParser class is depreceated, Booster.trees_to_dataframe is available instead",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+exclude = ["tests"]
+disallow_untyped_defs = true
+#disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_unused_configs = true
+show_error_codes = true
