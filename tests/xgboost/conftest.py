@@ -120,8 +120,8 @@ def xgb_diabetes_model_parsed_trees_dataframe(
 ) -> pd.DataFrame:
     """Return the trees from xgb_diabetes_model in DataFrame structure.
 
-    Trees are dumped to json and then loaded from there so the data
-    has different column names than if trees_to_dataframe was used.
+    Trees are dumped to json and then loaded from there so the data has different column
+    names than if trees_to_dataframe was used.
 
     """
     json_file = str(tmp_path / "model.json")
@@ -139,8 +139,8 @@ def xgb_diabetes_model_parsed_trees_dataframe_no_stats(
 ) -> pd.DataFrame:
     """Trees from xgb_diabetes_model in DataFrame structure without gain and cover.
 
-    Trees are dumped to json and then loaded from there so the data has different
-    column names than if trees_to_dataframe was used.
+    Trees are dumped to json and then loaded from there so the data has different column
+    names than if trees_to_dataframe was used.
 
     """
     json_file = str(tmp_path / "model.json")

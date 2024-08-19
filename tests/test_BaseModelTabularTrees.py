@@ -13,6 +13,7 @@ class DummyModelTabularTrees(BaseModelTabularTrees):
     """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
     This implements eevrything required to use the class.
+
     """
 
     trees: pd.DataFrame
@@ -52,6 +53,7 @@ class TestBaseModelTabularTreesInitialisation:
             """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
             This impementation does not have the REQUIRED_COLUMNS attribute.
+
             """
 
             trees: pd.DataFrame
@@ -76,6 +78,7 @@ class TestBaseModelTabularTreesInitialisation:
             """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.
 
             This impementation does not have the SORT_BY_COLUMNS attribute.
+
             """
 
             trees: pd.DataFrame
@@ -104,6 +107,7 @@ class TestBaseModelTabularTreesPostInit:
             """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation does will not set a trees attribute.
+
             """
 
             REQUIRED_COLUMNS = ["column1", "column2", "column3"]
@@ -132,6 +136,7 @@ class TestBaseModelTabularTreesPostInit:
             """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation sets REQUIRED_COLUMNS as a str instead of list.
+
             """
 
             trees: pd.DataFrame
@@ -157,6 +162,7 @@ class TestBaseModelTabularTreesPostInit:
             """Dummy BaseModelTabularTrees subclass  mimicking a model-specific class.
 
             This implementation sets SORT_BY_COLUMNS as a str instead of list.
+
             """
 
             trees: pd.DataFrame
@@ -208,6 +214,7 @@ class TestBaseModelTabularTreesPostInit:
 
             This implementation has SORT_BY_COLUMNS set as NOT a subset of
             REQUIRED_COLUMNS.
+
             """
 
             trees: pd.DataFrame

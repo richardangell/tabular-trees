@@ -286,6 +286,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     """Dataclass for XGBoost models that have been parsed from a model dump.
 
     Data maybe have been parsed from text or json file dump.
+
     """
 
     trees: pd.DataFrame
@@ -452,8 +453,8 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     def _combine_leaf_and_gain(self, df: pd.DataFrame) -> pd.DataFrame:
         """Combine the values in the leaf column into the gain column.
 
-        The leaf column should only be populated for leaf nodes (giving their
-        predicted value) and gain should only be populated for interval nodes.
+        The leaf column should only be populated for leaf nodes (giving their predicted
+        value) and gain should only be populated for interval nodes.
 
         """
         leaf_nodes = df["gain"].isnull()
@@ -562,12 +563,10 @@ class JsonDumpReader(DumpReader):
     def _recursive_pop_children(self, _dict: dict, _list: list):
         """Recursively extract nodes from nested structure and append to list.
 
-        The procedure is as follows;
-        If _dict has no childen i.e. this is a leaf node then convert the dict
-        to a DataFrame and append to _list.
-        Otherwise remove children from _dict, convert the remaining items to a
-        DataFrame and append to _list, then call function on left and right
-        children.
+        The procedure is as follows; If _dict has no childen i.e. this is a leaf node
+        then convert the dict to a DataFrame and append to _list. Otherwise remove
+        children from _dict, convert the remaining items to a DataFrame and append to
+        _list, then call function on left and right children.
 
         """
         if "children" in _dict:

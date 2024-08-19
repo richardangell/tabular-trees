@@ -84,15 +84,15 @@ def two_way_monotonic_increase_x2() -> pd.DataFrame:
     """2 way interaction that is monotonically increasing across both factors.
 
     Data is as follows:
-    a	b	response
-    -1	-1	130
-    -1	-1	130
-    -1	1	180
-    -1	1	180
-    1	-1	380
-    1	-1	380
-    1	1	420
-    1	1	420
+     a   b      response
+    -1  -1      130
+    -1  -1      130
+    -1   1      180
+    -1   1      180
+     1  -1      380
+     1  -1      380
+     1   1      420
+     1   1      420
 
     """
     data = pd.DataFrame(
@@ -111,15 +111,15 @@ def two_way_monotonic_increase_decrease() -> pd.DataFrame:
     """2 way interaction where factors are monotonically increasing then decreasing.
 
     Data is as follows:
-    a	b	response
-    -1	-1	180
-    -1	-1	180
-    -1	1	130
-    -1	1	130
-    1	-1	420
-    1	-1	420
-    1	1	380
-    1	1	380
+     a   b      response
+    -1  -1      180
+    -1  -1      180
+    -1   1      130
+    -1   1      130
+     1  -1      420
+     1  -1      420
+     1   1      380
+     1   1      380
 
     """
     data = pd.DataFrame(
@@ -138,15 +138,15 @@ def two_way_monotonic_decrease_increase() -> pd.DataFrame:
     """2 way interaction where factors are monotonically decreasing then increasing.
 
     Data is as follows:
-    a	b	response
-    -1	-1	380
-    -1	-1	380
-    -1	1	420
-    -1	1	420
-    1	-1	130
-    1	-1	130
-    1	1	180
-    1	1	180
+     a   b      response
+    -1  -1      380
+    -1  -1      380
+    -1   1      420
+    -1   1      420
+     1  -1      130
+     1  -1      130
+     1   1      180
+     1   1      180
 
     """
     data = pd.DataFrame(
@@ -165,15 +165,15 @@ def two_way_monotonic_decrease_x2() -> pd.DataFrame:
     """2 way interaction that is monotonically decreasing for boths factors.
 
     Data is as follows:
-    a	b	response
-    -1	-1	420
-    -1	-1	420
-    -1	1	380
-    -1	1	380
-    1	-1	180
-    1	-1	180
-    1	1	130
-    1	1	130
+     a   b      response
+    -1  -1      420
+    -1  -1      420
+    -1   1      380
+    -1   1      380
+     1  -1      180
+     1  -1      180
+     1   1      130
+     1   1      130
 
     """
     data = pd.DataFrame(

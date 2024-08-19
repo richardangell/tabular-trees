@@ -275,7 +275,11 @@ class ShapleyValues:
     """Shapley values results."""
 
     summary: pd.DataFrame
-    """Shapley values at feature level. Average of permutations over features."""
+    """Shapley values at feature level.
+
+    Average of permutations over features.
+
+    """
 
     permutations: pd.DataFrame = field(repr=False)
     """Shapley values for each feature permutation and tree."""

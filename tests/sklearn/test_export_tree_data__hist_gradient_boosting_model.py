@@ -25,6 +25,7 @@ def test_multiple_responses_exception(sklearn_iris_hist_gbm_classifier):
     """Test an error is raised if the model passed has multiple responses.
 
     An example would be a multiclass classification model.
+
     """
     with pytest.raises(
         NotImplementedError, match="model with multiple responses not supported"

@@ -28,6 +28,7 @@ class TestInit:
             """Return a constant of 0.
 
             Dummy function to pass into get_root_node_given_tree argument.
+
             """
             return 0
 
@@ -61,6 +62,7 @@ class TestInit:
             """Return a constant of 0.
 
             Dummy function to pass into get_root_node_given_tree argument.
+
             """
             return 0
 
@@ -80,6 +82,7 @@ class TestInit:
             """Return constant of 0.
 
             Dummy function to pass into get_root_node_given_tree argument.
+
             """
             return 0
 

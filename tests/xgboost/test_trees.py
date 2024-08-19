@@ -338,6 +338,7 @@ class TestParsedXGBoostTabularTreesPostInit:
         """Test a ValueError is raised if the tree data is missing stats columns.
 
         Cover and gain columns are required.
+
         """
         expected_exception_message = (
             "Cannot create ParsedXGBoostTabularTrees object unless statistics "

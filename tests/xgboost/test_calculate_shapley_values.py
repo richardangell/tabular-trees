@@ -9,23 +9,22 @@ from tabular_trees.trees import export_tree_data
 
 @pytest.fixture()
 def handcrafted_shap_data() -> tuple[pd.DataFrame, pd.Series]:
-    """Handcrafted data where shapley values are easy to hand calculate.
+    """Handcrafted data where shapley values are easy to hand calculate."""
+    # fmt: off
+    # data below has 10 rows as follows:
+    #   x	y	z	response
+    #	206	108	114	10
+    #	206	380	390	10
+    #	206	179	340	10
+    #	206	153	380	10
+    #	206	166	243	10
+    #	194	326	328	20
+    #	6	299	158	50
+    #	6	299	237	50
+    #	6	301	193	30
+    #	6	301	186	30
+    # fmt: on
 
-    Data has 10 rows and looks as follows;
-
-        x	y	z	response
-    0	206	108	114	10
-    1	206	380	390	10
-    2	206	179	340	10
-    3	206	153	380	10
-    4	206	166	243	10
-    5	194	326	328	20
-    6	6	299	158	50
-    7	6	299	237	50
-    8	6	301	193	30
-    9	6	301	186	30
-
-    """
     np.random.seed(100)
     x_train = pd.DataFrame(
         {
@@ -46,9 +45,8 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
     """Single decision tree on the handcrafted shap data.
 
     The model includes no regularisation and learning rate of 1 so that the leaf node
-    predictions are exactly the average of the values falling into the leaves. The
-    model has depth 2 and with the supplied data is able to fit exaclty to the
-    response.
+    predictions are exactly the average of the values falling into the leaves. The model
+    has depth 2 and with the supplied data is able to fit exaclty to the response.
 
     """
     x_train, y_train = handcrafted_shap_data

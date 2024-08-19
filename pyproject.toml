@@ -89,3 +89,8 @@ convention = "numpy"
 "*/__init__.py" = [
     "F401", # Unused import
 ]
+
+[tool.docformatter]
+wrap-summaries = 88
+wrap-descriptions = 88
+blank = true
