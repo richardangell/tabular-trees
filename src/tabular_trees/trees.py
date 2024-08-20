@@ -18,13 +18,13 @@ class BaseModelTabularTrees(ABC):
 
     @property
     @abstractmethod
-    def REQUIRED_COLUMNS(self):  # noqa: N802
+    def REQUIRED_COLUMNS(self) -> list[str]:  # noqa: N802
         """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("REQUIRED_COLUMNS attribute not defined")
 
     @property
     @abstractmethod
-    def SORT_BY_COLUMNS(self):  # noqa: N802
+    def SORT_BY_COLUMNS(self) -> list[str]:  # noqa: N802
         """Attribute that must be defined in BaseModelTabularTrees subclasses."""
         raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
 

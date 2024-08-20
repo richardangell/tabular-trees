@@ -23,8 +23,8 @@ class DummyDumpReader(DumpReader):
         return super().read_dump(file)
 
 
-class TestDumpReaderReadDump:
-    """Tests for the DumpReader.read_dump abstract method."""
+class TestDumpReaderCheckFileExists:
+    """Tests for the DumpReader.check_file_exists abstract method."""
 
     def test_file_not_str_exception(self):
         """Test that a TypeError is raised if file is not a str."""
@@ -34,7 +34,7 @@ class TestDumpReaderReadDump:
             TypeError,
             match="file is not in expected types <class 'str'>, got <class 'list'>",
         ):
-            dump_reader.read_dump([1, 2, 3])
+            dump_reader.check_file_exists([1, 2, 3])
 
     def test_file_does_not_exist_exception(self):
         """Test that a ValueError is raised if file does not exist."""
@@ -44,7 +44,7 @@ class TestDumpReaderReadDump:
             ValueError,
             match=re.escape("condition: [does_not_exist.txt exists] not met"),
         ):
-            dump_reader.read_dump("does_not_exist.txt")
+            dump_reader.check_file_exists("does_not_exist.txt")
 
 
 class TestDumpReaderImplementations:

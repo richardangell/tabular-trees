@@ -114,7 +114,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         self.__post_init__()
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Post init checks on regularisation parameters.
 
         Raises
@@ -368,7 +368,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
         self.__post_init__()
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Check that STATS_COLUMNS are present in the data."""
         checks.check_condition(
             all(column in self.trees.columns.values for column in self.STATS_COLUMNS),
@@ -441,7 +441,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
 
     def _create_category_column(self, df: pd.DataFrame) -> pd.DataFrame:
         """Create the Category column in df."""
-        df["Category"] = np.NaN
+        df["Category"] = np.nan
         return df
 
     def _populate_leaf_node_split_column(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -492,7 +492,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
             df["tree"].astype(str) + "-" + df[column].astype("Int64").astype(str)
         )
 
-        df.loc[null_rows, column] = np.NaN
+        df.loc[null_rows, column] = np.nan
 
         return df
 
@@ -502,13 +502,17 @@ class DumpReader(ABC):
 
     @property
     @abstractmethod
-    def dump_type(self):
+    def dump_type(self) -> str:
         """Attribute indicating the model dump format supported."""
         raise NotImplementedError
 
     @abstractmethod
-    def read_dump(self, file: str) -> None:
+    def read_dump(self, file: str) -> pd.DataFrame:
         """Read xgboost model dump, in specific format."""
+        raise NotImplementedError
+
+    def check_file_exists(self, file: str) -> None:
+        """Check passed file exists."""
         checks.check_type(file, str, "file")
         checks.check_condition(Path(file).exists(), f"{file} exists")
 
@@ -534,7 +538,7 @@ class JsonDumpReader(DumpReader):
             the output DataFrame.
 
         """
-        super().read_dump(file)
+        super().check_file_exists(file)
 
         with open(file) as f:
             j = json.load(f)
@@ -560,7 +564,7 @@ class JsonDumpReader(DumpReader):
 
         return trees_df
 
-    def _recursive_pop_children(self, _dict: dict, _list: list):
+    def _recursive_pop_children(self, _dict: dict, _list: list) -> None:
         """Recursively extract nodes from nested structure and append to list.
 
         The procedure is as follows; If _dict has no childen i.e. this is a leaf node
@@ -581,7 +585,7 @@ class JsonDumpReader(DumpReader):
         else:
             _list.append(pd.DataFrame(_dict, index=[_dict["nodeid"]]))
 
-    def _fill_depth_for_terminal_nodes(self, df: pd.DataFrame):
+    def _fill_depth_for_terminal_nodes(self, df: pd.DataFrame) -> pd.DataFrame:
         """Fill in the depth column for terminal nodes.
 
         The json dump from xgboost does not contain this information.
@@ -625,7 +629,7 @@ class TextDumpReader(DumpReader):
             the output DataFrame.
 
         """
-        super().read_dump(file)
+        super().check_file_exists(file)
 
         with open(file) as f:
             lines = f.readlines()

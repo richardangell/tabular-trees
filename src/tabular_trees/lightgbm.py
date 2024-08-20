@@ -130,7 +130,7 @@ def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
 class FloatFixedString(float):
     """Float with a defined string representation."""
 
-    def __new__(cls, value, string_representation: str):
+    def __new__(cls, value, string_representation: str) -> "FloatFixedString":
         """Create and return a new object."""
         return float.__new__(cls, value)
 
@@ -138,11 +138,11 @@ class FloatFixedString(float):
         float.__init__(value)
         self.string_representation = string_representation
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the fixed string representation for the float."""
         return self.string_representation
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the fixed string representation for the float."""
         return self.string_representation
 
@@ -208,7 +208,7 @@ class BoosterHeader:
     new_line: str = field(init=False, repr=False, default="\n")
     header_attributes: list[str] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set the header_attributes value."""
         self.header_attributes = [
             "version",
@@ -273,7 +273,7 @@ class BoosterTree:
     new_line: str = field(init=False, repr=False, default="\n")
     tree_attributes: list[str] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set the tree_attributes value."""
         self.tree_attributes = [
             "tree",
@@ -359,7 +359,7 @@ class BoosterString:
 
     def _booster_to_string(self, booster: lgb.Booster) -> list[str]:
         """Export Booster object to string and split by line breaks."""
-        booster_string = booster.model_to_string()
+        booster_string: str = booster.model_to_string()
         booster_string_split = booster_string.split(self.new_line)
 
         return booster_string_split
@@ -447,7 +447,7 @@ class BoosterString:
 
         return lgb.Booster(model_str=booster_string)
 
-    def to_editable_booster(self):
+    def to_editable_booster(self) -> "EditableBooster":
         """Export the BoosterString an EditableBooster object."""
         return BoosterStringToEditableBoosterConverter.convert(self)
 

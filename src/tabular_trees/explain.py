@@ -105,7 +105,7 @@ def decompose_prediction(
 
 def _decompose_prediction(
     trees_df: pd.DataFrame, row: pd.DataFrame, calculate_root_node: Callable
-):
+) -> PredictionDecomposition:
     """Decompose prediction from tree based model with Saabas method.
 
     Parameters
@@ -175,7 +175,7 @@ def _find_path_to_leaf_node(
         current_node["value"] = row[current_node["feature"]].values[0]
 
     else:
-        current_node["value"] = np.NaN
+        current_node["value"] = np.nan
 
     path = pd.concat([path, current_node], axis=0)
 
@@ -221,7 +221,7 @@ def _find_path_to_leaf_node(
     return path
 
 
-def _calculate_change_in_node_predictions(path: pd.DataFrame):
+def _calculate_change_in_node_predictions(path: pd.DataFrame) -> pd.DataFrame:
     """Calcualte change in node prediction through a particular path through the tree.
 
     Parameters
@@ -410,7 +410,7 @@ def _convert_node_columns_to_integer(tree_df: pd.DataFrame) -> pd.DataFrame:
     return tree_df
 
 
-def _shapley_values_tree(tree_df, row) -> ShapleyValues:
+def _shapley_values_tree(tree_df: pd.DataFrame, row: pd.Series) -> ShapleyValues:
     """Calculate shapley values for single tree.
 
     Parameters
@@ -475,15 +475,13 @@ def _shapley_values_tree(tree_df, row) -> ShapleyValues:
     for i, feature_permutation in enumerate(
         tqdm(itertools.permutations(features), total=factorial(len(features)))
     ):
-        feature_permutation = list(feature_permutation)
-
         selected_features = []
 
         current_prediction = mean_prediction
 
         contributions = {
             "bias": mean_prediction,
-            "permutation": str(feature_permutation),
+            "permutation": str(list(feature_permutation)),
         }
 
         for feature in feature_permutation:
@@ -504,7 +502,7 @@ def _shapley_values_tree(tree_df, row) -> ShapleyValues:
     return _format_shapley_value_for_tree(results_list, tree_number)
 
 
-def _expvalue(x, s, tree):
+def _expvalue(x: pd.Series, s: list, tree: pd.DataFrame) -> float:
     """Estimate E[f(x)|x_S].
 
     Algorithm 1 from Consistent Individualized Feature Attribution for Tree Ensembles.
@@ -536,7 +534,7 @@ def _expvalue(x, s, tree):
     return _g(0, 1, x, s, tree)
 
 
-def _g(j, w, x, s, tree):
+def _g(j: int, w: float, x: pd.Series, s: list, tree: pd.DataFrame) -> float:
     """Recusively traverse down tree and return prediction for x.
 
     This algorithm follows the route allowed by the features in s, if a node is
@@ -561,7 +559,7 @@ def _g(j, w, x, s, tree):
         Tree structure in tabular form
 
     """
-    v = tree["v"].tolist()
+    v: list[float] = tree["v"].tolist()
     a = tree["a"].tolist()
     b = tree["b"].tolist()
     t = tree["t"].tolist()

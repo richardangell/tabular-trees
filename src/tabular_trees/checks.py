@@ -1,14 +1,14 @@
 """Module containing checks to be used elsewhere in the package."""
 
 import abc
-from typing import Any, Callable
+from typing import Any, Callable, Type
 
 import pandas as pd
 
 
 def check_type(
     obj: Any,
-    expected_types,  # type: ignore
+    expected_types: Type | tuple[Type, ...],
     obj_name: str,
     none_allowed: bool = False,
 ) -> None:
@@ -48,7 +48,7 @@ def check_type(
         )
 
 
-def check_condition(condition: bool, error_message_text: str):
+def check_condition(condition: bool, error_message_text: str) -> None:
     """Check that condition, which evaluates to a bool, is True.
 
     Parameters
@@ -73,7 +73,11 @@ def check_condition(condition: bool, error_message_text: str):
         raise ValueError(f"condition: [{error_message_text}] not met")
 
 
-def check_df_columns(df, expected_columns, allow_unspecified_columns=False):
+def check_df_columns(
+    df: pd.DataFrame,
+    expected_columns: list[str],
+    allow_unspecified_columns: bool = False,
+) -> None:
     """Check if a pd.DataFrame has expected columns.
 
     Extra columns can be allowed by specifying the allow_unspecified_columns argument.
