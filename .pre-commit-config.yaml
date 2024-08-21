@@ -16,7 +16,13 @@ repos:
     hooks:
     -   id: mypy
         args: [--config-file, ./pyproject.toml]
-        additional_dependencies: [pandas-stubs==2.2.2.240807, types-tqdm==4.66.0.20240417]
+        additional_dependencies: [
+          pandas-stubs==2.2.2.240807,
+          types-tqdm==4.66.0.20240417,
+          lightgbm==4.0.0,
+          scikit-learn==1.2.1,
+          xgboost==1.7.4,
+        ] 
 
   - repo: https://github.com/pycqa/docformatter
     rev: v1.7.5

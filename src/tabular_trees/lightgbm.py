@@ -2,13 +2,18 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Optional, Union
+from typing import Optional, Union, SupportsFloat, SupportsIndex
 
 import lightgbm as lgb
 import pandas as pd
+from typing_extensions import Buffer, TypeAlias
 
 from . import checks
 from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
+
+
+ReadableBuffer: TypeAlias = Buffer  # stable
+ConvertibleToFloat: TypeAlias = str | ReadableBuffer | SupportsFloat | SupportsIndex
 
 
 def lightgbm_get_root_node_given_tree(tree: int) -> str:
@@ -130,11 +135,11 @@ def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
 class FloatFixedString(float):
     """Float with a defined string representation."""
 
-    def __new__(cls, value, string_representation: str) -> "FloatFixedString":
+    def __new__(cls, value: ConvertibleToFloat, string_representation: str) -> "FloatFixedString":
         """Create and return a new object."""
         return float.__new__(cls, value)
 
-    def __init__(self, value, string_representation: str):
+    def __init__(self, value: ConvertibleToFloat, string_representation: str):
         float.__init__(value)
         self.string_representation = string_representation
 
