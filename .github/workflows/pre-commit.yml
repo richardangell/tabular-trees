@@ -10,9 +10,17 @@ jobs:
   pre-commit:
     runs-on: macOS-latest
     steps:
+
     - uses: actions/checkout@v3
+    
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+    
+    - name: Install libomp
+      run: |
+        brew update
+        brew install libomp        
+    
     - uses: pre-commit/action@v3.0.0
