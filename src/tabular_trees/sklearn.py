@@ -139,7 +139,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
 
 @export_tree_data.register(HistGradientBoostingClassifier)
 @export_tree_data.register(HistGradientBoostingRegressor)
-def _export_tree_data__hist_gradient_boosting_model(
+def _export_tree_data__hist_gradient_boosting_model(  # type: ignore[no-any-unimported]
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> ScikitLearnHistTabularTrees:
     """Export tree data from HistGradientBoostingRegressor or Classifier object.
@@ -165,7 +165,7 @@ def _export_tree_data__hist_gradient_boosting_model(
     return ScikitLearnHistTabularTrees(tree_data)
 
 
-def _extract_hist_gbm_tree_data(
+def _extract_hist_gbm_tree_data(  # type: ignore[no-any-unimported]
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> pd.DataFrame:
     """Extract tree data from HistGradientBoosting model.
@@ -200,7 +200,7 @@ def _extract_hist_gbm_tree_data(
     return tree_data
 
 
-def _get_starting_value_hist_gradient_booster(
+def _get_starting_value_hist_gradient_booster(  # type: ignore[no-any-unimported]
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
@@ -209,7 +209,7 @@ def _get_starting_value_hist_gradient_booster(
 
 @export_tree_data.register(GradientBoostingClassifier)
 @export_tree_data.register(GradientBoostingRegressor)
-def _export_tree_data__gradient_boosting_model(
+def _export_tree_data__gradient_boosting_model(  # type: ignore[no-any-unimported]
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> ScikitLearnTabularTrees:
     """Export tree data from GradientBoostingRegressor or Classifier object.
@@ -235,7 +235,7 @@ def _export_tree_data__gradient_boosting_model(
     return ScikitLearnTabularTrees(tree_data)
 
 
-def _extract_gbm_tree_data(
+def _extract_gbm_tree_data(  # type: ignore[no-any-unimported]
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> pd.DataFrame:
     """Extract tree data from GradientBoosting model.
@@ -263,14 +263,14 @@ def _extract_gbm_tree_data(
     return tree_data
 
 
-def _get_starting_value_gradient_booster(
+def _get_starting_value_gradient_booster(  # type: ignore[no-any-unimported]
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
     return model.init_.constant_[0][0]  # type: ignore[no-any-return]
 
 
-def _extract_tree_data(tree: Tree) -> pd.DataFrame:
+def _extract_tree_data(tree: Tree) -> pd.DataFrame:  # type: ignore[no-any-unimported]
     """Extract node data from a sklearn.tree._tree.Tree object.
 
     Parameters
