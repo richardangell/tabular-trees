@@ -6,13 +6,13 @@ from typing import Union
 import pandas as pd
 
 try:
-    from sklearn.ensemble import (
+    from sklearn.ensemble import (  # type: ignore[import-not-found]
         GradientBoostingClassifier,
         GradientBoostingRegressor,
         HistGradientBoostingClassifier,
         HistGradientBoostingRegressor,
     )
-    from sklearn.tree._tree import Tree
+    from sklearn.tree._tree import Tree  # type: ignore[import-not-found]
 except ModuleNotFoundError as err:
     raise ImportError(
         "scikit-learn must be installed to use functionality in sklearn module"
@@ -204,7 +204,7 @@ def _get_starting_value_hist_gradient_booster(
     model: Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
-    return model._baseline_prediction[0][0]
+    return model._baseline_prediction[0][0]  # type: ignore[no-any-return]
 
 
 @export_tree_data.register(GradientBoostingClassifier)
@@ -267,7 +267,7 @@ def _get_starting_value_gradient_booster(
     model: Union[GradientBoostingClassifier, GradientBoostingRegressor],
 ) -> Union[int, float]:
     """Extract the initial prediction for the ensemble."""
-    return model.init_.constant_[0][0]
+    return model.init_.constant_[0][0]  # type: ignore[no-any-return]
 
 
 def _extract_tree_data(tree: Tree) -> pd.DataFrame:
