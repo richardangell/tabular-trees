@@ -455,7 +455,7 @@ class BoosterString:
 
     def to_editable_booster(self) -> "EditableBooster":
         """Export the BoosterString an EditableBooster object."""
-        return BoosterStringToEditableBoosterConverter.convert(self)
+        return BoosterStringToEditableBoosterConverter().convert(booster_string=self)
 
     def extract_header_rows(self) -> list[str]:
         """Extract the header rows from BoosterString object."""
