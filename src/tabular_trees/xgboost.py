@@ -7,7 +7,7 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -636,7 +636,7 @@ class TextDumpReader(DumpReader):
 
         tree_no = -1
 
-        lines_list: list[dict[str, Union[int, float, str]]] = []
+        lines_list: list[dict] = []
 
         for i in range(len(lines)):
             # if line is a new tree
@@ -645,7 +645,7 @@ class TextDumpReader(DumpReader):
 
             # else if node row
             else:
-                line_dict: dict[str, Union[int, float, str]] = {}
+                line_dict: dict = {}
 
                 # remove \n from end and any \t from start
                 node_str = lines[i][: len(lines[i]) - 1].replace("\t", "")
@@ -707,7 +707,7 @@ class TextDumpReader(DumpReader):
 
                 lines_list.append(line_dict)
 
-        lines_df = pd.DataFrame.from_dict(lines_list)
+        lines_df = pd.DataFrame.from_records(lines_list)
 
         if "cover" in lines_df.columns.values:
             lines_df["cover"] = lines_df["cover"].astype(int)
