@@ -9,23 +9,22 @@ from tabular_trees.trees import export_tree_data
 
 @pytest.fixture()
 def handcrafted_shap_data() -> tuple[pd.DataFrame, pd.Series]:
-    """Handcrafted data where shapley values are easy to hand calculate.
+    """Handcrafted data where shapley values are easy to hand calculate."""
+    # fmt: off
+    # data below has 10 rows as follows:
+    #   x	y	z	response
+    #	206	108	114	10
+    #	206	380	390	10
+    #	206	179	340	10
+    #	206	153	380	10
+    #	206	166	243	10
+    #	194	326	328	20
+    #	6	299	158	50
+    #	6	299	237	50
+    #	6	301	193	30
+    #	6	301	186	30
+    # fmt: on
 
-    Data has 10 rows and looks as follows;
-
-        x	y	z	response
-    0	206	108	114	10
-    1	206	380	390	10
-    2	206	179	340	10
-    3	206	153	380	10
-    4	206	166	243	10
-    5	194	326	328	20
-    6	6	299	158	50
-    7	6	299	237	50
-    8	6	301	193	30
-    9	6	301	186	30
-
-    """
     np.random.seed(100)
     x_train = pd.DataFrame(
         {
@@ -46,9 +45,8 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
     """Single decision tree on the handcrafted shap data.
 
     The model includes no regularisation and learning rate of 1 so that the leaf node
-    predictions are exactly the average of the values falling into the leaves. The
-    model has depth 2 and with the supplied data is able to fit exaclty to the
-    response.
+    predictions are exactly the average of the values falling into the leaves. The model
+    has depth 2 and with the supplied data is able to fit exaclty to the response.
 
     """
     x_train, y_train = handcrafted_shap_data
@@ -76,20 +74,20 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
 
 def test_tabular_trees_not_tabular_trees_exception():
     """Test an exception is raised if tabular_trees is not a TabularTrees object."""
-
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 
     with pytest.raises(
         TypeError,
-        match="tabular_trees is not in expected types <class 'tabular_trees.trees.TabularTrees'>",
+        match=(
+            "tabular_trees is not in expected types "
+            "<class 'tabular_trees.trees.TabularTrees'>"
+        ),
     ):
-
         calculate_shapley_values(12345, row_to_explain)
 
 
 def test_row_not_series_exception(handcrafted_shap_model):
     """Test an exception is raised if row is not a pd.Series object."""
-
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
@@ -97,13 +95,11 @@ def test_row_not_series_exception(handcrafted_shap_model):
         TypeError,
         match="row is not in expected types <class 'pandas.core.series.Series'>",
     ):
-
         calculate_shapley_values(tabular_trees, 12345)
 
 
 def test_output_type(handcrafted_shap_model):
     """Test the output from calculate_shapley_values is a ShapleyValues object."""
-
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
     tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
 
@@ -124,7 +120,6 @@ def test_shapley_values_treeshap_equality(
     xgb_diabetes_model_subset_cols,
 ):
     """Test equality between treeshap from xgboost and calculate_shapley_values."""
-
     # xgboost treeshap implementation
     shapley_values_xgboost = xgb_diabetes_model_subset_cols.predict(
         xgb_diabetes_dmatrix_subset_cols, pred_contribs=True

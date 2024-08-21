@@ -88,7 +88,11 @@ def validate_monotonic_constraints(
     >>> from tabular_trees.validate import validate_monotonic_constraints
     >>> # get data in DMatrix
     >>> diabetes = load_diabetes()
-    >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"], feature_names=diabetes["feature_names"])
+    >>> data = xgb.DMatrix(
+    ...     diabetes["data"],
+    ...     label=diabetes["target"],
+    ...     feature_names=diabetes["feature_names"]
+    ... )
     >>> # define monotonic constraints
     >>> feature_names = diabetes["feature_names"]
     >>> constraints = pd.Series([0] * len(feature_names), index=feature_names)
@@ -96,14 +100,21 @@ def validate_monotonic_constraints(
     >>> constraints.loc[constraints.index.isin(["bp", "age"])] = 1
     >>> constraints_dict = constraints.loc[constraints != 0].to_dict()
     >>> # build model
-    >>> params = {"max_depth": 3, "verbosity": 0, "monotone_constraints": tuple(constraints)}
+    >>> params = {
+    ...     "max_depth": 3,
+    ...     "verbosity": 0,
+    ...     "monotone_constraints": tuple(constraints)
+    ... }
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
     >>> # export to TabularTrees
     >>> xgboost_tabular_trees = export_tree_data(model)
     >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
     >>> # check monotonic constraints
     >>> validate_monotonic_constraints(tabular_trees, constraints=constraints_dict)
-    MonotonicConstraintResults(summary={'age': True, 'bp': True, 's5': True}, constraints={'age': 1, 'bmi': -1, 'bp': 1, 's5': -1}, all_constraints_met=True)
+    ... # doctest: +NORMALIZE_WHITESPACE
+    MonotonicConstraintResults(summary={'age': True, 'bp': True, 's5': True},
+        constraints={'age': 1, 'bmi': -1, 'bp': 1, 's5': -1},
+        all_constraints_met=True)
 
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")
@@ -149,16 +160,13 @@ def _validate_monotonic_constraints(
 
     # loop through each tree
     for tree_no in trees_df["tree"].unique():
-
         tree_df = trees_df.loc[trees_df["tree"] == tree_no].copy()
         tree_df = _convert_node_columns_to_integer(tree_df)
 
         # loop throguh each constraint
         for constraint_variable, constraint_direction in constraints.items():
-
             # if the constraint variable is used in the given tree
             if (tree_df["feature"] == constraint_variable).sum() > 0:
-
                 # get all nodes that are split on the variable of interest
                 nodes_split_on_variable = tree_df.loc[
                     tree_df["feature"] == constraint_variable, "node"
@@ -169,7 +177,6 @@ def _validate_monotonic_constraints(
                 # note, this could be made more efficient by not rechecking lower nodes
                 # if they have been covered when checking a node above
                 for node_to_check in nodes_split_on_variable:
-
                     child_nodes_left: list = []
                     child_values_left: list = []
 
@@ -294,15 +301,12 @@ def _traverse_tree_down(
 
     # if we have reached a terminal node
     if df.loc[df["node"] == node, "leaf"].item() == 1:
-
         pass
 
     else:
-
         # if the split for the current node is on the variable of interest update the
         # following; value, lower, upper
         if df.loc[df["node"] == node, "feature"].item() == name:
-
             # pick a value and update bounds that would send a data point down the left
             # (yes) split
 
@@ -318,7 +322,6 @@ def _traverse_tree_down(
             # or not i.e. we have previously travelled down a left path, as going down
             # the left path at the current node updates values in the same way
             if lower is None:
-
                 # choose a value above the split point to go down the left (yes) split
                 value = df.loc[df["node"] == node, "split_condition"].item() - 1
 
@@ -334,7 +337,6 @@ def _traverse_tree_down(
             # have previously travelled down a left path, as going down the left path
             # at the current node updates values in the same way
             else:
-
                 # lower bound remains the same
                 lower = lower
 
@@ -369,7 +371,6 @@ def _traverse_tree_down(
             # if both upper bound is unspecified, this means we have not previously
             # travelled down a left path
             if upper is None:
-
                 # choose a value above the split point to go down the right (no) split
                 value = df.loc[df["node"] == node, "split_condition"].item() + 1
 
@@ -381,7 +382,6 @@ def _traverse_tree_down(
                 upper = None
 
             else:
-
                 # the lower bound becomes the split condition
                 lower_split = df.loc[df["node"] == node, "split_condition"].item()
 
@@ -405,7 +405,6 @@ def _traverse_tree_down(
         # otherwise, if the split for the current node is not on the variable of
         # interest do not update values but continue down the tree
         else:
-
             _traverse_tree_down(
                 df,
                 df.loc[df["node"] == node, "left_child"].item(),
@@ -476,7 +475,8 @@ def _check_monotonicity_at_split(
     child_nodes_not_in_tree = list(set(all_child_nodes) - set(tree_nodes))
     if len(child_nodes_not_in_tree) > 0:
         raise ValueError(
-            f"the following child nodes do not appear in tree; {child_nodes_not_in_tree}"
+            "the following child nodes do not appear in tree; "
+            f"{child_nodes_not_in_tree}"
         )
 
     left_nodes_max_pred = tree_df.loc[
@@ -488,15 +488,9 @@ def _check_monotonicity_at_split(
     ].min()
 
     if trend == 1:
-        if left_nodes_max_pred <= right_nodes_min_pred:
-            monotonic = True
-        else:
-            monotonic = False
+        monotonic = left_nodes_max_pred <= right_nodes_min_pred
     else:
-        if left_nodes_max_pred >= right_nodes_min_pred:
-            monotonic = True
-        else:
-            monotonic = False
+        monotonic = left_nodes_max_pred >= right_nodes_min_pred
 
     results = {
         "variable": variable,

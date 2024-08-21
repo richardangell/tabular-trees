@@ -6,7 +6,6 @@ from tabular_trees import sklearn
 
 def test_output_values(handcrafted_data):
     """Test that the values output are expected for a simple, known tree."""
-
     model = HistGradientBoostingRegressor(
         max_iter=1, max_depth=2, learning_rate=1, min_samples_leaf=1
     )

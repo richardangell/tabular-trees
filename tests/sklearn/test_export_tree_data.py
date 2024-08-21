@@ -15,7 +15,6 @@ from tabular_trees.trees import export_tree_data
 )
 def test_model_specific_function_dispatch(request, model_fixture_name, expected_type):
     """Test export_tree_data returns the correct TabularTrees subclass."""
-
     model = request.getfixturevalue(model_fixture_name)
 
     tree_data = export_tree_data(model)

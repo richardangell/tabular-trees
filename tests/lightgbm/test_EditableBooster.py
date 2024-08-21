@@ -9,7 +9,6 @@ from tabular_trees.lightgbm import (
 
 
 def test_booster_reproducible_from_booster_string(diabetes_data, lgb_diabetes_model):
-
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
     booster_string = BoosterString(lgb_diabetes_model)
@@ -22,7 +21,6 @@ def test_booster_reproducible_from_booster_string(diabetes_data, lgb_diabetes_mo
 
 
 def test_convert_to_editable_booster(lgb_diabetes_model):
-
     booster_string = BoosterString(lgb_diabetes_model)
 
     editable_booster = convert_booster_string_to_editable_booster(booster_string)
@@ -31,7 +29,6 @@ def test_convert_to_editable_booster(lgb_diabetes_model):
 
 
 def test_convert_editable_booster_to_booster_string(lgb_diabetes_model):
-
     booster_string = BoosterString(lgb_diabetes_model)
 
     editable_booster = convert_booster_string_to_editable_booster(booster_string)
@@ -42,7 +39,6 @@ def test_convert_editable_booster_to_booster_string(lgb_diabetes_model):
 
 
 def test_booster_reproducible_from_editable_booster(diabetes_data, lgb_diabetes_model):
-
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
     booster_string = BoosterString(lgb_diabetes_model)
@@ -57,7 +53,6 @@ def test_booster_reproducible_from_editable_booster(diabetes_data, lgb_diabetes_
 
 
 def test_leaf_redictions_can_be_changed():
-
     x_train = pd.DataFrame(
         {
             "a": [1, 1, 0, 0],

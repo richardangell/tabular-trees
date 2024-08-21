@@ -119,15 +119,15 @@ def handcrafted_data():
     """Handcraft dataset that can be expressed with a simple depth 2 tree.
 
     Data is as follows;
-    a	b	response
-    1	1	100
-    1	1	100
-    1	-1	150
-    1	-1	150
-    -1	1	200
-    -1	1	200
-    -1	-1	250
-    -1	-1	250
+     a   b      response
+     1   1      100
+     1   1      100
+     1  -1      150
+     1  -1      150
+    -1   1      200
+    -1   1      200
+    -1  -1      250
+    -1  -1      250
 
     """
     data = pd.DataFrame(

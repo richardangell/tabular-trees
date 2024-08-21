@@ -16,7 +16,7 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.3.0 (unreleased) `#25 <https://github.com/richardangell/tabular-trees/pull/25>`_ `#19 <https://github.com/richardangell/tabular-trees/pull/19>`_
+0.3.0 (unreleased) `#36 <https://github.com/richardangell/tabular-trees/pull36/>`_ `#25 <https://github.com/richardangell/tabular-trees/pull/25>`_ `#19 <https://github.com/richardangell/tabular-trees/pull/19>`_
 ---------------------------------------------------------------------------------------
 
 Added
@@ -30,6 +30,7 @@ Added
 
 Changed
 ^^^^^^^
+- Swap to use ``ruff`` instead of various other tools, strengthen ``mypy`` settings and improve type hints
 - Improve tests
 - Tests using to ``lightgbm`` or ``xgboost`` are no longer imported if those packages are not installed
 - Update ``decompose_prediction`` to use ``pd.concat`` instead of depreceated ``pd.DataFrame.append``

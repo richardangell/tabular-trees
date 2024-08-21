@@ -9,7 +9,6 @@ from tabular_trees import BaseModelTabularTrees, TabularTrees
 @pytest.fixture(scope="session")
 def dummy_trees_data() -> pd.DataFrame:
     """Return DataFrame with columns required by TabularTrees but no rows."""
-
     return pd.DataFrame(columns=TabularTrees.REQUIRED_COLUMNS)
 
 
@@ -18,17 +17,19 @@ class TestInit:
 
     def test_inheritance(self):
         """Test that TabularTrees inherits from BaseModelTabularTrees."""
-
         assert (
             TabularTrees.__mro__[1] is BaseModelTabularTrees
         ), "TabularTrees does not inherit from BaseModelTabularTrees"
 
     def test_attributes_set(self, dummy_trees_data):
-        """Test that trees and get_root_node_given_tree attributes are set to values
-        passed."""
+        """Test trees, get_root_node_given_tree attributes are set to values passed."""
 
         def dummy_get_root_node_function():
-            """Dummy function to pass into get_root_node_given_tree argument."""
+            """Return a constant of 0.
+
+            Dummy function to pass into get_root_node_given_tree argument.
+
+            """
             return 0
 
         tabular_trees = TabularTrees(
@@ -46,21 +47,23 @@ class TestInit:
 
     def test_exception_raised_non_callable_passed(self, dummy_trees_data):
         """Test an exception is raised if get_root_node_given_tree is not callable."""
-
         with pytest.raises(
             ValueError,
             match=re.escape(
                 "condition: [get_root_node_given_tree is callable] not met"
             ),
         ):
-
             TabularTrees(trees=dummy_trees_data, get_root_node_given_tree=123)
 
     def test_tree_data_copied(self, dummy_trees_data):
-        """Test that"""
+        """Test that trees attribute is a copy of the data passed in init."""
 
         def dummy_get_root_node_function():
-            """Dummy function to pass into get_root_node_given_tree argument."""
+            """Return a constant of 0.
+
+            Dummy function to pass into get_root_node_given_tree argument.
+
+            """
             return 0
 
         tabular_trees = TabularTrees(
@@ -76,7 +79,11 @@ class TestInit:
         """Test that BaseModelTabularTrees.__post_init__ is called."""
 
         def dummy_get_root_node_function():
-            """Dummy function to pass into get_root_node_given_tree argument."""
+            """Return constant of 0.
+
+            Dummy function to pass into get_root_node_given_tree argument.
+
+            """
             return 0
 
         mocker.patch.object(BaseModelTabularTrees, "__post_init__")

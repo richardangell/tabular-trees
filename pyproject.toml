@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tabular-trees"
-version = "0.3.0"
+version = "0.3.0.dev0"
 description = "Package to assist with analysis of tree-based models."
 authors = ["Richard Angell <richardangell37@gmail.com>"]
 license = "BSD-3-Clause"
@@ -23,7 +23,6 @@ sklearn = ["scikit-learn"]
 lightgbm = ["lightgbm"]
 xgboost = ["xgboost"]
 
-
 [tool.poetry.group.dev]
 optional = true
 
@@ -36,7 +35,7 @@ tox = "4.4.6"
 eli5 = "0.13.0"
 scikit-learn = "^1.0.1"
 ipykernel = "^6.21.2"
-
+typing-extensions = "^4.12.2"
 
 [tool.poetry.group.docs]
 optional = true
@@ -46,7 +45,75 @@ sphinx = "6.1.3"
 sphinx-rtd-theme = "1.2.0"
 numpydoc = "1.5.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # flake8-bandit
+    "S",
+    # pep8-naming
+    "N",
+    # flake8-comprehensions
+    "C4",
+    # pydocstyle
+    "D",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*.py" = [
+    "S101", # Use of assert
+    "N999", # Invalid module name
+    "D100", # Missing docstring in public module
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+]
+"*/__init__.py" = [
+    "F401", # Unused import
+]
+
+[tool.docformatter]
+wrap-summaries = 88
+wrap-descriptions = 88
+blank = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This algorithm has very long runtime. It will produce the same results as treeSHAP but will take much longer to run.",
+    "ignore:XGBoostDumpParser class is depreceated, Booster.trees_to_dataframe is available instead",
+]
+
+[tool.mypy]
+python_version = "3.11"
+exclude = "tests"
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true

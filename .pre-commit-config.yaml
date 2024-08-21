@@ -1,40 +1,31 @@
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.6.1
     hooks:
-      - id: isort
-        args: [--profile, black, --filter-files]
-  - repo: https://github.com/psf/black
-    rev: 22.12.0
-    hooks:
-      - id: black
-        language_version: python3
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
-    hooks:
-    -   id: flake8
-        additional_dependencies: [
-          "flake8-bugbear==22.12.6",
-          "flake8-comprehensions==3.10.1",
-          "pep8-naming==0.13.3"
-        ]
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+        types_or: [ python, pyi ]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, pyi ]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.1
+    rev: v1.11.1
     hooks:
     -   id: mypy
-  - repo: https://github.com/pycqa/bandit
-    rev: 1.7.4
-    hooks:
-    -   id: bandit
-        args: [-r, -v, -c, bandit.yml, .]
+        args: [--config-file, ./pyproject.toml]
+        additional_dependencies: [
+          pandas-stubs==2.2.2.240807,
+          types-tqdm==4.66.0.20240417,
+          lightgbm==4.0.0,
+          xgboost==1.7.4,
+        ] 
+
   - repo: https://github.com/pycqa/docformatter
-    rev: v1.5.1
+    rev: v1.7.5
     hooks:
     -   id: docformatter
-        args: [--wrap-descriptions, "88", --wrap-summaries, "88", --blank]
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.2.2
-    hooks:
-    -   id: pydocstyle
-        args: [--convention, numpy]
-        exclude: ^docs/
+        additional_dependencies: [tomli]
+        args: [--in-place, --config, ./pyproject.toml]

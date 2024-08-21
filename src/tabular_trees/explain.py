@@ -72,7 +72,11 @@ def decompose_prediction(
     >>> from tabular_trees.explain import decompose_prediction
     >>> # get data in DMatrix
     >>> diabetes = load_diabetes()
-    >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"], feature_names=diabetes["feature_names"])
+    >>> data = xgb.DMatrix(
+    ...     diabetes["data"],
+    ...     label=diabetes["target"],
+    ...     feature_names=diabetes["feature_names"]
+    ... )
     >>> # build model
     >>> params = {"max_depth": 3, "verbosity": 0}
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
@@ -101,7 +105,7 @@ def decompose_prediction(
 
 def _decompose_prediction(
     trees_df: pd.DataFrame, row: pd.DataFrame, calculate_root_node: Callable
-):
+) -> PredictionDecomposition:
     """Decompose prediction from tree based model with Saabas method.
 
     Parameters
@@ -121,7 +125,6 @@ def _decompose_prediction(
     prediction_decompositions = []
 
     for n in range(n_trees + 1):
-
         leaf_node_path = _find_path_to_leaf_node(
             tree_df=trees_df.loc[trees_df.tree == n],
             row=row,
@@ -169,64 +172,56 @@ def _find_path_to_leaf_node(
 
     # for internal nodes record the value of the variable that will be used to split
     if current_node["leaf"].item() != 1:
-
         current_node["value"] = row[current_node["feature"]].values[0]
 
     else:
-
-        current_node["value"] = np.NaN
+        current_node["value"] = np.nan
 
     path = pd.concat([path, current_node], axis=0)
 
     # as long as we are not at a leaf node already
     if current_node["leaf"].item() != 1:
-
-        # determine if the value of the split variable sends the row left (yes) or right (no)
+        # determine if the value of the split variable sends the row left
+        # (yes) or right (no)
         if (
             row[current_node["feature"]].values[0]
             < current_node["split_condition"].values[0]
         ):
-
             next_node = current_node["left_child"].item()
 
         else:
-
             next_node = current_node["right_child"].item()
 
         # (loop) traverse the tree until a leaf node is reached
         while True:
-
             current_node = tree_df.loc[tree_df["node"] == next_node].copy()
 
-            # for internal nodes record the value of the variable that will be used to split
+            # for internal nodes record the value of the variable that will be
+            # used to split
             if current_node["leaf"].item() != 1:
-
                 current_node["value"] = row[current_node["feature"]].values[0]
 
             path = pd.concat([path, current_node], axis=0)
 
             if current_node["leaf"].item() != 1:
-
-                # determine if the value of the split variable sends the row left (yes) or right (no)
+                # determine if the value of the split variable sends the row left
+                # (yes) or right (no)
                 if (
                     row[current_node["feature"]].values[0]
                     < current_node["split_condition"].values[0]
                 ):
-
                     next_node = current_node["left_child"].item()
 
                 else:
-
                     next_node = current_node["right_child"].item()
 
             else:
-
                 break
 
     return path
 
 
-def _calculate_change_in_node_predictions(path: pd.DataFrame):
+def _calculate_change_in_node_predictions(path: pd.DataFrame) -> pd.DataFrame:
     """Calcualte change in node prediction through a particular path through the tree.
 
     Parameters
@@ -280,7 +275,11 @@ class ShapleyValues:
     """Shapley values results."""
 
     summary: pd.DataFrame
-    """Shapley values at feature level. Average of permutations over features."""
+    """Shapley values at feature level.
+
+    Average of permutations over features.
+
+    """
 
     permutations: pd.DataFrame = field(repr=False)
     """Shapley values for each feature permutation and tree."""
@@ -336,7 +335,11 @@ def calculate_shapley_values(
     >>> from tabular_trees.explain import calculate_shapley_values
     >>> # get data in DMatrix
     >>> diabetes = load_diabetes()
-    >>> data = xgb.DMatrix(diabetes["data"][:,:3], label=diabetes["target"], feature_names=diabetes["feature_names"][:3])
+    >>> data = xgb.DMatrix(
+    ...     diabetes["data"][:,:3],
+    ...     label=diabetes["target"],
+    ...     feature_names=diabetes["feature_names"][:3]
+    ... )
     >>> # build model
     >>> params = {"max_depth": 3, "verbosity": 0}
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
@@ -344,7 +347,10 @@ def calculate_shapley_values(
     >>> xgboost_tabular_trees = export_tree_data(model)
     >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
     >>> # get data to score
-    >>> scoring_data = pd.DataFrame(diabetes["data"][:,:3], columns=diabetes["feature_names"][:3])
+    >>> scoring_data = pd.DataFrame(
+    ...     diabetes["data"][:,:3],
+    ...     columns=diabetes["feature_names"][:3]
+    ... )
     >>> row_to_score = scoring_data.iloc[0]
     >>> # calculate shapley values
     >>> results = calculate_shapley_values(tabular_trees, row=row_to_score)
@@ -354,7 +360,8 @@ def calculate_shapley_values(
     """
     warnings.warn(
         "This algorithm has very long runtime. It will produce the same results as "
-        "treeSHAP but will take much longer to run."
+        "treeSHAP but will take much longer to run.",
+        stacklevel=2,
     )
 
     check_type(tabular_trees, TabularTrees, "tabular_trees")
@@ -383,7 +390,6 @@ def _calculate_shapley_values(tree_df: pd.DataFrame, row: pd.Series) -> ShapleyV
     results_list = []
 
     for tree_no in range(n_trees + 1):
-
         tree_rows = tree_df.loc[tree_df["tree"] == tree_no]
 
         tree_shapley_values = _shapley_values_tree(tree_rows, row)
@@ -404,7 +410,7 @@ def _convert_node_columns_to_integer(tree_df: pd.DataFrame) -> pd.DataFrame:
     return tree_df
 
 
-def _shapley_values_tree(tree_df, row) -> ShapleyValues:
+def _shapley_values_tree(tree_df: pd.DataFrame, row: pd.Series) -> ShapleyValues:
     """Calculate shapley values for single tree.
 
     Parameters
@@ -457,7 +463,8 @@ def _shapley_values_tree(tree_df, row) -> ShapleyValues:
     tree_df_cols_subset.drop(columns=["leaf", "node"], inplace=True)
 
     # convert child node index column to pandas int type with nulls
-    # this is to prevent error in G when trying to select items from list by index (with float)
+    # this is to prevent error in G when trying to select items from list by
+    # index (with float)
     tree_df_cols_subset["a"] = pd.Series(tree_df_cols_subset["a"], dtype="Int64")
     tree_df_cols_subset["b"] = pd.Series(tree_df_cols_subset["b"], dtype="Int64")
 
@@ -465,25 +472,19 @@ def _shapley_values_tree(tree_df, row) -> ShapleyValues:
 
     results_list = []
 
-    i = 0
-
-    for feature_permutation in tqdm(
-        itertools.permutations(features), total=factorial(len(features))
+    for i, feature_permutation in enumerate(
+        tqdm(itertools.permutations(features), total=factorial(len(features)))
     ):
-
-        feature_permutation = list(feature_permutation)
-
         selected_features = []
 
         current_prediction = mean_prediction
 
         contributions = {
             "bias": mean_prediction,
-            "permutation": str(feature_permutation),
+            "permutation": str(list(feature_permutation)),
         }
 
         for feature in feature_permutation:
-
             selected_features.append(feature)
 
             expected_value_given_features = _expvalue(
@@ -498,12 +499,10 @@ def _shapley_values_tree(tree_df, row) -> ShapleyValues:
 
         results_list.append(contributions_df)
 
-        i += 1
-
     return _format_shapley_value_for_tree(results_list, tree_number)
 
 
-def _expvalue(x, s, tree):
+def _expvalue(x: pd.Series, s: list, tree: pd.DataFrame) -> float:
     """Estimate E[f(x)|x_S].
 
     Algorithm 1 from Consistent Individualized Feature Attribution for Tree Ensembles.
@@ -523,8 +522,8 @@ def _expvalue(x, s, tree):
 
     tree : pd.DataFrame
         tree structure in tabular form with the following columns;
-        v - node values which for internal nodes take the value 'internal' otherwise the predicted value
-        for the leaf node
+        v - node values which for internal nodes take the value 'internal' otherwise
+        the predicted value for the leaf node
         a - left child node indices
         b - right child node indices
         t - thresholds for split in internal nodes
@@ -535,7 +534,7 @@ def _expvalue(x, s, tree):
     return _g(0, 1, x, s, tree)
 
 
-def _g(j, w, x, s, tree):
+def _g(j: int, w: float, x: pd.Series, s: list, tree: pd.DataFrame) -> float:
     """Recusively traverse down tree and return prediction for x.
 
     This algorithm follows the route allowed by the features in s, if a node is
@@ -560,7 +559,7 @@ def _g(j, w, x, s, tree):
         Tree structure in tabular form
 
     """
-    v = tree["v"].tolist()
+    v: list[float] = tree["v"].tolist()
     a = tree["a"].tolist()
     b = tree["b"].tolist()
     t = tree["t"].tolist()
@@ -568,23 +567,17 @@ def _g(j, w, x, s, tree):
     d = tree["d"].tolist()
 
     if v[j] != "internal":
-
         return w * v[j]
 
     else:
-
         if d[j] in s:
-
             if x[d[j]] <= t[j]:
-
                 return _g(a[j], w, x, s, tree)
 
             else:
-
                 return _g(b[j], w, x, s, tree)
 
         else:
-
             return _g(a[j], w * r[a[j]] / r[j], x, s, tree) + _g(
                 b[j], w * r[b[j]] / r[j], x, s, tree
             )

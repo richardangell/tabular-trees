@@ -2,13 +2,17 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Optional, Union
+from typing import Optional, SupportsFloat, SupportsIndex, Union
 
 import lightgbm as lgb
 import pandas as pd
+from typing_extensions import Buffer, TypeAlias
 
 from . import checks
 from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
+
+ReadableBuffer: TypeAlias = Buffer  # stable
+ConvertibleToFloat: TypeAlias = str | ReadableBuffer | SupportsFloat | SupportsIndex
 
 
 def lightgbm_get_root_node_given_tree(tree: int) -> str:
@@ -130,19 +134,21 @@ def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
 class FloatFixedString(float):
     """Float with a defined string representation."""
 
-    def __new__(cls, value, string_representation: str):
+    def __new__(
+        cls, value: ConvertibleToFloat, string_representation: str
+    ) -> "FloatFixedString":
         """Create and return a new object."""
         return float.__new__(cls, value)
 
-    def __init__(self, value, string_representation: str):
+    def __init__(self, value: ConvertibleToFloat, string_representation: str):
         float.__init__(value)
         self.string_representation = string_representation
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the fixed string representation for the float."""
         return self.string_representation
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the fixed string representation for the float."""
         return self.string_representation
 
@@ -208,7 +214,7 @@ class BoosterHeader:
     new_line: str = field(init=False, repr=False, default="\n")
     header_attributes: list[str] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set the header_attributes value."""
         self.header_attributes = [
             "version",
@@ -273,7 +279,7 @@ class BoosterTree:
     new_line: str = field(init=False, repr=False, default="\n")
     tree_attributes: list[str] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set the tree_attributes value."""
         self.tree_attributes = [
             "tree",
@@ -302,7 +308,7 @@ class BoosterTree:
         return self.new_line.join(self.get_booster_string_rows())
 
     def get_booster_string_rows(self) -> list[str]:
-        """Convert BoosterTree data to rows that could be concatenated to part of BoosterString."""
+        """Convert data to rows that could be concatenated to part of BoosterString."""
         tree_attribute_values = [
             self.__getattribute__(attribute_name)
             for attribute_name in self.tree_attributes
@@ -332,7 +338,6 @@ class BoosterString:
     def __init__(
         self, booster: Optional[lgb.Booster] = None, rows: Optional[list[str]] = None
     ):
-
         checks.check_condition(
             booster is not None or rows is not None,
             "either booster or rows must be supplied",
@@ -344,11 +349,9 @@ class BoosterString:
         )
 
         if booster is not None:
-
             self.booster_data = self._booster_to_string(booster)
 
         elif rows is not None:
-
             self.booster_data = rows[:]
 
             try:
@@ -362,7 +365,7 @@ class BoosterString:
 
     def _booster_to_string(self, booster: lgb.Booster) -> list[str]:
         """Export Booster object to string and split by line breaks."""
-        booster_string = booster.model_to_string()
+        booster_string: str = booster.model_to_string()
         booster_string_split = booster_string.split(self.new_line)
 
         return booster_string_split
@@ -409,7 +412,6 @@ class BoosterString:
         find_tree_from_row = tree_sizes_line
 
         for _ in range(n_trees):
-
             tree_line = self._find_text_in_booster_data("Tree=", find_tree_from_row)
             tree_number = self._get_tree_number_from_line(self.booster_data[tree_line])
             tree_rows[tree_number] = tree_line
@@ -418,7 +420,6 @@ class BoosterString:
         find_from_row = find_tree_from_row
 
         for string_to_find in row_to_find[1:]:
-
             string_found_row = self._find_text_in_booster_data(
                 string_to_find, find_from_row
             )
@@ -432,21 +433,18 @@ class BoosterString:
         return row_markers, tree_rows
 
     def _find_text_in_booster_data(self, text: str, start: int = 0) -> int:
-
         for subet_row_number, row in enumerate(self.booster_data[start:]):
-
             if row.find(text, 0, len(text)) == 0:
-
                 row_number = subet_row_number + start
 
                 return row_number
 
         raise ValueError(
-            f"""unable to find row starting with text '{text}' in booster_data starting from index {start}"""
+            f"""unable to find row starting with text '{text}' in booster_data """
+            f"starting from index {start}"
         )
 
     def _get_number_of_rows(self) -> int:
-
         return len(self.booster_data)
 
     def to_booster(self) -> lgb.Booster:
@@ -455,9 +453,9 @@ class BoosterString:
 
         return lgb.Booster(model_str=booster_string)
 
-    def to_editable_booster(self):
+    def to_editable_booster(self) -> "EditableBooster":
         """Export the BoosterString an EditableBooster object."""
-        return BoosterStringToEditableBoosterConverter.convert(self)
+        return BoosterStringToEditableBoosterConverter().convert(booster_string=self)
 
     def extract_header_rows(self) -> list[str]:
         """Extract the header rows from BoosterString object."""
@@ -504,7 +502,6 @@ class EditableBooster:
         booster_string_rows = self.header.get_booster_string_rows()
 
         for tree in self.trees:
-
             booster_string_rows += tree.get_booster_string_rows()
 
         booster_string_rows += self.bottom_rows
@@ -564,7 +561,7 @@ class BoosterStringToEditableBoosterConverter:
     def _extract_list_of_ints_or_floats(
         self, line: str, delimiter: str = " "
     ) -> list[Union[int, float]]:
-        """Extract line contents after equals sign and return as list of ints or floats."""
+        """Extract line contents after equals sign and return as list numbers."""
         return [
             convert_string_to_int_or_float(value)
             for value in self._extract_list_of_strings(line, delimiter)
@@ -573,7 +570,7 @@ class BoosterStringToEditableBoosterConverter:
     def _extract_list_of_feature_ranges(
         self, line: str, delimiter: str = " "
     ) -> list[FeatureRange]:
-        """Extract line contents after equals sign and return as list of FeatureRanges."""
+        """Extract line contents after equals sign and return as FeatureRanges list."""
         return [
             self._feature_range_from_string(value)
             for value in self._extract_list_of_strings(line, delimiter)
@@ -608,8 +605,7 @@ class BoosterStringToEditableBoosterConverter:
         """Extract trees from booster string to list of BoosterTree objects."""
         booster_trees = []
 
-        for tree_number in booster_string.tree_rows.keys():
-
+        for tree_number in booster_string.tree_rows:
             tree_rows = booster_string.extract_tree_rows(tree_number)
             booster_trees.append(self._rows_to_tree(tree_rows))
 
