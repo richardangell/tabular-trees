@@ -2,8 +2,13 @@ import re
 
 import pandas as pd
 import pytest
+from sklearn.ensemble import HistGradientBoostingRegressor
 
-from tabular_trees.sklearn import scikit_learn_hist_tabular_trees
+from tabular_trees.sklearn.scikit_learn_hist_tabular_trees import (
+    ScikitLearnHistTabularTrees,
+    _export_tree_data__hist_gradient_boosting_model,
+)
+from tabular_trees.trees import export_tree_data
 
 
 def test_model_not_correct_type_exception():
@@ -18,9 +23,7 @@ def test_model_not_correct_type_exception():
     )
 
     with pytest.raises(TypeError, match=re.escape(msg)):
-        scikit_learn_hist_tabular_trees._export_tree_data__hist_gradient_boosting_model(
-            ["a", "b"]
-        )
+        _export_tree_data__hist_gradient_boosting_model(["a", "b"])
 
 
 def test_multiple_responses_exception(sklearn_iris_hist_gbm_classifier):
@@ -32,49 +35,41 @@ def test_multiple_responses_exception(sklearn_iris_hist_gbm_classifier):
     with pytest.raises(
         NotImplementedError, match="model with multiple responses not supported"
     ):
-        scikit_learn_hist_tabular_trees._export_tree_data__hist_gradient_boosting_model(
+        _export_tree_data__hist_gradient_boosting_model(
             sklearn_iris_hist_gbm_classifier
         )
 
 
-def test_output(mocker, sklearn_diabetes_hist_gbm_regressor):
+def test_output(handcrafted_data):
     """Test output is the output from _extract_hist_gbm_tree_data."""
-    dummy_tree_data = pd.DataFrame(
+    model = HistGradientBoostingRegressor(
+        max_iter=1, max_depth=2, learning_rate=1, min_samples_leaf=1
+    )
+
+    model.fit(handcrafted_data[["a", "b"]], handcrafted_data["response"])
+
+    actual = export_tree_data(model)
+
+    expected_tree_data = pd.DataFrame(
         {
-            "tree": 0,
-            "node": 1,
-            "value": 2,
-            "count": 3,
-            "feature_idx": 4,
-            "num_threshold": 5,
-            "missing_go_to_left": 6,
-            "left": 7,
-            "right": 8,
-            "gain": 9,
-            "depth": 10,
-            "is_leaf": 11,
-            "bin_threshold": 12,
-            "is_categorical": 13,
-            "bitset_idx": 14,
-        },
-        index=[0],
+            "tree": [0, 0, 0, 0, 0, 0, 0],
+            "node": [0, 1, 2, 3, 4, 5, 6],
+            "value": [175.0, 225.0, 250.0, 200.0, 125.0, 150.0, 100.0],
+            "count": [8, 4, 2, 2, 4, 2, 2],
+            "feature_idx": [0, 1, 0, 0, 1, 0, 0],
+            "num_threshold": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            "missing_go_to_left": [0, 0, 0, 0, 0, 0, 0],
+            "left": [1, 2, 0, 0, 5, 0, 0],
+            "right": [4, 3, 0, 0, 6, 0, 0],
+            "gain": [20000.0, 2500.0, -1.0, -1.0, 2500.0, -1.0, -1.0],
+            "depth": [0, 1, 2, 2, 1, 2, 2],
+            "is_leaf": [0, 0, 1, 1, 0, 1, 1],
+            "bin_threshold": [0, 0, 0, 0, 0, 0, 0],
+            "is_categorical": [0, 0, 0, 0, 0, 0, 0],
+            "bitset_idx": [0, 0, 0, 0, 0, 0, 0],
+        }
     )
 
-    mocker.patch.object(
-        scikit_learn_hist_tabular_trees,
-        "_extract_hist_gbm_tree_data",
-        return_value=dummy_tree_data,
-    )
+    assert type(actual) is ScikitLearnHistTabularTrees
 
-    exported_trees = (
-        scikit_learn_hist_tabular_trees._export_tree_data__hist_gradient_boosting_model(
-            sklearn_diabetes_hist_gbm_regressor
-        )
-    )
-
-    assert (
-        type(exported_trees)
-        is scikit_learn_hist_tabular_trees.ScikitLearnHistTabularTrees
-    ), "output from _export_tree_data__hist_gradient_boosting_model incorrect type"
-
-    pd.testing.assert_frame_equal(exported_trees.trees, dummy_tree_data)
+    pd.testing.assert_frame_equal(actual.trees, expected_tree_data, check_dtype=False)

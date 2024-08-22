@@ -11,11 +11,18 @@ from tabular_trees.lightgbm.booster_string_converter import (
 
 
 def test_booster_reproducible_from_booster_string(diabetes_data, lgb_diabetes_model):
+    """Test that a Booster can be recovered from the BoosterString version of it."""
+    # ARRANGE
+
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
     booster_string = BoosterString(lgb_diabetes_model)
 
+    # ACT
+
     reproduced_booster = booster_string.to_booster()
+
+    # ASSERT
 
     predictions_reproduced = reproduced_booster.predict(diabetes_data["data"])
 
@@ -23,13 +30,20 @@ def test_booster_reproducible_from_booster_string(diabetes_data, lgb_diabetes_mo
 
 
 def test_booster_reproducible_from_editable_booster(diabetes_data, lgb_diabetes_model):
+    """Test that a Booster can be recovered from the EditableBooster version of it."""
+    # ARRANGE
+
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
     booster_string = BoosterString(lgb_diabetes_model)
 
     editable_booster = convert_booster_string_to_editable_booster(booster_string)
 
+    # ACT
+
     reproduced_booster = editable_booster.to_booster()
+
+    # ASSERT
 
     predictions_reproduced = reproduced_booster.predict(diabetes_data["data"])
 
@@ -37,7 +51,16 @@ def test_booster_reproducible_from_editable_booster(diabetes_data, lgb_diabetes_
 
 
 def test_leaf_redictions_can_be_changed():
-    x_train = pd.DataFrame(
+    """Test that leaf predictions of an EditableBooster can be chnaged.
+
+    Specifically test that changes are able to propagate through the model and are
+    output by the Booster.predict method when the EditableBooster is converted back to a
+    Booster.
+
+    """
+    # ARRANGE
+
+    data = pd.DataFrame(
         {
             "a": [1, 1, 0, 0],
             "b": [1, 0, 1, 0],
@@ -46,8 +69,8 @@ def test_leaf_redictions_can_be_changed():
     )
 
     lgb_data = lgb.Dataset(
-        data=x_train[["a", "b"]],
-        label=x_train["target"],
+        data=data[["a", "b"]],
+        label=data["target"],
         feature_name=["a", "b"],
     )
 
@@ -68,17 +91,21 @@ def test_leaf_redictions_can_be_changed():
         num_boost_round=1,
     )
 
+    original_predictions = model.predict(data[["a", "b"]])
+
     booster_string = BoosterString(model)
 
     editable_booster = convert_booster_string_to_editable_booster(booster_string)
+
+    # ACT
 
     editable_booster.trees[0].leaf_value = [1, 2, 3, 4]
 
     updated_booster = editable_booster.to_booster()
 
-    original_predictions = model.predict(x_train[["a", "b"]])
+    new_predictions = updated_booster.predict(data[["a", "b"]])
 
-    new_predictions = updated_booster.predict(x_train[["a", "b"]])
+    # ASSERT
 
     np.testing.assert_array_almost_equal(
         original_predictions,

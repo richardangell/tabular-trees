@@ -34,7 +34,15 @@ def derive_depths(df) -> pd.DataFrame:
 
 @pytest.mark.parametrize("lambda_", [(0.0), (2.0)])
 def test_predictions_calculated_correctly(lambda_, xgb_diabetes_dmatrix):
-    """Test that the derived node prediction values are correct."""
+    """Test that the derived node prediction values are correct.
+
+    Here the expected values for each node's prediction is calculated by building a GBM
+    where the node in question appears at the maximum depth of the final tree in the
+    model (the GBM that is built for each node is a subset of the full model used in the
+    test). This the node predictions can be easily accessed from the dataframe verison
+    of the model.
+
+    """
     model_for_predictions = xgb.train(
         params={"verbosity": 0, "max_depth": 3, "lambda": lambda_},
         dtrain=xgb_diabetes_dmatrix,

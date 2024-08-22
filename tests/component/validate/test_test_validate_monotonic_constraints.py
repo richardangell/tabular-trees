@@ -41,8 +41,8 @@ def xgb_diabetes_model_monotonic(xgb_diabetes_dmatrix) -> tuple[xgb.Booster, dic
     return model, monotonic_constraints_dict
 
 
-def test_output_type(xgb_diabetes_model_monotonic):
-    """Test validate_monotonic_constraints output is MonotonicConstraintResults."""
+def test_constraints_met_as_expected(xgb_diabetes_model_monotonic):
+    """Test validate_monotonic_constraints correcrly identifies constraints."""
     model, constraints = xgb_diabetes_model_monotonic
 
     xgboost_tabular_trees = export_tree_data(model)

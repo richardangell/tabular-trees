@@ -26,7 +26,7 @@ def xgb_diabetes_model_lambda_0(xgb_diabetes_dmatrix) -> xgb.Booster:
 
 
 def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):
-    """Test the output from decompose_prediction is an PredictionDecomposition type."""
+    """Test the output of decompose_prediction is an PredictionDecomposition type."""
     diabetes_data_df = pd.DataFrame(
         diabetes_data["data"], columns=diabetes_data["feature_names"]
     )

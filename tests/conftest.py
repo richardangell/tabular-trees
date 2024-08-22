@@ -2,6 +2,18 @@ import pytest
 from sklearn.datasets import load_breast_cancer, load_diabetes, load_iris
 from sklearn.utils import Bunch
 
+from .lightgbm_fixtures import (  # noqa: F401
+    lgb_diabetes_dataset,
+    lgb_diabetes_model,
+    lgb_diabetes_model_trees_dataframe,
+)
+from .xgboost_fixtures import (  # noqa: F401
+    xgb_diabetes_dmatrix,
+    xgb_diabetes_dmatrix_subset_cols,
+    xgb_diabetes_model,
+    xgb_diabetes_model_subset_cols,
+)
+
 
 @pytest.fixture(scope="session")
 def diabetes_data() -> Bunch:
