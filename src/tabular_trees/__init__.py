@@ -18,7 +18,7 @@ with contextlib.suppress(ImportError):
     from .lightgbm import lightgbm_tabular_trees
 
 with contextlib.suppress(ImportError):
-    from . import sklearn
+    from .sklearn import scikit_learn_tabular_trees
 
 with contextlib.suppress(ImportError):
     from .xgboost import xgboost_tabular_trees

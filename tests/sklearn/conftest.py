@@ -9,7 +9,10 @@ from sklearn.ensemble import (
     HistGradientBoostingRegressor,
 )
 
-from tabular_trees.sklearn import _extract_gbm_tree_data, _extract_hist_gbm_tree_data
+from tabular_trees.sklearn.scikit_learn_hist_tabular_trees import (
+    _extract_hist_gbm_tree_data,
+)
+from tabular_trees.sklearn.scikit_learn_tabular_trees import _extract_gbm_tree_data
 
 
 @pytest.fixture(scope="session")

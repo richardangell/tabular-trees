@@ -1,6 +1,9 @@
 import pytest
 
-from tabular_trees.sklearn import ScikitLearnHistTabularTrees, ScikitLearnTabularTrees
+from tabular_trees.sklearn.scikit_learn_hist_tabular_trees import (
+    ScikitLearnHistTabularTrees,
+)
+from tabular_trees.sklearn.scikit_learn_tabular_trees import ScikitLearnTabularTrees
 from tabular_trees.trees import export_tree_data
 
 

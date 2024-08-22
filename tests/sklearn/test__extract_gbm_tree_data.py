@@ -2,14 +2,18 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
-from tabular_trees import sklearn
+from tabular_trees.sklearn import scikit_learn_tabular_trees
 
 
 def test_required_columns(sklearn_diabetes_gbm_regressor):
     """Test the required columns are in the output."""
-    tree_data = sklearn._extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
+    tree_data = scikit_learn_tabular_trees._extract_gbm_tree_data(
+        sklearn_diabetes_gbm_regressor
+    )
 
-    assert sorted(sklearn.ScikitLearnTabularTrees.REQUIRED_COLUMNS) == sorted(
+    assert sorted(
+        scikit_learn_tabular_trees.ScikitLearnTabularTrees.REQUIRED_COLUMNS
+    ) == sorted(
         tree_data.columns.values
     ), "columns in output from _extract_gbm_tree_data not correct"
 
@@ -20,7 +24,7 @@ def test_output_values(handcrafted_data):
 
     model.fit(handcrafted_data[["a", "b"]], handcrafted_data["response"])
 
-    extracted_tree_data = sklearn._extract_gbm_tree_data(model)
+    extracted_tree_data = scikit_learn_tabular_trees._extract_gbm_tree_data(model)
 
     expected_tree_data = pd.DataFrame(
         {

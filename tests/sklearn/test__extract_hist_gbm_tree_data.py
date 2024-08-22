@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
 
-from tabular_trees import sklearn
+from tabular_trees.sklearn import scikit_learn_hist_tabular_trees
 
 
 def test_output_values(handcrafted_data):
@@ -12,7 +12,9 @@ def test_output_values(handcrafted_data):
 
     model.fit(handcrafted_data[["a", "b"]], handcrafted_data["response"])
 
-    extracted_tree_data = sklearn._extract_hist_gbm_tree_data(model)
+    extracted_tree_data = scikit_learn_hist_tabular_trees._extract_hist_gbm_tree_data(
+        model
+    )
 
     expected_tree_data = pd.DataFrame(
         {
