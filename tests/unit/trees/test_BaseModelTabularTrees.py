@@ -8,6 +8,19 @@ import pytest
 from tabular_trees.trees import BaseModelTabularTrees
 
 
+@pytest.fixture(scope="session")
+def dummy_model_tree_data() -> pd.DataFrame:
+    """Small dummy DataFrame with 3 columns and 4 rows."""
+    dummy_model_tree_data = pd.DataFrame(
+        {
+            "column1": [4, 3, 2, 1],
+            "column2": [5, 6, 7, 8],
+            "column3": ["a", "b", "c", "d"],
+        }
+    )
+    return dummy_model_tree_data
+
+
 @dataclass
 class DummyModelTabularTrees(BaseModelTabularTrees):
     """Dummy BaseModelTabularTrees subclass mimicking a model-specific class.

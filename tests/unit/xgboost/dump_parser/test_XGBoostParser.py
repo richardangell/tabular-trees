@@ -1,94 +1,14 @@
-import re
-
-import pandas as pd
 import pytest
 import xgboost as xgb
 
 from tabular_trees.xgboost.dump_parser import ParsedXGBoostTabularTrees, XGBoostParser
 from tabular_trees.xgboost.dump_reader import (
-    DumpReader,
     JsonDumpReader,
     TextDumpReader,
 )
 
 
-class DummyDumpReader(DumpReader):
-    """Dummy class inheriting from DumpReader, to test DumpReader functionality."""
-
-    dump_type = "dummy"
-
-    def read_dump(self, file: str) -> None:
-        """Simply call the DumpReader.read_dump method."""
-        return super().read_dump(file)
-
-
-class TestDumpReaderCheckFileExists:
-    """Tests for the DumpReader.check_file_exists abstract method."""
-
-    def test_file_not_str_exception(self):
-        """Test that a TypeError is raised if file is not a str."""
-        dump_reader = DummyDumpReader()
-
-        with pytest.raises(
-            TypeError,
-            match="file is not in expected types <class 'str'>, got <class 'list'>",
-        ):
-            dump_reader.check_file_exists([1, 2, 3])
-
-    def test_file_does_not_exist_exception(self):
-        """Test that a ValueError is raised if file does not exist."""
-        dump_reader = DummyDumpReader()
-
-        with pytest.raises(
-            ValueError,
-            match=re.escape("condition: [does_not_exist.txt exists] not met"),
-        ):
-            dump_reader.check_file_exists("does_not_exist.txt")
-
-
-class TestDumpReaderImplementations:
-    """Tests for the DumpReader subclasses."""
-
-    @pytest.mark.parametrize(
-        "reader_class,expected_value",
-        [(TextDumpReader, "text"), (JsonDumpReader, "json")],
-    )
-    def test_dump_reader_dump_type(self, reader_class, expected_value):
-        """Test DumpReader classes have correct dump_type attribute value."""
-        assert (
-            reader_class.dump_type == expected_value
-        ), f"dump_type attribute of {reader_class} class not expected"
-
-    @pytest.mark.parametrize("with_stats", [(False), (True)])
-    def test_text_json_parsing_equal(self, with_stats, tmp_path, xgb_diabetes_model):
-        """Test that parsing text and json files give the same output."""
-        text_dump = str(tmp_path.joinpath("dump_raw.txt"))
-        json_dump = str(tmp_path.joinpath("dump_raw.json"))
-
-        xgb_diabetes_model.dump_model(
-            text_dump, with_stats=with_stats, dump_format="text"
-        )
-        xgb_diabetes_model.dump_model(
-            json_dump, with_stats=with_stats, dump_format="json"
-        )
-
-        text_parser = TextDumpReader()
-        text_output = text_parser.read_dump(text_dump)
-
-        json_parser = JsonDumpReader()
-        json_output = json_parser.read_dump(json_dump)
-
-        assert sorted(text_output.columns.values) == sorted(
-            json_output.columns.values
-        ), "column names are not the same between text and json outputs"
-
-        # reorder columns to be in the same order
-        text_output = text_output[json_output.columns.values]
-
-        pd.testing.assert_frame_equal(text_output, json_output)
-
-
-class TestXGBoostParserInit:
+class TestInitialisation:
     """Tests for the XGBoostParser.__init__ method."""
 
     def test_model_not_booster_exception(self):
@@ -126,7 +46,7 @@ class TestXGBoostParserInit:
             XGBoostParser(xgb_diabetes_model)
 
 
-class TestXGBoostParserParseModel:
+class TestParseModel:
     """Tests for the XGBoostParser.parse_model method."""
 
     def test_model_dumped_then_read(self, mocker, xgb_diabetes_model):

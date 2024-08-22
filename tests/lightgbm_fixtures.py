@@ -1,5 +1,3 @@
-"""Fixtures for LightGBM specific data and models."""
-
 import lightgbm as lgb
 import pandas as pd
 import pytest

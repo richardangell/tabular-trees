@@ -4,7 +4,7 @@ from tabular_trees.lightgbm.lightgbm_tabular_trees import LightGBMTabularTrees
 from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
 
 
-class TestLightGBMTabularTreesInit:
+class TestInitialisation:
     """Tests for the LightGBMTabularTrees.__init__ method."""
 
     def test_inheritance(self):
@@ -57,7 +57,7 @@ class TestLightGBMTabularTreesInit:
         ), "not all TabularTrees.REQUIRED_COLUMNS values are in COLUMN_MAPPING"
 
 
-class TestLightGBMTabularTreesConvert:
+class TestConvertToTabularTrees:
     """Tests for the LightGBMTabularTrees.convert_to_tabular_trees method."""
 
     def test_output_type(self, lgb_diabetes_model_trees_dataframe):

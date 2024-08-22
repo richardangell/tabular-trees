@@ -3,9 +3,26 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
+import xgboost as xgb
 
 from tabular_trees.explain import PredictionDecomposition, decompose_prediction
 from tabular_trees.trees import export_tree_data
+
+
+@pytest.fixture(scope="session")
+def xgb_diabetes_model_lambda_0(xgb_diabetes_dmatrix) -> xgb.Booster:
+    """Xgboost model with 10 trees and depth 3 on the diabetes dataset.
+
+    Other parameters; lambda = 0.
+
+    """
+    model = xgb.train(
+        params={"verbosity": 0, "max_depth": 3, "lambda": 0},
+        dtrain=xgb_diabetes_dmatrix,
+        num_boost_round=10,
+    )
+
+    return model
 
 
 def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):

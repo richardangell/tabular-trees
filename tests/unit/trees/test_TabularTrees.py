@@ -12,7 +12,7 @@ def dummy_trees_data() -> pd.DataFrame:
     return pd.DataFrame(columns=TabularTrees.REQUIRED_COLUMNS)
 
 
-class TestInit:
+class TestInitialisation:
     """Tests for the TabularTrees.__init__ method."""
 
     def test_inheritance(self):
