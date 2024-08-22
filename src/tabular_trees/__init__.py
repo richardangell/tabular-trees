@@ -15,7 +15,7 @@ __version__ = metadata.version(__package__)
 del metadata
 
 with contextlib.suppress(ImportError):
-    from . import lightgbm
+    from .lightgbm import lightgbm_tabular_trees
 
 with contextlib.suppress(ImportError):
     from . import sklearn

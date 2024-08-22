@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tabular_trees.lightgbm import LightGBMTabularTrees
+from tabular_trees.lightgbm.lightgbm_tabular_trees import LightGBMTabularTrees
 from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
 
 

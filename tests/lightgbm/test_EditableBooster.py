@@ -2,8 +2,10 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from tabular_trees.lightgbm import (
+from tabular_trees.lightgbm.booster_string import (
     BoosterString,
+)
+from tabular_trees.lightgbm.booster_string_converter import (
     convert_booster_string_to_editable_booster,
 )
 
