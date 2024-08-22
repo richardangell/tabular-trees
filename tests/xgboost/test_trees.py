@@ -242,7 +242,7 @@ class TestXGBoostTabularTreesDerivePredictions:
 
                 model_trees = model.trees_to_dataframe()
 
-                round_to_digits = 3
+                round_to_digits = 4
 
                 derived_prediction = round(row["weight"], round_to_digits)
                 prediction_from_leaf_node = round(
