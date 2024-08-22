@@ -30,6 +30,7 @@ Added
 
 Changed
 ^^^^^^^
+- Restructure modules
 - Bump dependency versions (``pandas``: ``2.2.0``, ``lightgbm``: ``4.5.0``, ``xgboost``: ``2.1.0``, ``scikit-learn``: ``1.5.0``)
 - Swap to use ``ruff`` instead of various other tools, strengthen ``mypy`` settings and improve type hints
 - Improve tests
