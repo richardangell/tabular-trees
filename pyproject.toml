@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tabular-trees"
-version = "0.3.0.dev0"
+version = "0.3.0.dev1"
 description = "Package to assist with analysis of tree-based models."
 authors = ["Richard Angell <richardangell37@gmail.com>"]
 license = "BSD-3-Clause"
