@@ -56,6 +56,7 @@ def handcrafted_shap_model(handcrafted_shap_data) -> xgb.Booster:
 
     model = xgb.train(
         params={
+            "tree_method": "exact",
             "objective": "reg:squarederror",
             "max_depth": 2,
             "subsample": 1,

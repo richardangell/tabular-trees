@@ -178,10 +178,10 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         internal_nodes = ~leaf_nodes
 
         df["H"] = df["Cover"]
-        df["G"] = 0
+        df["G"] = 0.0
 
         # column to hold predictions
-        df["weight"] = 0
+        df["weight"] = 0.0
         df.loc[leaf_nodes, "weight"] = df.loc[leaf_nodes, "Gain"]
 
         df.loc[leaf_nodes, "G"] = -df.loc[leaf_nodes, "weight"] * (
@@ -268,9 +268,7 @@ def _export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
     checks.check_type(model, xgb.Booster, "model")
 
     model_config = json.loads(model.save_config())
-    train_params = model_config["learner"]["gradient_booster"]["updater"][
-        "grow_colmaker"
-    ]["train_param"]
+    train_params = model_config["learner"]["gradient_booster"]["tree_train_param"]
 
     tree_data = model.trees_to_dataframe()
 
