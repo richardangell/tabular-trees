@@ -3,7 +3,8 @@
 import contextlib
 from importlib import metadata
 
-from . import checks, explain, validate
+from . import checks, validate
+from .explain import prediction_decomposition, shapley_values
 from .trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 # single source for version number is in the pyproject.toml

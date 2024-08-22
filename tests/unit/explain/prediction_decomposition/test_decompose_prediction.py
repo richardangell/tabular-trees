@@ -5,7 +5,10 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.explain import PredictionDecomposition, decompose_prediction
+from tabular_trees.explain.prediction_decomposition import (
+    PredictionDecomposition,
+    decompose_prediction,
+)
 from tabular_trees.trees import export_tree_data
 
 
