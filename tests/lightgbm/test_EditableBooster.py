@@ -99,13 +99,13 @@ def test_leaf_redictions_can_be_changed():
     new_predictions = updated_booster.predict(x_train[["a", "b"]])
 
     np.testing.assert_array_almost_equal(
-        x=original_predictions,
-        y=np.array([25, 19, 9, 14]),
+        original_predictions,
+        np.array([25, 19, 9, 14]),
         decimal=14,
     )
 
     np.testing.assert_array_almost_equal(
-        x=new_predictions,
-        y=np.array([3, 2, 4, 1]),
+        new_predictions,
+        np.array([3, 2, 4, 1]),
         decimal=14,
     )

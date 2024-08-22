@@ -589,11 +589,13 @@ class JsonDumpReader(DumpReader):
         The json dump from xgboost does not contain this information.
 
         """
-        for i, row in df.iterrows():
-            if np.isnan(row["depth"]):
-                parent_col = "yes" if (df["yes"] == row["nodeid"]).sum() > 0 else "no"
-
-                df.at[i, "depth"] = df.loc[df[parent_col] == row["nodeid"], "depth"] + 1
+        for i in df.index:
+            if np.isnan(df.loc[i, "depth"].item()):
+                row_nodeid = df.loc[i, "nodeid"].item()
+                parent_col = "yes" if (df["yes"] == row_nodeid).sum() > 0 else "no"
+                df.loc[i, "depth"] = (
+                    df.loc[df[parent_col] == row_nodeid, "depth"].item() + 1
+                )
 
         df["depth"] = df["depth"].astype(int)
 

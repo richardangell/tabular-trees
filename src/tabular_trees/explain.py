@@ -447,7 +447,7 @@ def _shapley_values_tree(tree_df: pd.DataFrame, row: pd.Series) -> ShapleyValues
 
     tree_df_cols_subset = _convert_node_columns_to_integer(tree_df_cols_subset)
 
-    tree_df_cols_subset.loc[internal_nodes, "prediction"] = "internal"
+    tree_df_cols_subset.loc[internal_nodes, "prediction"] = np.nan
 
     cols_rename = {
         "left_child": "a",
@@ -566,7 +566,7 @@ def _g(j: int, w: float, x: pd.Series, s: list, tree: pd.DataFrame) -> float:
     r = tree["r"].tolist()
     d = tree["d"].tolist()
 
-    if v[j] != "internal":
+    if not np.isnan(v[j]):
         return w * v[j]
 
     else:
