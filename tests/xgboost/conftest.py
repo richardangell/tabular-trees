@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.xgboost import JsonDumpReader
+from tabular_trees.xgboost.dump_reader import JsonDumpReader
 
 
 @pytest.fixture(scope="session")

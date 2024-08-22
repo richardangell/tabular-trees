@@ -4,12 +4,11 @@ import pandas as pd
 import pytest
 import xgboost as xgb
 
-from tabular_trees.xgboost import (
+from tabular_trees.xgboost.dump_parser import ParsedXGBoostTabularTrees, XGBoostParser
+from tabular_trees.xgboost.dump_reader import (
     DumpReader,
     JsonDumpReader,
-    ParsedXGBoostTabularTrees,
     TextDumpReader,
-    XGBoostParser,
 )
 
 

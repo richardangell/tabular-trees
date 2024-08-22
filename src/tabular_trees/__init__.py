@@ -21,4 +21,4 @@ with contextlib.suppress(ImportError):
     from . import sklearn
 
 with contextlib.suppress(ImportError):
-    from . import xgboost
+    from .xgboost import xgboost_tabular_trees
