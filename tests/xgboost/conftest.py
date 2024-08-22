@@ -52,7 +52,7 @@ def xgb_diabetes_model(xgb_diabetes_dmatrix) -> xgb.Booster:
 def xgb_diabetes_model_subset_cols(xgb_diabetes_dmatrix_subset_cols) -> xgb.Booster:
     """Xgboost model with 10 trees and depth 3 on 4 columns of the diabetes dataset."""
     model = xgb.train(
-        params={"verbosity": 0, "max_depth": 3},
+        params={"verbosity": 0, "max_depth": 3, "tree_method": "exact"},
         dtrain=xgb_diabetes_dmatrix_subset_cols,
         num_boost_round=10,
     )
