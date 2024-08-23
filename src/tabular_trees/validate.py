@@ -6,7 +6,7 @@ from typing import Optional, Union
 import pandas as pd
 
 from .checks import check_condition, check_type
-from .explain import _convert_node_columns_to_integer
+from .explain.shapley_values import convert_node_columns_to_integer
 from .trees import TabularTrees
 
 
@@ -161,7 +161,7 @@ def _validate_monotonic_constraints(
     # loop through each tree
     for tree_no in trees_df["tree"].unique():
         tree_df = trees_df.loc[trees_df["tree"] == tree_no].copy()
-        tree_df = _convert_node_columns_to_integer(tree_df)
+        tree_df = convert_node_columns_to_integer(tree_df)
 
         # loop throguh each constraint
         for constraint_variable, constraint_direction in constraints.items():
