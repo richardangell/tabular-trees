@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from tabular_trees import BaseModelTabularTrees, TabularTrees
+from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
 
 
 @pytest.fixture(scope="session")

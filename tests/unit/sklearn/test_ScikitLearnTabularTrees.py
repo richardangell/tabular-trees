@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tabular_trees import BaseModelTabularTrees
 from tabular_trees.sklearn.scikit_learn_tabular_trees import ScikitLearnTabularTrees
+from tabular_trees.trees import BaseModelTabularTrees
 
 
 def test_inheritance():
