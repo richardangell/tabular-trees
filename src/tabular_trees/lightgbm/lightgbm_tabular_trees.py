@@ -79,7 +79,7 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         >>> # export to LightGBMTabularTrees
         >>> lightgbm_tabular_trees = export_tree_data(model)
         >>> type(lightgbm_tabular_trees)
-        <class 'tabular_trees.lightgbm.LightGBMTabularTrees'>
+        <class 'tabular_trees.lightgbm.lightgbm_tabular_trees.LightGBMTabularTrees'>
 
         """
         self.trees = trees

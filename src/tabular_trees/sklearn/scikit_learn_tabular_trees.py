@@ -67,9 +67,9 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
         >>> # export to ScikitLearnTabularTrees
         >>> sklearn_tabular_trees = export_tree_data(model)
         >>> type(sklearn_tabular_trees)
-        <class 'tabular_trees.sklearn.ScikitLearnTabularTrees'>
+        <class 'tabular_trees.sklearn.scikit_learn_tabular_trees.ScikitLearnTabularTrees'>
 
-        """
+        """  # noqa: E501
         self.trees = trees
 
         self.__post_init__()

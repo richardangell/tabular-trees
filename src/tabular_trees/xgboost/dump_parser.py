@@ -84,7 +84,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         --------
         >>> import xgboost as xgb
         >>> from sklearn.datasets import load_diabetes
-        >>> from tabular_trees.xgboost import XGBoostParser
+        >>> from tabular_trees import XGBoostParser
         >>> # get data in DMatrix
         >>> diabetes = load_diabetes()
         >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
@@ -96,7 +96,7 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         >>> # export to ParsedXGBoostTabularTrees
         >>> parsed_xgboost_tabular_trees = xgbooster_parser.parse_model()
         >>> type(parsed_xgboost_tabular_trees)
-        <class 'tabular_trees.xgboost.ParsedXGBoostTabularTrees'>
+        <class 'tabular_trees.xgboost.dump_parser.ParsedXGBoostTabularTrees'>
 
         """
         self.trees = trees

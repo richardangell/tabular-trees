@@ -88,7 +88,8 @@ convention = "numpy"
     "D205", # 1 blank line required between summary line and description
 ]
 "*/__init__.py" = [
-    "F401", # Unused import
+    "F401", # Unused import,
+    "D104", # Missing docstring in public package
 ]
 
 [tool.docformatter]

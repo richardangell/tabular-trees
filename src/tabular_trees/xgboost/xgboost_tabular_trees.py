@@ -98,7 +98,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         >>> # export to XGBoostTabularTrees
         >>> xgboost_tabular_trees = export_tree_data(model)
         >>> type(xgboost_tabular_trees)
-        <class 'tabular_trees.xgboost.XGBoostTabularTrees'>
+        <class 'tabular_trees.xgboost.xgboost_tabular_trees.XGBoostTabularTrees'>
 
         """
         self.trees = trees

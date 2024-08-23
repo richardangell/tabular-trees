@@ -65,7 +65,7 @@ def decompose_prediction(
     >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from tabular_trees import export_tree_data
-    >>> from tabular_trees.explain import decompose_prediction
+    >>> from tabular_trees import decompose_prediction
     >>> # get data in DMatrix
     >>> diabetes = load_diabetes()
     >>> data = xgb.DMatrix(
@@ -85,7 +85,7 @@ def decompose_prediction(
     >>> # decompose prediction
     >>> results = decompose_prediction(tabular_trees, row=row_to_score)
     >>> type(results)
-    <class 'tabular_trees.explain.PredictionDecomposition'>
+    <class 'tabular_trees.explain.prediction_decomposition.PredictionDecomposition'>
 
     """
     check_type(tabular_trees, TabularTrees, "tabular_trees")

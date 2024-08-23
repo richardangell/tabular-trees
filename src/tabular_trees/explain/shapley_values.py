@@ -75,7 +75,7 @@ def calculate_shapley_values(
     >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from tabular_trees import export_tree_data
-    >>> from tabular_trees.explain import calculate_shapley_values
+    >>> from tabular_trees import calculate_shapley_values
     >>> # get data in DMatrix
     >>> diabetes = load_diabetes()
     >>> data = xgb.DMatrix(
@@ -98,7 +98,7 @@ def calculate_shapley_values(
     >>> # calculate shapley values
     >>> results = calculate_shapley_values(tabular_trees, row=row_to_score)
     >>> type(results)
-    <class 'tabular_trees.explain.ShapleyValues'>
+    <class 'tabular_trees.explain.shapley_values.ShapleyValues'>
 
     """
     warnings.warn(
