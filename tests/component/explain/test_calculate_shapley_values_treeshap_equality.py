@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -6,9 +5,7 @@ from tabular_trees.explain.shapley_values import calculate_shapley_values
 from tabular_trees.trees import export_tree_data
 
 
-@pytest.mark.parametrize(
-    "row_number_to_score", np.random.randint(low=0, high=442, size=6).tolist()
-)
+@pytest.mark.parametrize("row_number_to_score", [0, 1, 11, 22, 199, 201])
 def test_equality_with_xgboost_treeshap(
     row_number_to_score,
     diabetes_data_subset_cols,
