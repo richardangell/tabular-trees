@@ -280,7 +280,7 @@ class XGBoostParser:
             )
 
             self.model.dump_model(
-                tmp_model_dump, with_stats=True, dump_format=self.reader.dump_type
+                tmp_model_dump, with_stats=True, dump_format=self.reader.dump_type.value
             )
 
             trees_df = self.reader.read_dump(tmp_model_dump)

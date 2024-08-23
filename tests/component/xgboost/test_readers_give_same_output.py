@@ -5,8 +5,8 @@ from tabular_trees.xgboost.dump_reader import JsonDumpReader, TextDumpReader
 
 
 @pytest.mark.parametrize("with_stats", [(False), (True)])
-def test_text__and_json_parsing_equal(with_stats, tmp_path, xgb_diabetes_model):
-    """Test that parsing text and json files give the same output."""
+def test_text_and_json_readers_equal(with_stats, tmp_path, xgb_diabetes_model):
+    """Test that reading text and json files give the same output."""
     text_dump = str(tmp_path.joinpath("dump_raw.txt"))
     json_dump = str(tmp_path.joinpath("dump_raw.json"))
 

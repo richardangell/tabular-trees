@@ -3,6 +3,7 @@
 import contextlib
 import json
 from abc import ABC, abstractmethod
+from enum import Enum
 from pathlib import Path
 
 import numpy as np
@@ -11,12 +12,19 @@ import pandas as pd
 from .. import checks
 
 
+class DumpType(Enum):
+    """Type for a specific implementation of DumpReader."""
+
+    TEXT = "text"
+    JSON = "json"
+
+
 class DumpReader(ABC):
     """Abstract base class for xgboost mode dump readers."""
 
     @property
     @abstractmethod
-    def dump_type(self) -> str:
+    def dump_type(self) -> DumpType:
         """Attribute indicating the model dump format supported."""
         raise NotImplementedError
 
@@ -34,7 +42,7 @@ class DumpReader(ABC):
 class JsonDumpReader(DumpReader):
     """Class to read xgboost model (json) file dumps."""
 
-    dump_type = "json"
+    dump_type = DumpType.JSON
     """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
@@ -121,7 +129,7 @@ class JsonDumpReader(DumpReader):
 class TextDumpReader(DumpReader):
     """Class to read xgboost model (text) file dumps."""
 
-    dump_type = "text"
+    dump_type = DumpType.TEXT
     """Type of model dump file this DumpReader can read."""
 
     def read_dump(self, file: str) -> pd.DataFrame:
