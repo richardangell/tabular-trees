@@ -5,8 +5,8 @@ import pandas as pd
 from tabular_trees.lightgbm.booster_string import (
     BoosterString,
 )
-from tabular_trees.lightgbm.booster_string_converter import (
-    convert_booster_string_to_editable_booster,
+from tabular_trees.lightgbm.editable_booster import (
+    EditableBooster,
 )
 
 
@@ -16,7 +16,7 @@ def test_booster_reproducible_from_booster_string(diabetes_data, lgb_diabetes_mo
 
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
-    booster_string = BoosterString(lgb_diabetes_model)
+    booster_string = BoosterString.from_booster(lgb_diabetes_model)
 
     # ACT
 
@@ -35,9 +35,7 @@ def test_booster_reproducible_from_editable_booster(diabetes_data, lgb_diabetes_
 
     predictions = lgb_diabetes_model.predict(diabetes_data["data"])
 
-    booster_string = BoosterString(lgb_diabetes_model)
-
-    editable_booster = convert_booster_string_to_editable_booster(booster_string)
+    editable_booster = EditableBooster.from_booster(lgb_diabetes_model)
 
     # ACT
 
@@ -93,9 +91,7 @@ def test_leaf_redictions_can_be_changed():
 
     original_predictions = model.predict(data[["a", "b"]])
 
-    booster_string = BoosterString(model)
-
-    editable_booster = convert_booster_string_to_editable_booster(booster_string)
+    editable_booster = EditableBooster.from_booster(model)
 
     # ACT
 
