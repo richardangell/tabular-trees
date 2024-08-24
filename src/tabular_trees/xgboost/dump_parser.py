@@ -124,7 +124,11 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         """
         converted_data = self._create_same_columns_as_xgboost_output(self.trees)
 
-        return XGBoostTabularTrees(converted_data)
+        converted_data_with_predictions = XGBoostTabularTrees.derive_predictions(
+            df=converted_data, lambda_=0
+        )
+
+        return XGBoostTabularTrees(converted_data_with_predictions)
 
     def _create_same_columns_as_xgboost_output(self, df: pd.DataFrame) -> pd.DataFrame:
         """Convert parsed DataFrame dump to xgb.Booster.trees_to_dataframe format.

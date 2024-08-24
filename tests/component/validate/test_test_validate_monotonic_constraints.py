@@ -46,7 +46,7 @@ def test_constraints_met_as_expected(xgb_diabetes_model_monotonic):
     model, constraints = xgb_diabetes_model_monotonic
 
     xgboost_tabular_trees = export_tree_data(model)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     results = validate_monotonic_constraints(
         tabular_trees=tabular_trees, constraints=constraints

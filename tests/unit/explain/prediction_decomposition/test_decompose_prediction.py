@@ -36,7 +36,7 @@ def test_output_type(diabetes_data, xgb_diabetes_model_lambda_0):
     row_data = diabetes_data_df.iloc[[0]]
 
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     result = decompose_prediction(
         tabular_trees=tabular_trees,
@@ -71,7 +71,7 @@ def test_tabular_trees_not_tabular_trees_exception(diabetes_data):
 def test_row_not_dataframe_exception(xgb_diabetes_model_lambda_0):
     """Test an exception is raised if row argument is not a pd.DataFrame."""
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     with pytest.raises(
         TypeError,
@@ -92,7 +92,7 @@ def test_not_single_row_exception(nrows, diabetes_data, xgb_diabetes_model_lambd
     row_data = diabetes_data_df.iloc[0:nrows]
 
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     with pytest.raises(
         ValueError,
@@ -135,7 +135,7 @@ def test_prediction_decomposition_eli5_equality(
 
     # get decomposition with tabular_trees
     xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_lambda_0)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
     tabular_trees_decomposition = decompose_prediction(
         tabular_trees=tabular_trees,
         row=row_data,

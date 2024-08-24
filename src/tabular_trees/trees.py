@@ -1,6 +1,6 @@
 """Module for tree structure classes."""
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from functools import singledispatch
 from typing import Any, Callable
@@ -15,18 +15,6 @@ class BaseModelTabularTrees(ABC):
 
     trees: pd.DataFrame
     """Tree data."""
-
-    @property
-    @abstractmethod
-    def REQUIRED_COLUMNS(self) -> list[str]:  # noqa: N802
-        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
-        raise NotImplementedError("REQUIRED_COLUMNS attribute not defined")
-
-    @property
-    @abstractmethod
-    def SORT_BY_COLUMNS(self) -> list[str]:  # noqa: N802
-        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
-        raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
 
     def __post_init__(self) -> None:
         """Post init checks and processing.

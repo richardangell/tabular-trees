@@ -11,6 +11,7 @@ from .xgboost_fixtures import (  # noqa: F401
     xgb_diabetes_dmatrix,
     xgb_diabetes_dmatrix_subset_cols,
     xgb_diabetes_model,
+    xgb_diabetes_model_non_zero_alpha,
     xgb_diabetes_model_subset_cols,
 )
 

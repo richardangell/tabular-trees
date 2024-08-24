@@ -9,7 +9,7 @@ import xgboost as xgb
 from numpy.typing import NDArray
 
 from .. import checks
-from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
+from ..trees import TabularTrees, export_tree_data
 
 
 def xgboost_get_root_node_given_tree(tree: int) -> str:
@@ -18,7 +18,7 @@ def xgboost_get_root_node_given_tree(tree: int) -> str:
 
 
 @dataclass
-class XGBoostTabularTrees(BaseModelTabularTrees):
+class XGBoostTabularTrees:
     """Class to hold the xgboost trees in tabular format."""
 
     """Class to hold the xgboost trees in tabular format.
@@ -49,8 +49,10 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
     H: NDArray[np.float64] = field(init=False, repr=False)
     weight: NDArray[np.float64] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set attributes from data(frame) columns."""
+        self.data = self.data.copy()
+
         for field_ in fields(self):
             if not field_.init:
                 setattr(self, field_.name, self.data[field_.name].values)
@@ -75,7 +77,7 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             df=tree_data, lambda_=model_lambda
         )
 
-        return XGBoostTabularTrees(trees=tree_data_with_predictions)
+        return XGBoostTabularTrees(data=tree_data_with_predictions)
 
     def to_dataframe(self) -> pd.DataFrame:
         """Return data as pd.DataFrame."""
