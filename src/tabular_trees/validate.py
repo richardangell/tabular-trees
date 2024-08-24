@@ -108,7 +108,7 @@ def validate_monotonic_constraints(
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
     >>> # export to TabularTrees
     >>> xgboost_tabular_trees = export_tree_data(model)
-    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> tabular_trees = xgboost_tabular_trees.to_tabular_trees()
     >>> # check monotonic constraints
     >>> validate_monotonic_constraints(tabular_trees, constraints=constraints_dict)
     ... # doctest: +NORMALIZE_WHITESPACE

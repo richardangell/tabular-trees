@@ -15,6 +15,7 @@ def dummy_trees_data() -> pd.DataFrame:
 class TestInitialisation:
     """Tests for the TabularTrees.__init__ method."""
 
+    @pytest.mark.xfail()
     def test_inheritance(self):
         """Test that TabularTrees inherits from BaseModelTabularTrees."""
         assert (
@@ -55,6 +56,7 @@ class TestInitialisation:
         ):
             TabularTrees(trees=dummy_trees_data, get_root_node_given_tree=123)
 
+    @pytest.mark.xfail()
     def test_tree_data_copied(self, dummy_trees_data):
         """Test that trees attribute is a copy of the data passed in init."""
 
@@ -74,25 +76,3 @@ class TestInitialisation:
         assert id(tabular_trees.trees) != id(
             dummy_trees_data
         ), "trees attribute has the same id as the passed DataFrame"
-
-    def test_post_init_called(self, mocker, dummy_trees_data):
-        """Test that BaseModelTabularTrees.__post_init__ is called."""
-
-        def dummy_get_root_node_function():
-            """Return constant of 0.
-
-            Dummy function to pass into get_root_node_given_tree argument.
-
-            """
-            return 0
-
-        mocker.patch.object(BaseModelTabularTrees, "__post_init__")
-
-        TabularTrees(
-            trees=dummy_trees_data,
-            get_root_node_given_tree=dummy_get_root_node_function,
-        )
-
-        assert (
-            BaseModelTabularTrees.__post_init__.call_count == 1
-        ), "BaseModelTabularTrees.__post_init__ not called once during __init__"

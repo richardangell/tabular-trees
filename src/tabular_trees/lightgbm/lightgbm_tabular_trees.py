@@ -1,9 +1,11 @@
 """LightGBM trees in tabular format."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import lightgbm as lgb
+import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .. import checks
 from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
@@ -18,58 +20,39 @@ def lightgbm_get_root_node_given_tree(tree: int) -> str:
 class LightGBMTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost trees in tabular format."""
 
-    trees: pd.DataFrame
+    data: pd.DataFrame
     """Tree data."""
 
-    REQUIRED_COLUMNS = [
-        "tree_index",
-        "node_depth",
-        "node_index",
-        "left_child",
-        "right_child",
-        "parent_index",
-        "split_feature",
-        "split_gain",
-        "threshold",
-        "decision_type",
-        "missing_direction",
-        "missing_type",
-        "value",
-        "weight",
-        "count",
-    ]
-    """List of columns required in tree data."""
+    tree_index: NDArray[np.int_] = field(init=False, repr=False)
+    node_depth: NDArray[np.int_] = field(init=False, repr=False)
+    node_index: NDArray[np.object_] = field(init=False, repr=False)
+    left_child: NDArray[np.object_] = field(init=False, repr=False)
+    right_child: NDArray[np.object_] = field(init=False, repr=False)
+    parent_index: NDArray[np.object_] = field(init=False, repr=False)
+    split_feature: NDArray[np.object_] = field(init=False, repr=False)
+    split_gain: NDArray[np.float64] = field(init=False, repr=False)
+    threshold: NDArray[np.float64] = field(init=False, repr=False)
+    decision_type: NDArray[np.object_] = field(init=False, repr=False)
+    missing_direction: NDArray[np.object_] = field(init=False, repr=False)
+    missing_type: NDArray[np.object_] = field(init=False, repr=False)
+    value: NDArray[np.float64] = field(init=False, repr=False)
+    weight: NDArray[np.int_] = field(init=False, repr=False)
+    count: NDArray[np.int_] = field(init=False, repr=False)
 
-    SORT_BY_COLUMNS = ["tree_index", "node_depth", "node_index"]
-    """List of columns to sort tree data by."""
-
-    COLUMN_MAPPING = {
-        "tree_index": "tree",
-        "node_index": "node",
-        "left_child": "left_child",
-        "right_child": "right_child",
-        "missing_direction": "missing",
-        "split_feature": "feature",
-        "threshold": "split_condition",
-        "leaf": "leaf",
-        "count": "count",
-        "value": "prediction",
-    }
-    """Column name mapping between LightGBMTabularTrees and TabularTrees tree data."""
-
-    def __init__(self, trees: pd.DataFrame):
-        """Initialise the LightGBMTabularTrees object.
+    @classmethod
+    def from_booster(cls, booster: lgb.Booster) -> "LightGBMTabularTrees":
+        """Create LightGBMTabularTrees from a lgb.Booster object.
 
         Parameters
         ----------
-        trees : pd.DataFrame
-            LightGBM tree data output from Booster.trees_to_dataframe.
+        booster : lgb.Booster
+            LightGBM model to pull tree data from.
 
         Examples
         --------
         >>> import lightgbm as lgb
         >>> from sklearn.datasets import load_diabetes
-        >>> from tabular_trees import export_tree_data
+        >>> from tabular_trees import LightGBMTabularTrees
         >>> # get data in Dataset
         >>> diabetes = load_diabetes()
         >>> data = lgb.Dataset(diabetes["data"], label=diabetes["target"])
@@ -77,35 +60,44 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         >>> params = {"max_depth": 3, "verbosity": -1}
         >>> model = lgb.train(params, train_set=data, num_boost_round=10)
         >>> # export to LightGBMTabularTrees
-        >>> lightgbm_tabular_trees = export_tree_data(model)
+        >>> lightgbm_tabular_trees = LightGBMTabularTrees.from_booster(model)
         >>> type(lightgbm_tabular_trees)
         <class 'tabular_trees.lightgbm.lightgbm_tabular_trees.LightGBMTabularTrees'>
 
         """
-        self.trees = trees
+        checks.check_type(booster, lgb.Booster, "booster")
+        tree_data = booster.trees_to_dataframe()
 
-        self.__post_init__()
+        return LightGBMTabularTrees(tree_data)
 
-    def convert_to_tabular_trees(self) -> TabularTrees:
+    def to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
-        trees = self.trees.copy()
+        trees = self.data.copy()
 
-        trees = self._derive_leaf_node_flag(trees)
+        # derive leaf node flag
+        trees["leaf"] = (trees["split_feature"].isnull()).astype(int)
 
-        tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
-            columns=self.COLUMN_MAPPING
+        column_mapping = {
+            "tree_index": "tree",
+            "node_index": "node",
+            "left_child": "left_child",
+            "right_child": "right_child",
+            "missing_direction": "missing",
+            "split_feature": "feature",
+            "threshold": "split_condition",
+            "leaf": "leaf",
+            "count": "count",
+            "value": "prediction",
+        }
+
+        tree_data_converted = trees[column_mapping.keys()].rename(
+            columns=column_mapping
         )
 
         return TabularTrees(
             trees=tree_data_converted,
             get_root_node_given_tree=lightgbm_get_root_node_given_tree,
         )
-
-    def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Derive a leaf node indiciator flag column."""
-        df["leaf"] = (df["split_feature"].isnull()).astype(int)
-
-        return df
 
 
 @export_tree_data.register(lgb.Booster)
@@ -120,6 +112,4 @@ def _export_tree_data__lgb_booster(model: lgb.Booster) -> LightGBMTabularTrees:
     """
     checks.check_type(model, lgb.Booster, "model")
 
-    tree_data = model.trees_to_dataframe()
-
-    return LightGBMTabularTrees(tree_data)
+    return LightGBMTabularTrees.from_booster(model)

@@ -49,7 +49,7 @@ Then we can export the tree data to a ``TabularTrees`` object with the following
     from tabular_trees import export_tree_data
     
     lightgbm_tabular_trees = export_tree_data(bst)
-    tabular_trees = lightgbm_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = lightgbm_tabular_trees.to_tabular_trees()
 
 The tree data can then be inspected and further analysed:
 

@@ -88,7 +88,7 @@ def calculate_shapley_values(
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
     >>> # export to TabularTrees
     >>> xgboost_tabular_trees = export_tree_data(model)
-    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> tabular_trees = xgboost_tabular_trees.to_tabular_trees()
     >>> # get data to score
     >>> scoring_data = pd.DataFrame(
     ...     diabetes["data"][:,:3],

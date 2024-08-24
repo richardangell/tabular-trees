@@ -1,7 +1,7 @@
 """Module for tree structure classes."""
 
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from functools import singledispatch
 from typing import Any, Callable
 
@@ -10,62 +10,30 @@ import pandas as pd
 from . import checks
 
 
+@dataclass
 class BaseModelTabularTrees(ABC):
-    """Abstract base class for model specific TabularTrees classes."""
+    """Base class for model specific TabularTrees classes."""
 
-    trees: pd.DataFrame
-    """Tree data."""
+    data: pd.DataFrame
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """Return data for trees object."""
+        return self.data.copy()
 
     def __post_init__(self) -> None:
-        """Post init checks and processing.
+        """Copy data and set attributes defined on subclass."""
+        if not hasattr(self, "data"):
+            raise AttributeError("data attribute not set")
 
-        Processing on the trees attribute is as follows;
-        - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by SORT_BY_COLUMNS columns
-        - The index is reset and original index dropped.
+        self.data = self.data.copy()
 
-        Raises
-        ------
-        AttributeError
-            If object does not have trees attribute.
-
-        TypeError
-            If trees attribute is not a pd.DataFrame.
-
-        TypeError
-            If REQUIRED_COLUMNS attribute is not a list.
-
-        TypeError
-            If SORT_BY_COLUMNS attribute is not a list.
-
-        ValueError
-            If REQUIRED_COLUMNS are not in trees attribute.
-
-        ValueError
-            If SORT_BY_COLUMNS is not a subset of REQUIRED_COLUMNS.
-
-        """
-        if not hasattr(self, "trees"):
-            raise AttributeError("trees attribute not set")
-
-        checks.check_type(self.trees, pd.DataFrame, "trees")
-        checks.check_type(self.REQUIRED_COLUMNS, list, "REQUIRED_COLUMNS")
-        checks.check_type(self.SORT_BY_COLUMNS, list, "SORT_BY_COLUMNS")
-
-        checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
-
-        checks.check_condition(
-            all(column in self.REQUIRED_COLUMNS for column in self.SORT_BY_COLUMNS),
-            "SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS",
-        )
-
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
-        self.trees = self.trees.sort_values(self.SORT_BY_COLUMNS)
-        self.trees = self.trees.reset_index(drop=True)
+        for field_ in fields(self):
+            if not field_.init:
+                setattr(self, field_.name, self.data[field_.name].values)
 
 
 @dataclass
-class TabularTrees(BaseModelTabularTrees):
+class TabularTrees:
     """Generic tree structure in tabular format."""
 
     trees: pd.DataFrame
@@ -107,8 +75,6 @@ class TabularTrees(BaseModelTabularTrees):
             callable(self.get_root_node_given_tree),
             "get_root_node_given_tree is callable",
         )
-
-        self.__post_init__()
 
 
 @singledispatch

@@ -1,7 +1,7 @@
 """XGBoost trees in tabular format."""
 
 import json
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ import xgboost as xgb
 from numpy.typing import NDArray
 
 from .. import checks
-from ..trees import TabularTrees, export_tree_data
+from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
 
 
 def xgboost_get_root_node_given_tree(tree: int) -> str:
@@ -18,48 +18,96 @@ def xgboost_get_root_node_given_tree(tree: int) -> str:
 
 
 @dataclass
-class XGBoostTabularTrees:
+class XGBoostTabularTrees(BaseModelTabularTrees):
     """Class to hold the xgboost trees in tabular format."""
 
-    """Class to hold the xgboost trees in tabular format.
-    
-    Attributes
-    ----------
-    Tree : NDArray[np.int_]
-        blah balh
-    Node : NDArray[np.int_]
-        dsksddsn
-    
-    """
-
     data: pd.DataFrame
+    """Tree data."""
 
     Tree: NDArray[np.int_] = field(init=False, repr=False)
+    """Tree number."""
+
     Node: NDArray[np.int_] = field(init=False, repr=False)
+    """Node number."""
+
     ID: NDArray[np.object_] = field(init=False, repr=False)
+    """Id for ech node combining tree and node numbers."""
+
     Feature: NDArray[np.object_] = field(init=False, repr=False)
+    """The name of the feature split on.
+
+    Null for leaf nodes.
+
+    """
+
     Split: NDArray[np.float64] = field(init=False, repr=False)
+    """The split point for a node.
+
+    Null for leaf nodes.
+
+    """
+
     Yes: NDArray[np.object_] = field(init=False, repr=False)
+    """Left child node.
+
+    Null for leaf nodes.
+
+    """
+
     No: NDArray[np.object_] = field(init=False, repr=False)
+    """Right child node.
+
+    Null for leaf nodes.
+
+    """
+
     Missing: NDArray[np.object_] = field(init=False, repr=False)
+    """Child node for rows with null values in the split feature."""
+
     Gain: NDArray[np.float64] = field(init=False, repr=False)
+    """Gain for a given split."""
+
     Cover: NDArray[np.float64] = field(init=False, repr=False)
+    """Related to the 2nd order derivative of the loss function with respect to a the
+    split feature."""
+
     Category: NDArray[np.float64] = field(init=False, repr=False)
+
     G: NDArray[np.float64] = field(init=False, repr=False)
+    """Use in calculation of internal node predictions."""
+
     H: NDArray[np.float64] = field(init=False, repr=False)
+    """Cover."""
+
     weight: NDArray[np.float64] = field(init=False, repr=False)
-
-    def __post_init__(self) -> None:
-        """Set attributes from data(frame) columns."""
-        self.data = self.data.copy()
-
-        for field_ in fields(self):
-            if not field_.init:
-                setattr(self, field_.name, self.data[field_.name].values)
+    """Node prediction."""
 
     @classmethod
     def from_booster(cls, booster: xgb.Booster) -> "XGBoostTabularTrees":
-        """Export XGBoostTabularTrees from an xgboost.Booster."""
+        """Create XGBoostTabularTrees from a xgb.Booster object.
+
+        Parameters
+        ----------
+        booster : lgb.Booster
+            LightGBM model to pull tree data from.
+
+        Examples
+        --------
+        >>> import xgboost as xgb
+        >>> from sklearn.datasets import load_diabetes
+        >>> from tabular_trees import XGBoostTabularTrees
+        >>> # get data in DMatrix
+        >>> diabetes = load_diabetes()
+        >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
+        >>> # build model
+        >>> params = {"max_depth": 3, "verbosity": 0}
+        >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
+        >>> # export to XGBoostTabularTrees
+        >>> xgboost_tabular_trees = XGBoostTabularTrees.from_booster(model)
+        >>> type(xgboost_tabular_trees)
+        <class 'tabular_trees.xgboost.xgboost_tabular_trees.XGBoostTabularTrees'>
+
+        """
         checks.check_type(booster, xgb.Booster, "booster")
 
         model_config = json.loads(booster.save_config())
@@ -78,10 +126,6 @@ class XGBoostTabularTrees:
         )
 
         return XGBoostTabularTrees(data=tree_data_with_predictions)
-
-    def to_dataframe(self) -> pd.DataFrame:
-        """Return data as pd.DataFrame."""
-        return self.data
 
     def to_tabular_trees(self) -> TabularTrees:
         """Convert the tree data to a TabularTrees object."""
