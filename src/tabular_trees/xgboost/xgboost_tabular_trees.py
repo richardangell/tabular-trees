@@ -88,8 +88,8 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         Parameters
         ----------
-        booster : lgb.Booster
-            LightGBM model to pull tree data from.
+        booster : xgb.Booster
+            XGBoost model to pull tree data from.
 
         Examples
         --------
