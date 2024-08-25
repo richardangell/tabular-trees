@@ -109,8 +109,8 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         >>> params = {"max_depth": 3, "verbosity": 0}
         >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
         >>> # export to ParsedXGBoostTabularTrees
-        >>> parsed_xgboost_tabular_trees = ParsedXGBoostTabularTrees.from_booster()
-        >>> type(parsed_xgboost_tabular_trees)
+        >>> parsed_xgb_tabular_trees = ParsedXGBoostTabularTrees.from_booster(model)
+        >>> type(parsed_xgb_tabular_trees)
         <class 'tabular_trees.xgboost.dump_parser.ParsedXGBoostTabularTrees'>
 
         """

@@ -9,10 +9,10 @@ from sklearn.ensemble import (
     HistGradientBoostingRegressor,
 )
 
-from tabular_trees.sklearn.scikit_learn_hist_tabular_trees import (
-    _extract_hist_gbm_tree_data,
+from tabular_trees.sklearn.sklearn_hist_tabular_trees import (
+    ScikitLearnHistTabularTrees,
 )
-from tabular_trees.sklearn.scikit_learn_tabular_trees import _extract_gbm_tree_data
+from tabular_trees.sklearn.sklearn_tabular_trees import ScikitLearnTabularTrees
 
 
 @pytest.fixture(scope="session")
@@ -108,13 +108,17 @@ def sklearn_hist_gbm_trees_dataframe(
     sklearn_diabetes_hist_gbm_regressor,
 ) -> pd.DataFrame:
     """Return the trees from a HistGradientBoostingRegressor in DataFrame structure."""
-    return _extract_hist_gbm_tree_data(sklearn_diabetes_hist_gbm_regressor)
+    return ScikitLearnHistTabularTrees._extract_hist_gbm_tree_data(
+        sklearn_diabetes_hist_gbm_regressor
+    )
 
 
 @pytest.fixture(scope="session")
 def sklearn_gbm_trees_dataframe(sklearn_diabetes_gbm_regressor) -> pd.DataFrame:
     """Return the trees from a GradientBoostingRegressor in DataFrame structure."""
-    return _extract_gbm_tree_data(sklearn_diabetes_gbm_regressor)
+    return ScikitLearnTabularTrees._extract_gbm_tree_data(
+        sklearn_diabetes_gbm_regressor
+    )
 
 
 @pytest.fixture
