@@ -28,7 +28,7 @@ jobs:
 
     - name: Install poetry
       run: |
-        python -m pip install poetry==1.4.0
+        python -m pip install poetry
 
     - name: Configure poetry
       run: |
@@ -42,7 +42,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m poetry install --with dev  --extras "lightgbm xgboost"
+        python -m poetry install --with dev  --extras "lightgbm xgboost sklearn"
           
     - name: Test with pytest
       if: always()
