@@ -19,6 +19,10 @@ LightGBM
     :toctree: api/
 
     LightGBMTabularTrees
+    EditableBooster
+    BoosterHeader
+    BoosterTree
+    BoosterString
 
 Scikit-Learn
 --------------------------

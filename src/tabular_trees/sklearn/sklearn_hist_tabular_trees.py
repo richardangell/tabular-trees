@@ -23,7 +23,12 @@ from ..trees import BaseModelTabularTrees, export_tree_data
 
 @dataclass
 class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
-    """Scikit-Learn HistGradientBoosting trees in tabular format."""
+    """Scikit-Learn HistGradientBoosting trees in tabular format.
+
+    The preferred way to create ScikitLearnHistTabularTrees objects is with the
+    from_hist_gradient_booster method.
+
+    """
 
     data: pd.DataFrame
     """Tree data."""

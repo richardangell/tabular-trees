@@ -19,7 +19,12 @@ from .xgboost_tabular_trees import XGBoostTabularTrees
 
 @dataclass
 class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
-    """Dataclass for XGBoost models that have been parsed from a model dump."""
+    """Dataclass for XGBoost models that have been parsed from a model dump.
+
+    The preferred way to create ParsedXGBoostTabularTrees objects is with the
+    from_booster method.
+
+    """
 
     data: pd.DataFrame
     """Tree data."""

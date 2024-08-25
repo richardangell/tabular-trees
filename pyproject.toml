@@ -101,6 +101,7 @@ blank = true
 filterwarnings = [
     "ignore:This algorithm has very long runtime. It will produce the same results as treeSHAP but will take much longer to run.",
     "ignore:XGBoostDumpParser class is depreceated, Booster.trees_to_dataframe is available instead",
+    "ignore:EditableBooster is experimental and has not been tested with every option that is available in LightGBM.",
 ]
 
 [tool.mypy]

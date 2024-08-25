@@ -18,26 +18,72 @@ def lightgbm_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class LightGBMTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format."""
+    """Class to hold the LightGBM trees in tabular format.
+
+    The preferred way to create LightGBMTabularTrees objects is with the from_booster
+    method.
+
+    """
 
     data: pd.DataFrame
     """Tree data."""
 
     tree_index: NDArray[np.int_] = field(init=False, repr=False)
+    """Tree index."""
+
     node_depth: NDArray[np.int_] = field(init=False, repr=False)
+    """Depth of each node."""
+
     node_index: NDArray[np.object_] = field(init=False, repr=False)
+    """Unique identifier for each node in the tree."""
+
     left_child: NDArray[np.object_] = field(init=False, repr=False)
+    """Node index for left children."""
+
     right_child: NDArray[np.object_] = field(init=False, repr=False)
+    """Node index for right children."""
+
     parent_index: NDArray[np.object_] = field(init=False, repr=False)
+    """Node index for the current node's parent."""
+
     split_feature: NDArray[np.object_] = field(init=False, repr=False)
+    """Name of the feature used to split on.
+
+    Null for leaf nodes.
+
+    """
+
     split_gain: NDArray[np.float64] = field(init=False, repr=False)
+    """Gain for splits.
+
+    Null for leaf nodes.
+
+    """
+
     threshold: NDArray[np.float64] = field(init=False, repr=False)
+    """Split threshold.
+
+    Null for leaf nodes.
+
+    """
+
     decision_type: NDArray[np.object_] = field(init=False, repr=False)
+    """"""
+
     missing_direction: NDArray[np.object_] = field(init=False, repr=False)
+    """Direction at split for rows with null value for the split feature."""
+
     missing_type: NDArray[np.object_] = field(init=False, repr=False)
+    """What types of values are considered missing."""
+
     value: NDArray[np.float64] = field(init=False, repr=False)
+    """Node predicton."""
+
     weight: NDArray[np.int_] = field(init=False, repr=False)
+    """Sum of Hessian for node."""
+
     count: NDArray[np.int_] = field(init=False, repr=False)
+    """Count of rows at node."""
 
     @classmethod
     def from_booster(cls, booster: lgb.Booster) -> "LightGBMTabularTrees":

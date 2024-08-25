@@ -19,7 +19,12 @@ def xgboost_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class XGBoostTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format."""
+    """Class to hold the XGBoost trees in tabular format.
+
+    The preferred way to create XGBoostTabularTrees objects is with the from_booster
+    method.
+
+    """
 
     data: pd.DataFrame
     """Tree data."""

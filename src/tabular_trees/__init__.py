@@ -9,7 +9,7 @@ from .explain.prediction_decomposition import (
 )
 from .explain.shapley_values import ShapleyValues, calculate_shapley_values
 from .lightgbm.booster_string import BoosterString
-from .lightgbm.editable_booster import EditableBooster
+from .lightgbm.editable_booster import BoosterHeader, BoosterTree, EditableBooster
 from .lightgbm.lightgbm_tabular_trees import LightGBMTabularTrees
 from .sklearn.sklearn_hist_tabular_trees import ScikitLearnHistTabularTrees
 from .sklearn.sklearn_tabular_trees import ScikitLearnTabularTrees
@@ -41,6 +41,8 @@ __all__ = [
     "calculate_shapley_values",
     "ShapleyValues",
     "EditableBooster",
+    "BoosterHeader",
+    "BoosterTree",
     "LightGBMTabularTrees",
     "BoosterString",
     "ScikitLearnHistTabularTrees",

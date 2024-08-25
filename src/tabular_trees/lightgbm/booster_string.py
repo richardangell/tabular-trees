@@ -30,25 +30,53 @@ class BoosterString:
 
     @classmethod
     def from_booster(cls, booster: lgb.Booster) -> "BoosterString":
-        """Create BoosterString from a lgb.Booster object."""
+        """Create BoosterString from a lgb.Booster object.
+
+        Returns
+        -------
+        model : BoosterString
+            Model as a BoosterString object.
+
+        """
         booster_string: str = booster.model_to_string()
         booster_string_split = booster_string.split(cls.new_line)
 
         return BoosterString(booster_string_split)
 
     def to_booster(self) -> lgb.Booster:
-        """Convert the BoosterString back to a Booster."""
+        """Convert the BoosterString back to a Booster.
+
+        Returns
+        -------
+        model : lgb.Booster
+            BoosterString as lgb.Booster object.
+
+        """
         booster_string = self.new_line.join(self.rows)
 
         return lgb.Booster(model_str=booster_string)
 
     def extract_header_rows(self) -> list[str]:
-        """Extract the header rows from BoosterString object."""
+        """Extract the header rows from BoosterString object.
+
+        Returns
+        -------
+        rows : list[str]
+            Header rows from Booster text.
+
+        """
         end_row_index = self.row_markers["end_header"] + 1
         return self._extract_rows(0, end_row_index)
 
     def extract_tree_rows(self, tree_number: int) -> list[str]:
-        """Extract rows for given tree number."""
+        """Extract rows for given tree number.
+
+        Returns
+        -------
+        rows : list[str]
+            Rows from Booster text for the given tree.
+
+        """
         try:
             start_row_index = self.tree_rows[tree_number]
         except KeyError as err:
@@ -59,7 +87,14 @@ class BoosterString:
         return self._extract_rows(start_row_index, start_row_index + 19)
 
     def extract_bottom_rows(self) -> list[str]:
-        """Return all rows after the 'end of trees' line to the end."""
+        """Return all rows after the 'end of trees' line to the end.
+
+        Returns
+        -------
+        rows : list[str]
+            Final rows from Booster text.
+
+        """
         return self._extract_rows(
             self.row_markers["end_of_trees"], self._get_number_of_rows()
         )

@@ -1,6 +1,7 @@
 """Module containing editable version of LightGBM Booster objects."""
 
-from dataclasses import dataclass, field
+import warnings
+from dataclasses import dataclass, field, fields
 from typing import Union
 
 import lightgbm as lgb
@@ -34,57 +35,77 @@ class BoosterHeader:
     """Dataclass for the metadata in header section of a Booster."""
 
     header: str
+
     version: str
+    """Major version of the LightGBM package."""
+
     num_class: int
+    """Number of (response) classes."""
+
     num_tree_per_iteration: int
     label_index: int
+
     max_feature_idx: int
+    """Number of features."""
+
     objective: str
+    """Objective for the model."""
+
     feature_names: list[str]
+    """Name of each feature."""
+
     feature_infos: list[FeatureRange]
+    """Range of each feature."""
+
     tree_sizes: list[int]
+    """Number of characters for each tree.
 
-    list_delimiter: str = field(init=False, repr=False, default=" ")
-    new_line: str = field(init=False, repr=False, default="\n")
-    header_attributes: list[str] = field(init=False, repr=False)
+    This is equal to len(BoosterTree.get_booster_sting()) + 1 for each tree in the
+    model.
 
-    def __post_init__(self) -> None:
-        """Set the header_attributes value."""
-        self.header_attributes = [
-            "version",
-            "num_class",
-            "num_tree_per_iteration",
-            "label_index",
-            "max_feature_idx",
-            "objective",
-            "feature_names",
-            "feature_infos",
-            "tree_sizes",
-        ]
+    """
+
+    _list_delimiter = " "
+    _new_line = "\n"
 
     def to_string(self) -> str:
-        """Concatenate header information to a single string."""
-        return self.new_line.join(self.get_booster_string_rows())
+        """Concatenate header information to a single string.
+
+        Returns
+        -------
+        header : str
+            Header information concatenated into one string.
+
+        """
+        return self._new_line.join(self.get_booster_string_rows())
 
     def get_booster_string_rows(self) -> list[str]:
-        """Append the booster header as a list of strings."""
+        """Append the booster header as a list of strings.
+
+        Returns
+        -------
+        header : list[str]
+            Header information as a list of strings.
+
+        """
+        header_attributes = [field_.name for field_ in fields(self)]
+
         header_attribute_values = [
-            self.__getattribute__(attribute_name)
-            for attribute_name in self.header_attributes
+            self.__getattribute__(name) for name in header_attributes
         ]
 
         header_attributes_with_equals_signs = [
             f"{name}={self._concatendate_list_to_string(value)}"
             if type(value) is list
             else f"{name}={value}"
-            for name, value in zip(self.header_attributes, header_attribute_values)
+            for name, value in zip(header_attributes, header_attribute_values)
         ]
 
         return [self.header] + header_attributes_with_equals_signs + [""]
 
     def _concatendate_list_to_string(self, value: list) -> str:
         """Concatenate list using list_delimiter as the separator."""
-        return self.list_delimiter.join([str(list_item) for list_item in value])
+        return self._list_delimiter.join([str(list_item) for list_item in value])
 
 
 @dataclass
@@ -92,50 +113,68 @@ class BoosterTree:
     """Data class for individual LightGBM trees."""
 
     tree: int
+    """Tree index."""
+
     num_leaves: int
+    """Number of leaves in tree."""
+
     num_cat: int
+
     split_feature: list[int]
+    """Split feature indexes for internal nodes."""
+
     split_gain: list[Union[int, float]]
+    """Split gain for internal nodes."""
+
     threshold: list[Union[int, float]]
+    """Split threshold for internal nodes."""
+
     decision_type: list[int]
+    """2 for ordered splits."""
+
     left_child: list[int]
+    """Left child node indexes.
+
+    Leaf nodes indexes are negative and indexed from -1.
+
+    """
+
     right_child: list[int]
+    """Right child node indexes.
+
+    Leaf nodes indexes are negative and indexed from -1.
+
+    """
+
     leaf_value: list[Union[int, float]]
+    """Leaf predictions."""
+
     leaf_weight: list[Union[int, float]]
+    """Sum of Hessian for rows in the leaf node."""
+
     leaf_count: list[int]
+    """Number of rows in the leaf node."""
+
     internal_value: list[Union[int, float]]
+    """Prediction for internal nodes."""
+
     internal_weight: list[Union[int, float]]
+    """Sum of Hessian for rows in the internal node."""
+
     internal_count: list[int]
+    """Number of rows in the internal node."""
+
     is_linear: int
     shrinkage: Union[int, float]
 
-    list_delimiter: str = field(init=False, repr=False, default=" ")
-    new_line: str = field(init=False, repr=False, default="\n")
-    tree_attributes: list[str] = field(init=False, repr=False)
+    _list_delimiter = " "
+    _new_line = "\n"
 
     def __post_init__(self) -> None:
         """Set the tree_attributes value."""
-        self.tree_attributes = [
-            "tree",
-            "num_leaves",
-            "num_cat",
-            "split_feature",
-            "split_gain",
-            "threshold",
-            "decision_type",
-            "left_child",
-            "right_child",
-            "leaf_value",
-            "leaf_weight",
-            "leaf_count",
-            "internal_value",
-            "internal_weight",
-            "internal_count",
-            "is_linear",
-            "shrinkage",
-        ]
+        self._tree_attributes = [field_.name for field_ in fields(self)]
 
-        self.tree_attributes_for_booster_string = ["Tree"] + self.tree_attributes[1:]
+        self._tree_attributes_for_booster_string = ["Tree"] + self._tree_attributes[1:]
 
     def get_booster_sting(self) -> str:
         """Concatenate tree information to a single string.
@@ -146,13 +185,13 @@ class BoosterTree:
             Booster as a string.
 
         """
-        return self.new_line.join(self.get_booster_string_rows())
+        return self._new_line.join(self.get_booster_string_rows())
 
     def get_booster_string_rows(self) -> list[str]:
         """Convert data to rows that could be concatenated to part of BoosterString."""
         tree_attribute_values = [
             self.__getattribute__(attribute_name)
-            for attribute_name in self.tree_attributes
+            for attribute_name in self._tree_attributes
         ]
 
         tree_attributes_with_equals_signs = [
@@ -160,7 +199,7 @@ class BoosterTree:
             if type(value) is list
             else f"{name}={value}"
             for name, value in zip(
-                self.tree_attributes_for_booster_string, tree_attribute_values
+                self._tree_attributes_for_booster_string, tree_attribute_values
             )
         ]
 
@@ -168,7 +207,7 @@ class BoosterTree:
 
     def _concatendate_list_to_string(self, value: list) -> str:
         """Concatenate list using list_delimiter as the separator."""
-        return self.list_delimiter.join([str(list_item) for list_item in value])
+        return self._list_delimiter.join([str(list_item) for list_item in value])
 
 
 class BoosterStringConverter:
@@ -292,8 +331,18 @@ class EditableBooster:
     """Editable LightGBM booster."""
 
     header: BoosterHeader
+    """Header section for the Booster."""
+
     trees: list[BoosterTree] = field(repr=False)
+    """List of trees in the Booster."""
+
     bottom_rows: list[str]
+    """Unspecified rows at the end of a Booster's string representation.
+
+    These are the rows after the 'end of trees' part of the Booster, once is has been
+    converted to strings.
+
+    """
 
     @classmethod
     def from_booster(cls, booster: lgb.Booster) -> "EditableBooster":
@@ -310,6 +359,12 @@ class EditableBooster:
             Booster as an EditableBooster.
 
         """
+        warnings.warn(
+            "EditableBooster is experimental and has not been tested with every "
+            "option that is available in LightGBM.",
+            stacklevel=2,
+        )
+
         booster_string = BoosterString.from_booster(booster)
         return BoosterStringConverter().convert(booster_string)
 
