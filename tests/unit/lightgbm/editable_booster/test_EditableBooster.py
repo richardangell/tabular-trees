@@ -11,11 +11,7 @@ from tabular_trees.lightgbm.editable_booster import BoosterTree, EditableBooster
 
 @pytest.fixture(scope="session")
 def dummy_booster_to_modify() -> lgb.Booster:
-    """Return dummy model using two numeric features.
-
-    Modify this Booster in the tests allows
-
-    """
+    """Return dummy model using two numeric features."""
     data = pd.DataFrame(
         {
             "a": [1, 1, 0, 0],
