@@ -93,7 +93,7 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         >>> # export to ScikitLearnHistTabularTrees
         >>> sklearn_tabular_trees = ScikitLearnHistTabularTrees.from_hist_gradient_booster(model)
         >>> type(sklearn_tabular_trees)
-        <class 'tabular_trees.sklearn.scikit_learn_hist_tabular_trees.ScikitLearnHistTabularTrees'>
+        <class 'tabular_trees.sklearn.sklearn_hist_tabular_trees.ScikitLearnHistTabularTrees'>
 
         """  # noqa: E501
         checks.check_type(
