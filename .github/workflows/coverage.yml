@@ -42,7 +42,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m poetry install --with dev  --extras lightgbm,xgboost,sklearn
+        python -m poetry install --with dev  --extras "lightgbm xgboost sklearn"
           
     - name: Test with pytest
       if: always()
