@@ -669,7 +669,7 @@ i18n = ["Babel (>=2.7)"]
 name = "joblib"
 version = "1.4.2"
 description = "Lightweight pipelining with Python functions"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
@@ -1474,7 +1474,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 name = "scikit-learn"
 version = "1.5.1"
 description = "A set of python modules for machine learning and data mining"
-optional = false
+optional = true
 python-versions = ">=3.9"
 files = [
     {file = "scikit_learn-1.5.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:781586c414f8cc58e71da4f3d7af311e0505a683e112f2f62919e3019abd3745"},
@@ -1519,7 +1519,7 @@ tests = ["black (>=24.3.0)", "matplotlib (>=3.3.4)", "mypy (>=1.9)", "numpydoc (
 name = "scipy"
 version = "1.13.1"
 description = "Fundamental algorithms for scientific computing in Python"
-optional = false
+optional = true
 python-versions = ">=3.9"
 files = [
     {file = "scipy-1.13.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:20335853b85e9a49ff7572ab453794298bcf0354d8068c5f6775a0eabf350aca"},
@@ -1774,7 +1774,7 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 name = "threadpoolctl"
 version = "3.5.0"
 description = "threadpoolctl"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "threadpoolctl-3.5.0-py3-none-any.whl", hash = "sha256:56c1e26c150397e58c4926da8eeee87533b1e32bef131bd4bf6a2f45f3185467"},
@@ -1996,4 +1996,4 @@ xgboost = ["xgboost"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0c37335e39d70211423c185338a027d3d4540f570e2c0a627023f52b454da3db"
+content-hash = "0ffe091ae7bc139c313a3949030ec77905148302e12a6b8ca42224004d93eb4a"
