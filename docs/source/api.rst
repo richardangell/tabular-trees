@@ -11,7 +11,6 @@ Trees API
 
     export_tree_data
     TabularTrees
-    BaseModelTabularTrees
     
 LightGBM Trees API
 --------------------------
@@ -19,7 +18,7 @@ LightGBM Trees API
 .. autosummary::
     :toctree: api/
 
-    lightgbm.LightGBMTabularTrees
+    lightgbm.lightgbm_tabular_trees.LightGBMTabularTrees
 
 Scikit-Learn Trees API
 --------------------------
@@ -27,8 +26,8 @@ Scikit-Learn Trees API
 .. autosummary::
     :toctree: api/
 
-    sklearn.ScikitLearnTabularTrees
-    sklearn.ScikitLearnHistTabularTrees
+    sklearn.sklearn_tabular_trees.ScikitLearnTabularTrees
+    sklearn.sklearn_hist_tabular_trees.ScikitLearnHistTabularTrees
 
 XGBoost Trees API
 --------------------------
@@ -36,11 +35,11 @@ XGBoost Trees API
 .. autosummary::
     :toctree: api/
 
-    xgboost.XGBoostTabularTrees
-    xgboost.ParsedXGBoostTabularTrees
-    xgboost.XGBoostParser
-    xgboost.JsonDumpReader
-    xgboost.TextDumpReader
+    xgboost.xgboost_tabular_trees.XGBoostTabularTrees
+    xgboost.dump_parser.ParsedXGBoostTabularTrees
+    xgboost.dump_parser.XGBoostParser
+    xgboost.dump_reader.JsonDumpReader
+    xgboost.dump_reader.TextDumpReader
 
 .. warning::
     The ``XGBoostDumpParser`` is depreceated, ``Booster.trees_to_dataframe`` can be
@@ -52,10 +51,10 @@ Explain API
 .. autosummary::
     :toctree: api/
 
-    explain.decompose_prediction
-    explain.PredictionDecomposition
-    explain.calculate_shapley_values
-    explain.ShapleyValues
+    explain.prediction_decomposition.decompose_prediction
+    explain.prediction_decomposition.PredictionDecomposition
+    explain.shapley_values.calculate_shapley_values
+    explain.shapley_values.ShapleyValues
 
 .. warning::
     The ``calculate_shapley_values`` function is very slow and is only implemeneted for

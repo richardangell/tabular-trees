@@ -16,8 +16,8 @@ Subsections for each version can be one of the following;
 
 Each individual change should have a link to the pull request after the description of the change.
 
-0.3.0 (unreleased) `#36 <https://github.com/richardangell/tabular-trees/pull36/>`_ `#25 <https://github.com/richardangell/tabular-trees/pull/25>`_ `#19 <https://github.com/richardangell/tabular-trees/pull/19>`_
----------------------------------------------------------------------------------------
+0.3.0 (unreleased)
+------------------
 
 Added
 ^^^^^
@@ -44,8 +44,8 @@ Fixed
 ^^^^^
 - Fix ``validate_monotonic_constraints`` to correctly loop through all trees in the model
 
-0.2.0 (2023-03-13) `#18 <https://github.com/richardangell/tabular-trees/pull/18>`_
-----------------------------------------------------------------------------------
+0.2.0 (2023-03-13)
+------------------
 
 Added
 ^^^^^
