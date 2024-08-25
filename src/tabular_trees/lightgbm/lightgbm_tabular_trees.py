@@ -48,6 +48,11 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         booster : lgb.Booster
             LightGBM model to pull tree data from.
 
+        Returns
+        -------
+        trees : LightGBMTabularTrees
+            Model trees in tabular format.
+
         Examples
         --------
         >>> import lightgbm as lgb
@@ -71,7 +76,14 @@ class LightGBMTabularTrees(BaseModelTabularTrees):
         return LightGBMTabularTrees(tree_data)
 
     def to_tabular_trees(self) -> TabularTrees:
-        """Convert the tree data to a TabularTrees object."""
+        """Convert the tree data to a TabularTrees object.
+
+        Returns
+        -------
+        trees : TabularTrees
+            Model trees in TabularTrees form.
+
+        """
         trees = self.data.copy()
 
         # derive leaf node flag

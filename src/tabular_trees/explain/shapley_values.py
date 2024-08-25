@@ -62,6 +62,11 @@ def calculate_shapley_values(
         columns are added this will exponentially increase the number of runs - even if
         they are not relevant to the model.
 
+    Returns
+    -------
+    results : ShapleyValues
+        Shapley values for prediction from model on the input row.
+
     Notes
     -----
     This algorithm has O(TL2^M) complexity (where M is the number of features) and this

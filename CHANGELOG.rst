@@ -83,6 +83,6 @@ Added
 
 - ``TabularTrees`` class to hold tree data in table format.
 - ``parse_model`` function to load an ``xgboost.Booster`` and derive predictions for internal nodes.
-- ``validate_monotonic_constraints_df`` function to validate monotonic constraints for ``xgboost.Booster``s.
+- ``validate_monotonic_constraints_df`` function to validate monotonic constraints for ``xgboost.Booster`` objects.
 - ``decompose_prediction`` to decompose predictions from an ``xgboost.Booster``.
 - ``shapley_values`` to calculate shapley values for predictions from an ``xgboost.Booster``.

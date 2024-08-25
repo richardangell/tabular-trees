@@ -79,6 +79,11 @@ def validate_monotonic_constraints(
     return_detailed_results : bool, defualt=False
         Should detailed breakdown of every split be returned?
 
+    Returns
+    -------
+    results : MonotonicConstraintResults
+        Object containing results of checking monotonic trends.
+
     Examples
     --------
     >>> import xgboost as xgb

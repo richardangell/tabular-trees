@@ -17,7 +17,14 @@ class BaseModelTabularTrees(ABC):
     data: pd.DataFrame
 
     def to_dataframe(self) -> pd.DataFrame:
-        """Return data for trees object."""
+        """Return data for trees object.
+
+        Returns
+        -------
+        trees : pd.DataFrame
+            Model trees in DataFrame form.
+
+        """
         return self.data.copy()
 
     def __post_init__(self) -> None:
@@ -94,6 +101,12 @@ def export_tree_data(model: Any) -> BaseModelTabularTrees:
     ------
     NotImplementedError
         If the type of the passed model is not supported.
+
+    Returns
+    -------
+    trees : BaseModelTabularTrees
+        Model-specific implementation of BaseModelTabularTrees containing tree data
+        for the input model.
 
     """
     raise NotImplementedError(f"model type not supported; {type(model)}")

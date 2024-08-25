@@ -97,6 +97,11 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         booster : xgb.Booster
             XGBoost model to pull tree data from.
 
+        Returns
+        -------
+        trees : ParsedXGBoostTabularTrees
+            Model trees in tabular format.
+
         Examples
         --------
         >>> import xgboost as xgb
@@ -120,10 +125,10 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     def to_xgboost_tabular_trees(self) -> XGBoostTabularTrees:
         """Return the tree structures as XGBoostTabularTrees class.
 
-        Raises
-        ------
-        ValueError
-            If both gain and cover columns are not present in the trees data.
+        Returns
+        -------
+        trees : XGBoostTabularTrees
+            Model trees in XGBoostTabularTrees format.
 
         """
         converted_data = self._create_same_columns_as_xgboost_output(self.data)
@@ -291,6 +296,11 @@ class XGBoostParser:
         """Dump model and then parse into tabular structure.
 
         Tree data is returned in a ParsedXGBoostTabularTrees object.
+
+        Returns
+        -------
+        trees : ParsedXGBoostTabularTrees
+            Model trees in tabular format.
 
         """
         with tempfile.TemporaryDirectory() as tmp_dir:

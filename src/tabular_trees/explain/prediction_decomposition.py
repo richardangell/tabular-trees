@@ -53,6 +53,11 @@ def decompose_prediction(
     row : pd.DataFrame
         Single row of data to explain prediction from tabular_trees object.
 
+    Returns
+    -------
+    results : PredictionDecomposition
+        Prediction decomposed into change attributed to each feature.
+
     Notes
     -----
     [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19

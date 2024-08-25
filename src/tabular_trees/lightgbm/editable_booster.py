@@ -138,7 +138,14 @@ class BoosterTree:
         self.tree_attributes_for_booster_string = ["Tree"] + self.tree_attributes[1:]
 
     def get_booster_sting(self) -> str:
-        """Concatenate tree information to a single string."""
+        """Concatenate tree information to a single string.
+
+        Returns
+        -------
+        model : str
+            Booster as a string.
+
+        """
         return self.new_line.join(self.get_booster_string_rows())
 
     def get_booster_string_rows(self) -> list[str]:
@@ -290,17 +297,43 @@ class EditableBooster:
 
     @classmethod
     def from_booster(cls, booster: lgb.Booster) -> "EditableBooster":
-        """Create an EditableBooster from a LightGBM Booster."""
+        """Create an EditableBooster from a LightGBM Booster.
+
+        Parameters
+        ----------
+        booster : lgb.Booster
+            LightGBM model to convert to EditableBooster.
+
+        Returns
+        -------
+        model : EditableBooster
+            Booster as an EditableBooster.
+
+        """
         booster_string = BoosterString.from_booster(booster)
         return BoosterStringConverter().convert(booster_string)
 
     def to_booster(self) -> lgb.Booster:
-        """Convert EditableBooster to LightGBM Booster."""
+        """Convert EditableBooster to LightGBM Booster.
+
+        Returns
+        -------
+        model : lgb.Booster
+            EditableBooster as a lgb.Booster object.
+
+        """
         booster_string = self.to_booster_string()
         return booster_string.to_booster()
 
     def to_booster_string(self) -> BoosterString:
-        """Convert EditableBooster to BoosterString."""
+        """Convert EditableBooster to BoosterString.
+
+        Returns
+        -------
+        model : BoosterString
+            EditableBooster as a BoosterString object.
+
+        """
         booster_string_rows = self.header.get_booster_string_rows()
 
         for tree in self.trees:

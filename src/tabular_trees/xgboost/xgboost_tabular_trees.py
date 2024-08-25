@@ -91,6 +91,11 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         booster : xgb.Booster
             XGBoost model to pull tree data from.
 
+        Returns
+        -------
+        trees : XGBoostTabularTrees
+            Model trees in tabular format.
+
         Examples
         --------
         >>> import xgboost as xgb
@@ -128,7 +133,14 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         return XGBoostTabularTrees(data=tree_data_with_predictions)
 
     def to_tabular_trees(self) -> TabularTrees:
-        """Convert the tree data to a TabularTrees object."""
+        """Convert the tree data to a TabularTrees object.
+
+        Returns
+        -------
+        trees : TabularTrees
+            Model trees in TabularTrees form.
+
+        """
         trees = self.data.copy()
 
         # derive leaf node flag
@@ -164,9 +176,8 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         Returns
         -------
-        pd.DataFrame
-            Tree data (trees attribute) with 'weight', 'H' and 'G' columns
-            added.
+        trees : pd.DataFrame
+            Tree data  with 'weight', 'H' and 'G' columns added.
 
         """
         n_trees = df["Tree"].max()

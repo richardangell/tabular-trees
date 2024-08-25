@@ -71,6 +71,11 @@ class ScikitLearnTabularTrees(BaseModelTabularTrees):
             GradientBoostingRegressor or Classifier tree data extracted from
             the .estimators_ attribute.
 
+        Returns
+        -------
+        trees : ScikitLearnTabularTrees
+            Model trees in tabular format.
+
         Examples
         --------
         >>> from sklearn.datasets import load_diabetes

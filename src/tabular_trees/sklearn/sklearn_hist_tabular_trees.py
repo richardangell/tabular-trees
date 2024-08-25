@@ -79,6 +79,11 @@ class ScikitLearnHistTabularTrees(BaseModelTabularTrees):
         model : Union[HistGradientBoostingClassifier, HistGradientBoostingRegressor]
             Model to extract tree data from.
 
+        Returns
+        -------
+        trees : ScikitLearnHistTabularTrees
+            Model trees in tabular format.
+
         Examples
         --------
         >>> from sklearn.datasets import load_diabetes
