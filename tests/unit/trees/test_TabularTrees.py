@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from tabular_trees.trees import BaseModelTabularTrees, TabularTrees
+from tabular_trees.trees import TabularTrees
 
 
 @pytest.fixture(scope="session")
@@ -14,13 +14,6 @@ def dummy_trees_data() -> pd.DataFrame:
 
 class TestInitialisation:
     """Tests for the TabularTrees.__init__ method."""
-
-    @pytest.mark.xfail()
-    def test_inheritance(self):
-        """Test that TabularTrees inherits from BaseModelTabularTrees."""
-        assert (
-            TabularTrees.__mro__[1] is BaseModelTabularTrees
-        ), "TabularTrees does not inherit from BaseModelTabularTrees"
 
     def test_attributes_set(self, dummy_trees_data):
         """Test trees, get_root_node_given_tree attributes are set to values passed."""
@@ -56,7 +49,6 @@ class TestInitialisation:
         ):
             TabularTrees(trees=dummy_trees_data, get_root_node_given_tree=123)
 
-    @pytest.mark.xfail()
     def test_tree_data_copied(self, dummy_trees_data):
         """Test that trees attribute is a copy of the data passed in init."""
 

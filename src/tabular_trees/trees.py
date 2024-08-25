@@ -68,7 +68,7 @@ class TabularTrees:
             Tree data in tabular structure.
 
         """
-        self.trees = trees
+        self.trees = trees.copy()
         self.get_root_node_given_tree = get_root_node_given_tree
 
         checks.check_condition(
