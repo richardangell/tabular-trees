@@ -43,6 +43,8 @@ def test_predictions_calculated_correctly(lambda_, xgb_diabetes_dmatrix):
     of the model.
 
     """
+    # ARRANGE
+
     model_for_predictions = xgb.train(
         params={"verbosity": 0, "max_depth": 3, "lambda": lambda_},
         dtrain=xgb_diabetes_dmatrix,
@@ -51,13 +53,13 @@ def test_predictions_calculated_correctly(lambda_, xgb_diabetes_dmatrix):
 
     trees_data = model_for_predictions.trees_to_dataframe()
 
-    xgboost_tabular_trees = XGBoostTabularTrees(trees_data, lambda_)
+    # ACT
 
-    predictions = xgboost_tabular_trees.derive_predictions()
+    predictions = XGBoostTabularTrees.derive_predictions(df=trees_data, lambda_=lambda_)
 
-    depths = derive_depths(xgboost_tabular_trees.trees.copy())
+    # ASSERT
 
-    predictions["Depth"] = depths["Depth"]
+    predictions = derive_depths(predictions)
 
     # loop through internal nodes, non-root nodes
     for row_number in range(predictions.shape[0]):

@@ -3,6 +3,7 @@ import pytest
 
 from tabular_trees.explain.shapley_values import calculate_shapley_values
 from tabular_trees.trees import export_tree_data
+from tabular_trees.xgboost.xgboost_tabular_trees import XGBoostTabularTrees
 
 
 @pytest.mark.parametrize("row_number_to_score", [0, 1, 11, 22, 199, 201])
@@ -30,8 +31,10 @@ def test_equality_with_xgboost_treeshap(
     )
     row_data = diabetes_data_df.iloc[row_number_to_score]
 
-    xgboost_tabular_trees = export_tree_data(xgb_diabetes_model_subset_cols)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    xgboost_tabular_trees: XGBoostTabularTrees = export_tree_data(
+        xgb_diabetes_model_subset_cols
+    )
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     shapley_values_tabular_trees = calculate_shapley_values(tabular_trees, row_data)
 

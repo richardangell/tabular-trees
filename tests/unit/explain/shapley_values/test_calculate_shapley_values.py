@@ -90,7 +90,7 @@ def test_tabular_trees_not_tabular_trees_exception():
 def test_row_not_series_exception(handcrafted_shap_model):
     """Test an exception is raised if row is not a pd.Series object."""
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     with pytest.raises(
         TypeError,
@@ -102,7 +102,7 @@ def test_row_not_series_exception(handcrafted_shap_model):
 def test_output_type(handcrafted_shap_model):
     """Test the output from calculate_shapley_values is a ShapleyValues object."""
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 
@@ -116,7 +116,7 @@ def test_output_type(handcrafted_shap_model):
 def test_expected_shapley_values(handcrafted_shap_model):
     """Test shapley values output are as expected a known model."""
     xgboost_tabular_trees = export_tree_data(handcrafted_shap_model)
-    tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    tabular_trees = xgboost_tabular_trees.to_tabular_trees()
 
     row_to_explain = pd.Series({"x": 150, "y": 75, "z": 200})
 

@@ -29,6 +29,22 @@ def xgb_diabetes_model(xgb_diabetes_dmatrix) -> xgb.Booster:
 
 
 @pytest.fixture(scope="session")
+def xgb_diabetes_model_non_zero_alpha(xgb_diabetes_dmatrix) -> xgb.Booster:
+    """Xgboost model with alpha 1 on the diabetes dataset.
+
+    Model has with 2 trees at depth 3.
+
+    """
+    model = xgb.train(
+        params={"verbosity": 0, "max_depth": 3, "alpha": 1},
+        dtrain=xgb_diabetes_dmatrix,
+        num_boost_round=2,
+    )
+
+    return model
+
+
+@pytest.fixture(scope="session")
 def xgb_diabetes_dmatrix_subset_cols(diabetes_data_subset_cols) -> xgb.DMatrix:
     """Return a subset (4 columns) of the diabetes dataset in a single xgb.DMatrix.
 

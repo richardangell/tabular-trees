@@ -51,9 +51,14 @@ class JsonDumpReader(DumpReader):
         Json file to read must be the output from xgboost.Booster.dump_model with
         dump_format = 'json'.
 
+        Parameters
+        ----------
+        file : str
+            Xgboost model dump text file.
+
         Returns
         -------
-        pd.DataFrame
+        model : pd.DataFrame
             DataFrame with columns; tree, nodeid, depth, yes, no, missing,
             split, split_condition, leaf. If the model dump file was output
             with with_stats = True then gain and cover columns are also in
@@ -146,7 +151,7 @@ class TextDumpReader(DumpReader):
 
         Returns
         -------
-        pd.DataFrame
+        model : pd.DataFrame
             DataFrame with columns; tree, nodeid, depth, yes, no, missing,
             split, split_condition, leaf. If the model dump file was output
             with with_stats = True then gain and cover columns are also in

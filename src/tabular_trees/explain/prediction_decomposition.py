@@ -53,6 +53,11 @@ def decompose_prediction(
     row : pd.DataFrame
         Single row of data to explain prediction from tabular_trees object.
 
+    Returns
+    -------
+    results : PredictionDecomposition
+        Prediction decomposed into change attributed to each feature.
+
     Notes
     -----
     [1] Saabas, Ando (2014) 'Interpreting random forests', Diving into data blog, 19
@@ -78,7 +83,7 @@ def decompose_prediction(
     >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
     >>> # export to TabularTrees
     >>> xgboost_tabular_trees = export_tree_data(model)
-    >>> tabular_trees = xgboost_tabular_trees.convert_to_tabular_trees()
+    >>> tabular_trees = xgboost_tabular_trees.to_tabular_trees()
     >>> # get data to score
     >>> scoring_data = pd.DataFrame(diabetes["data"], columns=diabetes["feature_names"])
     >>> row_to_score = scoring_data.iloc[[0]]

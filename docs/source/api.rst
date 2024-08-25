@@ -3,7 +3,7 @@ api documentation
 
 .. currentmodule:: tabular_trees
 
-Trees API
+Trees
 ------------------
 
 .. autosummary::
@@ -11,51 +11,52 @@ Trees API
 
     export_tree_data
     TabularTrees
-    BaseModelTabularTrees
     
-LightGBM Trees API
+LightGBM
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    lightgbm.LightGBMTabularTrees
+    LightGBMTabularTrees
+    EditableBooster
+    BoosterHeader
+    BoosterTree
+    BoosterString
 
-Scikit-Learn Trees API
+Scikit-Learn
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    sklearn.ScikitLearnTabularTrees
-    sklearn.ScikitLearnHistTabularTrees
+    ScikitLearnTabularTrees
+    ScikitLearnHistTabularTrees
 
-XGBoost Trees API
+XGBoost
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    xgboost.XGBoostTabularTrees
-    xgboost.ParsedXGBoostTabularTrees
-    xgboost.XGBoostParser
-    xgboost.JsonDumpReader
-    xgboost.TextDumpReader
+    XGBoostTabularTrees
+    XGBoostParser
+    ParsedXGBoostTabularTrees
 
 .. warning::
-    The ``XGBoostDumpParser`` is depreceated, ``Booster.trees_to_dataframe`` can be
+    The ``XGBoostParser`` is depreceated, ``Booster.trees_to_dataframe`` can be
     used instead to extract tree data from a ``Booster`` object.
 
-Explain API
+Explain
 ------------------
 
 .. autosummary::
     :toctree: api/
 
-    explain.decompose_prediction
-    explain.PredictionDecomposition
-    explain.calculate_shapley_values
-    explain.ShapleyValues
+    decompose_prediction
+    PredictionDecomposition
+    calculate_shapley_values
+    ShapleyValues
 
 .. warning::
     The ``calculate_shapley_values`` function is very slow and is only implemeneted for
@@ -65,11 +66,11 @@ Explain API
     accessible via the ``Booster.predict`` methods when specifying ``pred_contribs`` or
     ``pred_contrib`` respectively.
 
-Validate API
+Validate
 --------------------------
 
 .. autosummary::
     :toctree: api/
 
-    validate.validate_monotonic_constraints
-    validate.MonotonicConstraintResults
+    validate_monotonic_constraints
+    MonotonicConstraintResults

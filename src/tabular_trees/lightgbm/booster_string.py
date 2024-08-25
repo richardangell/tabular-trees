@@ -1,11 +1,8 @@
 """Module containing BoosterString class."""
 
 from collections import OrderedDict
-from typing import Optional
 
 import lightgbm as lgb
-
-from .. import checks
 
 
 class BoosterString:
@@ -13,59 +10,73 @@ class BoosterString:
 
     new_line = "\n"
 
-    def __init__(
-        self, booster: Optional[lgb.Booster] = None, rows: Optional[list[str]] = None
-    ):
-        """Initialise the BoosterString object.
-
-        Can be initialised with either a lgb.Booster or list of strings.
+    def __init__(self, rows: list[str]):
+        """Initialise the BoosterString from a list of strings.
 
         Parameters
         ----------
-        booster: Optional[lgb.Booster] = None
-            LightGBM Booster to represent as strings.
-        rows: Optional[list[str]] = None
+        rows: list[str]
             List of strings defining a Booster.
 
         """
-        checks.check_condition(
-            booster is not None or rows is not None,
-            "either booster or rows must be supplied",
-        )
+        self.rows = rows[:]
 
-        checks.check_condition(
-            not (booster is not None and rows is not None),
-            "booster and rows cannot be both supplied",
-        )
-
-        if booster is not None:
-            self.booster_data = self._booster_to_string(booster)
-
-        elif rows is not None:
-            self.booster_data = rows[:]
-
-            try:
-                self.to_booster()
-            except Exception as err:
-                raise ValueError(
-                    "supplied rows do not produce a valid booster"
-                ) from err
+        try:
+            self.to_booster()
+        except Exception as err:
+            raise ValueError("supplied rows do not produce a valid booster") from err
 
         self.row_markers, self.tree_rows = self._gather_line_markers()
 
+    @classmethod
+    def from_booster(cls, booster: lgb.Booster) -> "BoosterString":
+        """Create BoosterString from a lgb.Booster object.
+
+        Returns
+        -------
+        model : BoosterString
+            Model as a BoosterString object.
+
+        """
+        booster_string: str = booster.model_to_string()
+        booster_string_split = booster_string.split(cls.new_line)
+
+        return BoosterString(booster_string_split)
+
     def to_booster(self) -> lgb.Booster:
-        """Convert the BoosterString back to a Booster."""
-        booster_string = self.new_line.join(self.booster_data)
+        """Convert the BoosterString back to a Booster.
+
+        Returns
+        -------
+        model : lgb.Booster
+            BoosterString as lgb.Booster object.
+
+        """
+        booster_string = self.new_line.join(self.rows)
 
         return lgb.Booster(model_str=booster_string)
 
     def extract_header_rows(self) -> list[str]:
-        """Extract the header rows from BoosterString object."""
+        """Extract the header rows from BoosterString object.
+
+        Returns
+        -------
+        rows : list[str]
+            Header rows from Booster text.
+
+        """
         end_row_index = self.row_markers["end_header"] + 1
         return self._extract_rows(0, end_row_index)
 
     def extract_tree_rows(self, tree_number: int) -> list[str]:
-        """Extract rows for given tree number."""
+        """Extract rows for given tree number.
+
+        Returns
+        -------
+        rows : list[str]
+            Rows from Booster text for the given tree.
+
+        """
         try:
             start_row_index = self.tree_rows[tree_number]
         except KeyError as err:
@@ -76,17 +87,17 @@ class BoosterString:
         return self._extract_rows(start_row_index, start_row_index + 19)
 
     def extract_bottom_rows(self) -> list[str]:
-        """Return all rows after the 'end of trees' line to the end."""
+        """Return all rows after the 'end of trees' line to the end.
+
+        Returns
+        -------
+        rows : list[str]
+            Final rows from Booster text.
+
+        """
         return self._extract_rows(
             self.row_markers["end_of_trees"], self._get_number_of_rows()
         )
-
-    def _booster_to_string(self, booster: lgb.Booster) -> list[str]:
-        """Export Booster object to string and split by line breaks."""
-        booster_string: str = booster.model_to_string()
-        booster_string_split = booster_string.split(self.new_line)
-
-        return booster_string_split
 
     def _gather_line_markers(self) -> tuple[OrderedDict, OrderedDict]:
         """Find specific lines in the booster string data."""
@@ -116,14 +127,14 @@ class BoosterString:
         row_found_indexes.append(tree_sizes_line)
 
         n_trees = self._get_number_trees_from_tree_sizes_line(
-            self.booster_data[tree_sizes_line]
+            self.rows[tree_sizes_line]
         )
 
         find_tree_from_row = tree_sizes_line
 
         for _ in range(n_trees):
             tree_line = self._find_text_in_booster_data("Tree=", find_tree_from_row)
-            tree_number = self._get_tree_number_from_line(self.booster_data[tree_line])
+            tree_number = self._get_tree_number_from_line(self.rows[tree_line])
             tree_rows[tree_number] = tree_line
             find_tree_from_row = tree_line + 1
 
@@ -143,7 +154,7 @@ class BoosterString:
         return row_markers, tree_rows
 
     def _find_text_in_booster_data(self, text: str, start: int = 0) -> int:
-        for subet_row_number, row in enumerate(self.booster_data[start:]):
+        for subet_row_number, row in enumerate(self.rows[start:]):
             if row.find(text, 0, len(text)) == 0:
                 row_number = subet_row_number + start
 
@@ -155,11 +166,11 @@ class BoosterString:
         )
 
     def _get_number_of_rows(self) -> int:
-        return len(self.booster_data)
+        return len(self.rows)
 
     def _extract_rows(self, start: int, end: int) -> list[str]:
         """Extract booster rows within range."""
-        return self.booster_data[start:end]
+        return self.rows[start:end]
 
     def _get_number_trees_from_tree_sizes_line(self, tree_sizes_line: str) -> int:
         """Get the number of trees in the booster from the tree sizes line."""

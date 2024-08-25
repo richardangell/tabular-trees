@@ -2,13 +2,14 @@
 
 import tempfile
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+from numpy.typing import NDArray
 
 from .. import checks
 from ..trees import BaseModelTabularTrees
@@ -20,111 +21,128 @@ from .xgboost_tabular_trees import XGBoostTabularTrees
 class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
     """Dataclass for XGBoost models that have been parsed from a model dump.
 
-    Data maybe have been parsed from text or json file dump.
+    The preferred way to create ParsedXGBoostTabularTrees objects is with the
+    from_booster method.
 
     """
 
-    trees: pd.DataFrame
+    data: pd.DataFrame
     """Tree data."""
 
-    REQUIRED_COLUMNS = [
-        "tree",
-        "nodeid",
-        "depth",
-        "yes",
-        "no",
-        "missing",
-        "split",
-        "split_condition",
-        "leaf",
-        "gain",
-        "cover",
-    ]
-    """List of columns required in tree data."""
+    tree: NDArray[np.int_] = field(init=False, repr=False)
+    """Tree index."""
 
-    SORT_BY_COLUMNS = ["tree", "nodeid"]
-    """List of columns to sort tree data by."""
+    depth: NDArray[np.int_] = field(init=False, repr=False)
+    """Node depth in tree.
 
-    STATS_COLUMNS = [
-        "gain",
-        "cover",
-    ]
-    """Data items included in XGBoost model dump if with_stats = True in dump_model."""
+    Root nodes have depth 0.
 
-    # mapping between column names in this class and the column names in the
-    # XGBoostTabularTrees class
-    COLUMN_MAPPING = {
-        "tree": "Tree",
-        "nodeid": "Node",
-        "yes": "Yes",
-        "no": "No",
-        "missing": "Missing",
-        "split": "Feature",
-        "split_condition": "Split",
-        "gain": "Gain",
-        "cover": "Cover",
-    }
-    """Column name mapping between ParsedXGBoostTabularTrees and XGBoostTabularTrees
-    tree data."""
+    """
 
-    def __init__(self, trees: pd.DataFrame):
-        """Initialise the ParsedXGBoostTabularTrees object.
+    nodeid: NDArray[np.int_] = field(init=False, repr=False)
+    """Node index within tree."""
+
+    split: NDArray[np.object_] = field(init=False, repr=False)
+    """Split feature.
+
+    Null for leaf nodes.
+
+    """
+
+    split_condition: NDArray[np.float64] = field(init=False, repr=False)
+    """Split threshold.
+
+    Null for leaf nodes.
+
+    """
+
+    yes: NDArray[np.float64] = field(init=False, repr=False)
+    """Node index for left child.
+
+    Null for leaf nodes.
+
+    """
+
+    no: NDArray[np.float64] = field(init=False, repr=False)
+    """Node index for right child.
+
+    Null for leaf nodes.
+
+    """
+
+    missing: NDArray[np.float64] = field(init=False, repr=False)
+    """Node index for child for rows with null values for split feature."""
+
+    leaf: NDArray[np.float64] = field(init=False, repr=False)
+    """Leaf node predictions.
+
+    Null for internal nodes.
+
+    """
+
+    gain: NDArray[np.float64] = field(init=False, repr=False)
+    """Gain for a split."""
+
+    cover: NDArray[np.float64] = field(init=False, repr=False)
+    """Related to the 2nd order derivative of the loss function with respect to a the
+    split feature."""
+
+    def __post_init__(self) -> None:
+        """Sort data, then copy and set attributes."""
+        self.data = self.data.sort_values(["tree", "nodeid"]).reset_index(drop=True)
+
+        super().__post_init__()
+
+    @classmethod
+    def from_booster(cls, booster: xgb.Booster) -> "ParsedXGBoostTabularTrees":
+        """Create ParsedXGBoostTabularTrees from a xgb.Booster object.
 
         Parameters
         ----------
-        trees : pd.DataFrame
-            XGBoost tree data parsed from the output of Booster.dump_model.
+        booster : xgb.Booster
+            XGBoost model to pull tree data from.
 
-        Raises
-        ------
-        ValueError
-            If alpha is not 0.
+        Returns
+        -------
+        trees : ParsedXGBoostTabularTrees
+            Model trees in tabular format.
 
         Examples
         --------
         >>> import xgboost as xgb
         >>> from sklearn.datasets import load_diabetes
-        >>> from tabular_trees import XGBoostParser
+        >>> from tabular_trees.xgboost.dump_parser import ParsedXGBoostTabularTrees
         >>> # get data in DMatrix
         >>> diabetes = load_diabetes()
         >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
         >>> # build model
         >>> params = {"max_depth": 3, "verbosity": 0}
         >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
-        >>> # parse the model
-        >>> xgbooster_parser = XGBoostParser(model)
         >>> # export to ParsedXGBoostTabularTrees
-        >>> parsed_xgboost_tabular_trees = xgbooster_parser.parse_model()
-        >>> type(parsed_xgboost_tabular_trees)
+        >>> parsed_xgb_tabular_trees = ParsedXGBoostTabularTrees.from_booster(model)
+        >>> type(parsed_xgb_tabular_trees)
         <class 'tabular_trees.xgboost.dump_parser.ParsedXGBoostTabularTrees'>
 
         """
-        self.trees = trees
+        parser = XGBoostParser(model=booster)
+        return parser.parse_model()
 
-        self.__post_init__()
-
-    def __post_init__(self) -> None:
-        """Check that STATS_COLUMNS are present in the data."""
-        checks.check_condition(
-            all(column in self.trees.columns.values for column in self.STATS_COLUMNS),
-            "Cannot create ParsedXGBoostTabularTrees object unless statistics "
-            "are output. Rerun dump_model with with_stats = True.",
-        )
-
-        super().__post_init__()
-
-    def convert_to_xgboost_tabular_trees(self) -> XGBoostTabularTrees:
+    def to_xgboost_tabular_trees(self) -> XGBoostTabularTrees:
         """Return the tree structures as XGBoostTabularTrees class.
 
-        Raises
-        ------
-        ValueError
-            If both gain and cover columns are not present in the trees data.
+        Returns
+        -------
+        trees : XGBoostTabularTrees
+            Model trees in XGBoostTabularTrees format.
 
         """
-        converted_data = self._create_same_columns_as_xgboost_output(self.trees)
+        converted_data = self._create_same_columns_as_xgboost_output(self.data)
 
-        return XGBoostTabularTrees(converted_data)
+        converted_data_with_predictions = XGBoostTabularTrees.derive_predictions(
+            df=converted_data, lambda_=0
+        )
+
+        return XGBoostTabularTrees(converted_data_with_predictions)
 
     def _create_same_columns_as_xgboost_output(self, df: pd.DataFrame) -> pd.DataFrame:
         """Convert parsed DataFrame dump to xgb.Booster.trees_to_dataframe format.
@@ -162,8 +180,19 @@ class ParsedXGBoostTabularTrees(BaseModelTabularTrees):
         return df
 
     def _rename_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Rename columns according to the mapping defined in COLUMN_MAPPING."""
-        return df.rename(columns=self.COLUMN_MAPPING)
+        """Rename columns to match XGBoostTabularTrees columns."""
+        column_mapping = {
+            "tree": "Tree",
+            "nodeid": "Node",
+            "yes": "Yes",
+            "no": "No",
+            "missing": "Missing",
+            "split": "Feature",
+            "split_condition": "Split",
+            "gain": "Gain",
+            "cover": "Cover",
+        }
+        return df.rename(columns=column_mapping)
 
     def _drop_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Drop depth, leaf columns not needed in XGBoostTabularTrees structure."""
@@ -245,9 +274,9 @@ class XGBoostParser:
         model : xgb.core.Booster
             Model to parse trees into tabular data.
 
-        reader : Optional[DumpReader], default = None
-            Object capable of reading dumped xgboost model. If no value is passed
-            then JsonDumpReader() is used.
+        reader : Optional[DumpReader], default = ()
+            DumpReader capable of reading dumped xgboost model. JsonDumpReader will
+            be used if reader is not provided.
 
         """
         checks.check_type(model, xgb.core.Booster, "model")
@@ -272,6 +301,11 @@ class XGBoostParser:
         """Dump model and then parse into tabular structure.
 
         Tree data is returned in a ParsedXGBoostTabularTrees object.
+
+        Returns
+        -------
+        trees : ParsedXGBoostTabularTrees
+            Model trees in tabular format.
 
         """
         with tempfile.TemporaryDirectory() as tmp_dir:

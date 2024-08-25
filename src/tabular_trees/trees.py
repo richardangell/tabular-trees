@@ -1,7 +1,7 @@
 """Module for tree structure classes."""
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from abc import ABC
+from dataclasses import dataclass, fields
 from functools import singledispatch
 from typing import Any, Callable
 
@@ -10,74 +10,37 @@ import pandas as pd
 from . import checks
 
 
+@dataclass
 class BaseModelTabularTrees(ABC):
-    """Abstract base class for model specific TabularTrees classes."""
+    """Base class for model specific TabularTrees classes."""
 
-    trees: pd.DataFrame
-    """Tree data."""
+    data: pd.DataFrame
 
-    @property
-    @abstractmethod
-    def REQUIRED_COLUMNS(self) -> list[str]:  # noqa: N802
-        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
-        raise NotImplementedError("REQUIRED_COLUMNS attribute not defined")
+    def to_dataframe(self) -> pd.DataFrame:
+        """Return data for trees object.
 
-    @property
-    @abstractmethod
-    def SORT_BY_COLUMNS(self) -> list[str]:  # noqa: N802
-        """Attribute that must be defined in BaseModelTabularTrees subclasses."""
-        raise NotImplementedError("SORT_BY_COLUMNS attribute not defined")
-
-    def __post_init__(self) -> None:
-        """Post init checks and processing.
-
-        Processing on the trees attribute is as follows;
-        - Columns are ordered into REQUIRED_COLUMNS order
-        - Rows are sorted by SORT_BY_COLUMNS columns
-        - The index is reset and original index dropped.
-
-        Raises
-        ------
-        AttributeError
-            If object does not have trees attribute.
-
-        TypeError
-            If trees attribute is not a pd.DataFrame.
-
-        TypeError
-            If REQUIRED_COLUMNS attribute is not a list.
-
-        TypeError
-            If SORT_BY_COLUMNS attribute is not a list.
-
-        ValueError
-            If REQUIRED_COLUMNS are not in trees attribute.
-
-        ValueError
-            If SORT_BY_COLUMNS is not a subset of REQUIRED_COLUMNS.
+        Returns
+        -------
+        trees : pd.DataFrame
+            Model trees in DataFrame form.
 
         """
-        if not hasattr(self, "trees"):
-            raise AttributeError("trees attribute not set")
+        return self.data.copy()
 
-        checks.check_type(self.trees, pd.DataFrame, "trees")
-        checks.check_type(self.REQUIRED_COLUMNS, list, "REQUIRED_COLUMNS")
-        checks.check_type(self.SORT_BY_COLUMNS, list, "SORT_BY_COLUMNS")
+    def __post_init__(self) -> None:
+        """Copy data and set attributes defined on subclass."""
+        if not hasattr(self, "data"):
+            raise AttributeError("data attribute not set")
 
-        checks.check_df_columns(self.trees, self.REQUIRED_COLUMNS)
+        self.data = self.data.copy()
 
-        checks.check_condition(
-            all(column in self.REQUIRED_COLUMNS for column in self.SORT_BY_COLUMNS),
-            "SORT_BY_COLUMNS is a subset of REQUIRED_COLUMNS",
-        )
-
-        self.trees = self.trees[self.REQUIRED_COLUMNS]
-        self.trees = self.trees.sort_values(self.SORT_BY_COLUMNS)
-        self.trees = self.trees.reset_index(drop=True)
+        for field_ in fields(self):
+            if not field_.init:
+                setattr(self, field_.name, self.data[field_.name].values)
 
 
 @dataclass
-class TabularTrees(BaseModelTabularTrees):
+class TabularTrees:
     """Generic tree structure in tabular format."""
 
     trees: pd.DataFrame
@@ -112,15 +75,13 @@ class TabularTrees(BaseModelTabularTrees):
             Tree data in tabular structure.
 
         """
-        self.trees = trees
+        self.trees = trees.copy()
         self.get_root_node_given_tree = get_root_node_given_tree
 
         checks.check_condition(
             callable(self.get_root_node_given_tree),
             "get_root_node_given_tree is callable",
         )
-
-        self.__post_init__()
 
 
 @singledispatch
@@ -140,6 +101,12 @@ def export_tree_data(model: Any) -> BaseModelTabularTrees:
     ------
     NotImplementedError
         If the type of the passed model is not supported.
+
+    Returns
+    -------
+    trees : BaseModelTabularTrees
+        Model-specific implementation of BaseModelTabularTrees containing tree data
+        for the input model.
 
     """
     raise NotImplementedError(f"model type not supported; {type(model)}")

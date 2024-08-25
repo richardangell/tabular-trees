@@ -1,10 +1,12 @@
 """XGBoost trees in tabular format."""
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 import xgboost as xgb
+from numpy.typing import NDArray
 
 from .. import checks
 from ..trees import BaseModelTabularTrees, TabularTrees, export_tree_data
@@ -17,78 +19,93 @@ def xgboost_get_root_node_given_tree(tree: int) -> str:
 
 @dataclass
 class XGBoostTabularTrees(BaseModelTabularTrees):
-    """Class to hold the xgboost trees in tabular format."""
+    """Class to hold the XGBoost trees in tabular format.
 
-    trees: pd.DataFrame
+    The preferred way to create XGBoostTabularTrees objects is with the from_booster
+    method.
+
+    """
+
+    data: pd.DataFrame
     """Tree data."""
 
-    lambda_: float = 1.0
-    """Lambda parameter value from XGBoost model."""
+    Tree: NDArray[np.int_] = field(init=False, repr=False)
+    """Tree number."""
 
-    alpha: float = 0.0
-    """Alpha parameter value from XGBoost model."""
+    Node: NDArray[np.int_] = field(init=False, repr=False)
+    """Node number."""
 
-    REQUIRED_COLUMNS = [
-        "Tree",
-        "Node",
-        "ID",
-        "Feature",
-        "Split",
-        "Yes",
-        "No",
-        "Missing",
-        "Gain",
-        "Cover",
-        "Category",
-        "G",
-        "H",
-        "weight",
-    ]
-    """List of columns required in tree data."""
+    ID: NDArray[np.object_] = field(init=False, repr=False)
+    """Id for ech node combining tree and node numbers."""
 
-    SORT_BY_COLUMNS = ["Tree", "Node"]
-    """List of columns to sort tree data by."""
+    Feature: NDArray[np.object_] = field(init=False, repr=False)
+    """The name of the feature split on.
 
-    COLUMN_MAPPING = {
-        "Tree": "tree",
-        "ID": "node",
-        "Yes": "left_child",
-        "No": "right_child",
-        "Missing": "missing",
-        "Feature": "feature",
-        "Split": "split_condition",
-        "weight": "prediction",
-        "leaf": "leaf",
-        "Cover": "count",
-    }
-    """Column name mapping between XGBoostTabularTrees and TabularTrees tree data."""
+    Null for leaf nodes.
 
-    def __init__(self, trees: pd.DataFrame, lambda_: float = 1.0, alpha: float = 0.0):
-        """Initialise the XGBoostTabularTrees object.
+    """
+
+    Split: NDArray[np.float64] = field(init=False, repr=False)
+    """The split point for a node.
+
+    Null for leaf nodes.
+
+    """
+
+    Yes: NDArray[np.object_] = field(init=False, repr=False)
+    """Left child node.
+
+    Null for leaf nodes.
+
+    """
+
+    No: NDArray[np.object_] = field(init=False, repr=False)
+    """Right child node.
+
+    Null for leaf nodes.
+
+    """
+
+    Missing: NDArray[np.object_] = field(init=False, repr=False)
+    """Child node for rows with null values in the split feature."""
+
+    Gain: NDArray[np.float64] = field(init=False, repr=False)
+    """Gain for a given split."""
+
+    Cover: NDArray[np.float64] = field(init=False, repr=False)
+    """Related to the 2nd order derivative of the loss function with respect to a the
+    split feature."""
+
+    Category: NDArray[np.float64] = field(init=False, repr=False)
+
+    G: NDArray[np.float64] = field(init=False, repr=False)
+    """Use in calculation of internal node predictions."""
+
+    H: NDArray[np.float64] = field(init=False, repr=False)
+    """Cover."""
+
+    weight: NDArray[np.float64] = field(init=False, repr=False)
+    """Node prediction."""
+
+    @classmethod
+    def from_booster(cls, booster: xgb.Booster) -> "XGBoostTabularTrees":
+        """Create XGBoostTabularTrees from a xgb.Booster object.
 
         Parameters
         ----------
-        trees : pd.DataFrame
-            XGBoost tree data output from Booster.trees_to_dataframe.
+        booster : xgb.Booster
+            XGBoost model to pull tree data from.
 
-        lambda_ : float, default = 1.0
-            Lambda parameter value from XGBoost model.
-
-        alpha : float default = 0.0
-            Alpha parameter value from XGBoost model. Only alpha values of 0 are
-            supported. Specifically the internal node prediction logic is only
-            defined for alpha = 0.
-
-        Raises
-        ------
-        ValueError
-            If alpha is not 0.
+        Returns
+        -------
+        trees : XGBoostTabularTrees
+            Model trees in tabular format.
 
         Examples
         --------
         >>> import xgboost as xgb
         >>> from sklearn.datasets import load_diabetes
-        >>> from tabular_trees import export_tree_data
+        >>> from tabular_trees import XGBoostTabularTrees
         >>> # get data in DMatrix
         >>> diabetes = load_diabetes()
         >>> data = xgb.DMatrix(diabetes["data"], label=diabetes["target"])
@@ -96,48 +113,59 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         >>> params = {"max_depth": 3, "verbosity": 0}
         >>> model = xgb.train(params, dtrain=data, num_boost_round=10)
         >>> # export to XGBoostTabularTrees
-        >>> xgboost_tabular_trees = export_tree_data(model)
+        >>> xgboost_tabular_trees = XGBoostTabularTrees.from_booster(model)
         >>> type(xgboost_tabular_trees)
         <class 'tabular_trees.xgboost.xgboost_tabular_trees.XGBoostTabularTrees'>
 
         """
-        self.trees = trees
-        self.lambda_ = lambda_
-        self.alpha = alpha
+        checks.check_type(booster, xgb.Booster, "booster")
 
-        self.__post_init__()
+        model_config = json.loads(booster.save_config())
+        train_params = model_config["learner"]["gradient_booster"]["tree_train_param"]
 
-    def __post_init__(self) -> None:
-        """Post init checks on regularisation parameters.
+        model_alpha = float(train_params["alpha"])
+        model_lambda = float(train_params["lambda"])
 
-        Raises
-        ------
-        TypeError
-            If self.lambda_ is not a float.
+        if model_alpha != 0:
+            raise ValueError("Only Booster objects with alpha = 0 are supported.")
 
-        TypeError
-            If self.alpha is not a float.
+        tree_data = booster.trees_to_dataframe()
 
-        ValueError
-            If self.alpha is not 0.
+        tree_data_with_predictions = XGBoostTabularTrees.derive_predictions(
+            df=tree_data, lambda_=model_lambda
+        )
+
+        return XGBoostTabularTrees(data=tree_data_with_predictions)
+
+    def to_tabular_trees(self) -> TabularTrees:
+        """Convert the tree data to a TabularTrees object.
+
+        Returns
+        -------
+        trees : TabularTrees
+            Model trees in TabularTrees form.
 
         """
-        checks.check_type(self.lambda_, float, "lambda_")
-        checks.check_type(self.alpha, float, "alpha")
-        checks.check_condition(self.alpha == 0, "alpha = 0")
+        trees = self.data.copy()
 
-        self.trees = self.derive_predictions()
+        # derive leaf node flag
+        trees["leaf"] = (trees["Feature"] == "Leaf").astype(int)
 
-        super().__post_init__()
+        column_mapping = {
+            "Tree": "tree",
+            "ID": "node",
+            "Yes": "left_child",
+            "No": "right_child",
+            "Missing": "missing",
+            "Feature": "feature",
+            "Split": "split_condition",
+            "weight": "prediction",
+            "leaf": "leaf",
+            "Cover": "count",
+        }
 
-    def convert_to_tabular_trees(self) -> TabularTrees:
-        """Convert the tree data to a TabularTrees object."""
-        trees = self.trees.copy()
-
-        trees = self._derive_leaf_node_flag(trees)
-
-        tree_data_converted = trees[self.COLUMN_MAPPING.keys()].rename(
-            columns=self.COLUMN_MAPPING
+        tree_data_converted = trees[column_mapping.keys()].rename(
+            columns=column_mapping
         )
 
         return TabularTrees(
@@ -145,25 +173,18 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
             get_root_node_given_tree=xgboost_get_root_node_given_tree,
         )
 
-    def _derive_leaf_node_flag(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Derive a leaf node indiciator flag column."""
-        df["leaf"] = (df["Feature"] == "Leaf").astype(int)
-
-        return df
-
-    def derive_predictions(self) -> pd.DataFrame:
+    @staticmethod
+    def derive_predictions(df: pd.DataFrame, lambda_: float) -> pd.DataFrame:
         """Derive predictons for internal nodes in trees.
 
         Predictions will be available in 'weight' column in the output.
 
         Returns
         -------
-        pd.DataFrame
-            Tree data (trees attribute) with 'weight', 'H' and 'G' columns
-            added.
+        trees : pd.DataFrame
+            Tree data  with 'weight', 'H' and 'G' columns added.
 
         """
-        df = self.trees.copy()
         n_trees = df["Tree"].max()
 
         # identify leaf and internal nodes
@@ -178,12 +199,12 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
         df.loc[leaf_nodes, "weight"] = df.loc[leaf_nodes, "Gain"]
 
         df.loc[leaf_nodes, "G"] = -df.loc[leaf_nodes, "weight"] * (
-            df.loc[leaf_nodes, "H"] + self.lambda_
+            df.loc[leaf_nodes, "H"] + lambda_
         )
 
         # propagate G up from the leaf nodes to internal nodes, for each tree
         df_g_list = [
-            self._derive_internal_node_g(df.loc[df["Tree"] == n])
+            XGBoostTabularTrees._derive_internal_node_g(df.loc[df["Tree"] == n])
             for n in range(n_trees + 1)
         ]
 
@@ -192,12 +213,13 @@ class XGBoostTabularTrees(BaseModelTabularTrees):
 
         # update weight values for internal nodes
         df_g.loc[internal_nodes, "weight"] = -df_g.loc[internal_nodes, "G"] / (
-            df_g.loc[internal_nodes, "H"] + self.lambda_
+            df_g.loc[internal_nodes, "H"] + lambda_
         )
 
         return df_g
 
-    def _derive_internal_node_g(self, tree_df: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def _derive_internal_node_g(tree_df: pd.DataFrame) -> pd.DataFrame:
         """Derive predictons for internal nodes in a single tree.
 
         This involves starting at each leaf node in the tree and propagating
@@ -260,13 +282,4 @@ def _export_tree_data__xgb_booster(model: xgb.Booster) -> XGBoostTabularTrees:
     """
     checks.check_type(model, xgb.Booster, "model")
 
-    model_config = json.loads(model.save_config())
-    train_params = model_config["learner"]["gradient_booster"]["tree_train_param"]
-
-    tree_data = model.trees_to_dataframe()
-
-    return XGBoostTabularTrees(
-        trees=tree_data,
-        lambda_=float(train_params["lambda"]),
-        alpha=float(train_params["alpha"]),
-    )
+    return XGBoostTabularTrees.from_booster(model)
